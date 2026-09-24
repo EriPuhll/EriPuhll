@@ -71,6 +71,7 @@ const Store = {
     const sset = saved.settings || {};
     d.settings = Object.assign(fresh.settings, sset);
     d.settings.theme = migrateGlobalTheme(sset.theme);
+    if (!d.settings.trackingStart) d.settings.trackingStart = toISODate(new Date()); // desde cuándo se usa la app
     ['subjects', 'events', 'classes', 'sessions', 'simulacros', 'projects'].forEach((k) => { if (!Array.isArray(d[k])) d[k] = []; });
     if (!d.remindersSent || typeof d.remindersSent !== 'object') d.remindersSent = {};
     d.subjects.forEach(migrateSubject);
@@ -148,7 +149,7 @@ function newSubject(fields = {}) {
   const n = Store.data ? Store.data.subjects.length : 0;
   const now = new Date();
   const s = {
-    id: uid(), name: '', semester: now.getMonth() < 6 ? '1' : '2', year: now.getFullYear(), tag: '',
+    id: uid(), createdAt: toISODate(new Date()), name: '', semester: now.getMonth() < 6 ? '1' : '2', year: now.getFullYear(), tag: '',
     professors: [], bibliography: '', credits: 0, rule: '', absences: 0, maxAbsences: null, pendingNotes: [],
     color: SUBJECT_COLORS[n % SUBJECT_COLORS.length],
     theme: { bgType: 'none', bgColor: '#efe7fb', pattern: 'dots', bgImageId: '' },
@@ -297,9 +298,10 @@ function subjectActive(s, date = new Date()) {
 }
 
 /**
- * Ritmo de una materia. Las horas totales (créditos × horas por crédito) se
- * reparten en partes iguales entre las semanas de cursado. Lo que no se llegó
- * a hacer en semanas anteriores se suma a la meta de esta semana.
+ * Ritmo de una materia. Las horas que faltan se reparten en partes iguales
+ * entre las semanas de cursado, contando desde que empezaste a usar la app
+ * (o desde que creaste la materia): las semanas anteriores no generan deuda.
+ * Lo que no se llegó a hacer en semanas anteriores se suma a la meta de esta semana.
  */
 function subjectPace(s, now = Date.now()) {
   const W = 7 * DAY_MS;
@@ -307,19 +309,23 @@ function subjectPace(s, now = Date.now()) {
   const done = studiedMinutes(s.id);
   const left = Math.max(0, goal - done);
   const { start, end } = subjectPeriod(s);
-  const firstWeek = startOfWeek(start).getTime();
+  const track = [Store.data.settings.trackingStart, s.createdAt].filter(Boolean).map((d) => parseDate(d).getTime());
+  const paceStart = Math.max(start.getTime(), ...track);
+  const firstWeek = startOfWeek(new Date(paceStart)).getTime();
   const totalWeeks = Math.max(1, Math.ceil((end.getTime() - firstWeek) / W));
-  const base = goal / totalWeeks;
+  const goalAtStart = Math.max(0, goal - studiedMinutes(s.id, 0, firstWeek));
+  const base = goalAtStart / totalWeeks;
   const thisWeek = startOfWeek(new Date(now)).getTime();
   const started = now >= start.getTime();
   const finished = now > end.getTime();
   const weekIdx = clamp(Math.floor((thisWeek - firstWeek) / W), 0, totalWeeks);
-  const doneBefore = studiedMinutes(s.id, 0, thisWeek);
-  const debt = started && !finished ? Math.max(0, Math.min(goal, base * weekIdx) - doneBefore) : 0;
+  const doneSince = studiedMinutes(s.id, firstWeek, thisWeek);
+  const debt = started && !finished ? Math.max(0, Math.min(goalAtStart, base * weekIdx) - doneSince) : 0;
   const weekDone = studiedMinutes(s.id, thisWeek);
-  const perWeek = started && !finished ? Math.min(Math.max(0, goal - doneBefore), base + debt) : 0;
+  const leftAtWeek = Math.max(0, goal - studiedMinutes(s.id, 0, thisWeek));
+  const perWeek = started && !finished ? Math.min(leftAtWeek, base + debt) : 0;
   const weeksLeft = finished ? 0 : Math.max(1, Math.ceil((end.getTime() - Math.max(now, firstWeek)) / W));
-  const expected = goal * clamp((now - start.getTime()) / Math.max(1, end.getTime() - start.getTime()), 0, 1);
+  const expected = (goal - goalAtStart) + goalAtStart * clamp((now - paceStart) / Math.max(1, end.getTime() - paceStart), 0, 1);
   const behind = goal > 0 && debt >= 30;
   return { goal, done, left, base, debt, perWeek, weeksLeft, totalWeeks, expected, behind, weekDone, over: done - goal, started, finished, start, end };
 }
