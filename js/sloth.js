@@ -1,15 +1,21 @@
 'use strict';
 
-/* ---------- El perezoso: dibujo por capas, ropa, ánimo y apariciones ---------- */
+/* ---------- El perezoso: dibujo por capas, ropa, ánimo y apariciones ----------
+ * Acostado sobre una rama, con la cara crema, las manchas oscuras de lado y los
+ * brazos colgando con garras largas. La cabeza se dibuja en su propio marco
+ * (centro 100,92) y se ubica sobre la rama con una transformación; así los
+ * accesorios de cabeza sirven igual para la vista completa y para la cara sola.
+ */
 
 const FUR_PRESETS = [
-  { id: 'marron', label: 'Marrón clásico', color: '#a88a6d' },
-  { id: 'gris', label: 'Gris', color: '#9a9aa3' },
-  { id: 'caramelo', label: 'Caramelo', color: '#c98a4b' },
+  { id: 'marron', label: 'Marrón clásico', color: '#c39b76' },
+  { id: 'gris', label: 'Gris', color: '#a3a0a6' },
+  { id: 'caramelo', label: 'Caramelo', color: '#cf9255' },
   { id: 'lavanda', label: 'Lavanda', color: '#a075ea' },
   { id: 'menta', label: 'Menta', color: '#7cc4a4' },
   { id: 'rosa', label: 'Rosa', color: '#f0a3c0' },
 ];
+const DEFAULT_FUR = '#c39b76';
 
 const MOODS = {
   feliz: 'Feliz', dormido: 'Dormido', preocupado: 'Preocupado', orgulloso: 'Orgulloso', estirandose: 'Estirándose',
@@ -17,6 +23,23 @@ const MOODS = {
 
 const ACCENT = 'var(--accent, #a075ea)';
 const MOSS = 'var(--moss, #6f8f5a)';
+const LEAF = '#7cbf45';
+const LEAF_LIGHT = '#a3d86a';
+const BARK = '#a5652c';
+const BARK_LIGHT = '#c5843f';
+const BARK_DARK = '#7a4a1f';
+const CLAW = '#f1e6cc';
+const CLAW_EDGE = '#cdb88f';
+
+// Dónde va la cabeza sobre la rama (vista completa)
+const HEAD_TF = 'translate(104 110) rotate(-10) scale(1.1) translate(-100 -92)';
+// Dónde cuelga lo que "abraza" (de la garra delantera) y el reloj (en el brazo)
+const HAND_TF = 'translate(150 220) scale(0.74) translate(-100 -176)';
+const ARM_TF = 'translate(12 88)';
+const BACK_TF = 'translate(205 96) scale(0.78) translate(-100 -160)';
+const BODY_PATH = 'M120 128 C 110 90, 150 62, 205 64 C 255 66, 285 92, 280 122 C 276 140, 250 146, 205 142 L 140 140 Z';
+
+let svgSerial = 0;
 
 function sparkle(x, y, s, color) {
   const k = s * 0.3;
@@ -44,187 +67,259 @@ function flower(x, y, color, r = 4.2) {
   }).join('');
   return `${petals}<circle cx="${x}" cy="${y}" r="${r * 0.62}" fill="#f2a65a"/>`;
 }
-function princessDress(top, skirt, trim, deco) {
-  return `<circle cx="68" cy="132" r="11" fill="${top}"/><circle cx="132" cy="132" r="11" fill="${top}"/>
-    <path d="M70 128 Q100 120 130 128 L126 168 Q100 174 74 168 Z" fill="${top}"/>
-    <path d="M74 166 Q100 174 126 166 Q156 196 164 232 Q100 248 36 232 Q44 196 74 166 Z" fill="${skirt}"/>
-    <path d="M36 232 Q48 222 60 233 Q72 222 84 234 Q96 222 108 234 Q120 222 132 234 Q144 222 164 232" fill="none" stroke="${trim}" stroke-width="3"/>
-    <path d="M74 166 Q100 176 126 166" stroke="${trim}" stroke-width="4" fill="none"/>${deco}`;
-}
 function snowflake(x, y, s) {
   return `<path d="M${x - s} ${y} L${x + s} ${y} M${x} ${y - s} L${x} ${y + s} M${x - s * 0.7} ${y - s * 0.7} L${x + s * 0.7} ${y + s * 0.7} M${x - s * 0.7} ${y + s * 0.7} L${x + s * 0.7} ${y - s * 0.7}" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`;
+}
+function leaf(x, y, rot, s = 1) {
+  return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 0 C -10 -10 -9 -28 0 -36 C 9 -28 10 -10 0 0 Z" fill="${LEAF}"/><path d="M0 -2 L0 -30" stroke="${LEAF_LIGHT}" stroke-width="1.6"/></g>`;
+}
+
+/* Ropa del cuerpo: se pinta sobre el cuerpo acostado (recortada a su forma) */
+const DECO_SPOTS = [[160, 92, 5], [198, 80, 4], [238, 94, 5], [215, 120, 3.6], [176, 120, 4], [258, 112, 3.6]];
+function outfitSVG(o) {
+  const id = `sl-body-${++svgSerial}`;
+  let deco = '';
+  let skirtDeco = '';
+  switch (o.deco) {
+    case 'sparkle':
+      deco = DECO_SPOTS.map(([x, y, s]) => sparkle(x, y, s, '#fff')).join('');
+      skirtDeco = sparkle(180, 158, 3.5, '#fff') + sparkle(236, 156, 3.5, '#fff');
+      break;
+    case 'snow':
+      deco = DECO_SPOTS.map(([x, y, s]) => snowflake(x, y, s)).join('');
+      skirtDeco = snowflake(180, 157, 4) + snowflake(236, 155, 4);
+      break;
+    case 'roses':
+      deco = DECO_SPOTS.slice(0, 4).map(([x, y]) => flower(x, y, '#e46a6a', 3.4)).join('');
+      skirtDeco = flower(200, 158, '#e46a6a', 3.4);
+      break;
+    case 'heart':
+      deco = `<rect x="100" y="112" width="200" height="8" fill="${o.trim}"/>${heart(205, 88, 1, '#fff')}${sparkle(170, 96, 4, '#fff')}${sparkle(245, 100, 4, '#fff')}`;
+      break;
+    case 'stitch':
+      deco = `<path d="M150 82 L262 126" stroke="${o.trim}" stroke-width="2.5" stroke-dasharray="6 4"/><path d="M168 84 l6 10 M190 93 l6 10 M212 102 l6 10 M234 111 l6 10" stroke="${o.trim}" stroke-width="2"/>${skull(240, 86, 0.8)}`;
+      break;
+    case 'dino':
+      deco = `<ellipse cx="205" cy="146" rx="80" ry="30" fill="${o.belly}"/><path d="M160 126 Q205 136 250 124 M170 136 Q205 144 242 134" stroke="#a7d99a" stroke-width="3" fill="none"/>`;
+      break;
+    case 'stripe':
+      deco = `<rect x="192" y="40" width="20" height="120" fill="#1d1d1d"/><rect x="198" y="40" width="8" height="120" fill="#f4f4f4"/>`;
+      break;
+    case 'hoodie':
+      deco = `<path d="M182 110 L234 110 L228 134 L188 134 Z" fill="${o.trim}"/><path d="M146 88 l4 24 M154 84 l8 24" stroke="#fff" stroke-width="3" stroke-linecap="round"/>${sparkle(212, 88, 6, '#fff')}`;
+      break;
+    case 'sash':
+      deco = `<rect x="198" y="40" width="14" height="120" fill="#2a2238"/><path d="M138 80 L198 108 L146 136" fill="none" stroke="${o.trim}" stroke-width="5"/>`;
+      break;
+    default: break;
+  }
+  const front = `<defs><clipPath id="${id}"><path d="${BODY_PATH}"/></clipPath></defs>
+    <g clip-path="url(#${id})"><rect x="100" y="40" width="200" height="130" fill="${o.top}"/>${deco}</g>
+    <path d="M137 84 Q127 108 139 134" stroke="${o.trim}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    ${o.skirt ? `<path d="M138 132 Q205 152 276 126 L284 160 Q272 170 260 162 Q248 172 236 164 Q224 174 212 165 Q200 174 188 165 Q176 173 164 164 Q150 170 136 160 Z" fill="${o.skirt}"/>
+      <path d="M136 160 Q150 170 164 164 Q176 173 188 165 Q200 174 212 165 Q224 174 236 164 Q248 172 260 162 Q272 170 284 160" fill="none" stroke="${o.trim}" stroke-width="3"/>${skirtDeco}` : ''}`;
+  const back = o.deco === 'dino'
+    ? `<path d="M272 112 Q306 114 318 136 Q296 134 276 128Z" fill="${o.top}"/>` + [[150, 80], [172, 70], [196, 65], [220, 65], [244, 72], [266, 86]].map(([x, y]) => `<path d="M${x - 9} ${y + 8} L${x} ${y - 12} L${x + 9} ${y + 8} Z" fill="#4e9a54"/>`).join('')
+    : '';
+  return { back, front };
 }
 
 /* Ropero. hours = horas de estudio del semestre para desbloquear. */
 const WARDROBE_CATS = [
-  { id: 'cabeza', label: 'Cabeza', icon: '👒' },
-  { id: 'ojos', label: 'Ojos', icon: '👓' },
-  { id: 'cara', label: 'Cara', icon: '🧔' },
-  { id: 'cuello', label: 'Cuello', icon: '🧣' },
-  { id: 'cuerpo', label: 'Ropa', icon: '👗' },
-  { id: 'abrazando', label: 'Abrazando', icon: '🤲' },
-  { id: 'extra', label: 'Extras', icon: '✨' },
+  { id: 'cabeza', label: 'Cabeza' },
+  { id: 'ojos', label: 'Ojos' },
+  { id: 'cara', label: 'Cara' },
+  { id: 'cuello', label: 'Cuello' },
+  { id: 'cuerpo', label: 'Ropa' },
+  { id: 'abrazando', label: 'En la garra' },
+  { id: 'extra', label: 'Extras' },
 ];
 
 const WARDROBE = [
   // --- 0 h
-  { id: 'mono', cat: 'cabeza', name: 'Moño', hours: 0, style: 'Clásico', svg: () => `<g transform="translate(132 56) rotate(18)"><path d="M0 0 L-17 -11 Q-21 0 -17 11 Z" fill="#f28bb3"/><path d="M0 0 L17 -11 Q21 0 17 11 Z" fill="#f28bb3"/><circle r="5.5" fill="#e0679a"/></g>` },
-  { id: 'lentes', cat: 'ojos', name: 'Lentes redondos', hours: 0, style: 'Clásico', svg: () => `<g fill="rgba(255,255,255,.18)" stroke="#2a2238" stroke-width="3"><circle cx="86" cy="94" r="12"/><circle cx="114" cy="94" r="12"/></g><path d="M98 94 Q100 90 102 94" stroke="#2a2238" stroke-width="3" fill="none"/><path d="M74 92 L56 88 M126 92 L144 88" stroke="#2a2238" stroke-width="3"/>` },
-  { id: 'bufanda', cat: 'cuello', name: 'Bufanda', hours: 0, style: 'Clásico', svg: () => `<path d="M62 128 Q100 144 138 128 L138 142 Q100 158 62 142 Z" fill="#e46a6a"/><path d="M116 144 L124 178 L110 178 L106 148 Z" fill="#e46a6a"/><path d="M110 170 L124 170 M109 175 L125 175" stroke="#fff" stroke-width="2"/><path d="M78 134 L79 146 M100 140 L100 152 M122 134 L121 146" stroke="#f7c9c9" stroke-width="3"/>` },
-  { id: 'hojita', cat: 'abrazando', name: 'Hojita', hours: 0, style: 'Clásico', svg: () => `<path d="M84 190 Q92 150 126 156 Q120 190 84 190 Z" fill="${MOSS}"/><path d="M88 186 Q104 172 122 160" stroke="#dcebd0" stroke-width="2" fill="none"/>` },
+  { id: 'mono', cat: 'cabeza', name: 'Moño', hours: 0, style: 'Clásico', svg: () => `<g transform="translate(130 54) rotate(18)"><path d="M0 0 L-17 -11 Q-21 0 -17 11 Z" fill="#f28bb3"/><path d="M0 0 L17 -11 Q21 0 17 11 Z" fill="#f28bb3"/><circle r="5.5" fill="#e0679a"/></g>` },
+  { id: 'lentes', cat: 'ojos', name: 'Lentes redondos', hours: 0, style: 'Clásico', svg: () => `<g fill="rgba(255,255,255,.2)" stroke="#2a2238" stroke-width="3"><circle cx="79" cy="95" r="13"/><circle cx="121" cy="95" r="13"/></g><path d="M92 95 Q100 90 108 95" stroke="#2a2238" stroke-width="3" fill="none"/><path d="M66 92 L52 88 M134 92 L148 88" stroke="#2a2238" stroke-width="3"/>` },
+  { id: 'bufanda', cat: 'cuello', name: 'Bufanda', hours: 0, style: 'Clásico', svg: () => `<path d="M62 124 Q100 140 138 124 L138 138 Q100 154 62 138 Z" fill="#e46a6a"/><path d="M116 140 L124 172 L110 172 L106 144 Z" fill="#e46a6a"/><path d="M110 164 L124 164 M109 169 L125 169" stroke="#fff" stroke-width="2"/><path d="M78 130 L79 142 M100 136 L100 148 M122 130 L121 142" stroke="#f7c9c9" stroke-width="3"/>` },
+  { id: 'hojita', cat: 'abrazando', name: 'Hojita', hours: 0, style: 'Clásico', svg: () => `<path d="M84 190 Q92 150 126 156 Q120 190 84 190 Z" fill="${LEAF}"/><path d="M88 186 Q104 172 122 160" stroke="${LEAF_LIGHT}" stroke-width="2" fill="none"/>` },
   // --- progreso
-  { id: 'gorro', cat: 'cabeza', name: 'Gorro de lana con pompón', hours: 2, style: 'Clásico', svg: () => `<path d="M54 80 Q54 34 100 32 Q146 34 146 80 Z" fill="#6c9eeb"/><path d="M70 44 L70 78 M85 36 L85 78 M100 33 L100 78 M115 36 L115 78 M130 44 L130 78" stroke="#5a8ad6" stroke-width="3"/><rect x="50" y="72" width="100" height="15" rx="7.5" fill="#4a7fd4"/><circle cx="100" cy="28" r="11" fill="#fff" stroke="#dfe7f5" stroke-width="2"/>` },
-  { id: 'mariposas', cat: 'cabeza', name: 'Clips de mariposa', hours: 3, style: 'Gen Z', svg: () => butterfly(70, 60, -20, '#c78bd9', '#f28bb3') + butterfly(130, 56, 18, '#8fd3ff', '#7cc4a4') },
-  { id: 'auriculares', cat: 'cabeza', name: 'Auriculares', hours: 5, style: 'Clásico', svg: () => `<path d="M50 98 Q50 36 100 36 Q150 36 150 98" stroke="#2a2238" stroke-width="7" fill="none"/><rect x="38" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/><rect x="144" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/>` },
+  { id: 'gorro', cat: 'cabeza', name: 'Gorro de lana con pompón', hours: 2, style: 'Clásico', svg: () => `<path d="M54 78 Q54 32 100 30 Q146 32 146 78 Z" fill="#6c9eeb"/><path d="M70 42 L70 76 M85 34 L85 76 M100 31 L100 76 M115 34 L115 76 M130 42 L130 76" stroke="#5a8ad6" stroke-width="3"/><rect x="50" y="70" width="100" height="15" rx="7.5" fill="#4a7fd4"/><circle cx="100" cy="26" r="11" fill="#fff" stroke="#dfe7f5" stroke-width="2"/>` },
+  { id: 'mariposas', cat: 'cabeza', name: 'Clips de mariposa', hours: 3, style: 'Gen Z', svg: () => butterfly(68, 60, -20, '#c78bd9', '#f28bb3') + butterfly(132, 56, 18, '#8fd3ff', '#7cc4a4') },
+  { id: 'auriculares', cat: 'cabeza', name: 'Auriculares', hours: 5, style: 'Clásico', svg: () => `<path d="M50 98 Q50 34 100 34 Q150 34 150 98" stroke="#2a2238" stroke-width="7" fill="none"/><rect x="38" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/><rect x="144" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/>` },
   { id: 'taza', cat: 'abrazando', name: 'Taza de café', hours: 5, style: 'Clásico', svg: () => `<rect x="86" y="160" width="28" height="30" rx="5" fill="#fff" stroke="#d8d0c0" stroke-width="2"/><path d="M114 166 q12 0 12 9 q0 9 -12 9" stroke="#d8d0c0" stroke-width="4" fill="none"/><ellipse cx="100" cy="162" rx="12" ry="3" fill="#7a4a2a"/><path d="M92 152 q-4 -6 0 -12 M100 150 q-4 -6 0 -12 M108 152 q-4 -6 0 -12" stroke="#b9aec9" stroke-width="2" fill="none"/>${heart(100, 174, 0.45, '#f28bb3')}` },
-  { id: 'brillitos', cat: 'extra', name: 'Brillitos en la cara', hours: 6, style: 'Gen Z', svg: () => sparkle(58, 72, 6, '#f5d76e') + sparkle(146, 110, 5, '#f28bb3') + sparkle(52, 116, 4, '#c9b6f2') + sparkle(150, 62, 4.5, '#fff') + `<circle cx="74" cy="104" r="1.4" fill="#f5d76e"/><circle cx="78" cy="108" r="1.2" fill="#fff"/><circle cx="124" cy="104" r="1.4" fill="#f5d76e"/><circle cx="121" cy="108" r="1.2" fill="#fff"/>` },
-  { id: 'tiara', cat: 'cabeza', name: 'Tiara de princesa', hours: 7, style: 'Princesa', svg: () => `<path d="M76 58 L84 40 L92 52 L100 32 L108 52 L116 40 L124 58 Z" fill="#f5d76e" stroke="#e0b93f" stroke-width="2" stroke-linejoin="round"/><circle cx="100" cy="46" r="3.5" fill="#f28bb3"/><circle cx="84" cy="50" r="2.5" fill="#6c9eeb"/><circle cx="116" cy="50" r="2.5" fill="#6c9eeb"/>` },
-  { id: 'perlas', cat: 'cuello', name: 'Collar de perlas', hours: 7, style: 'Princesa', svg: () => [70, 77.5, 85, 92.5, 100, 107.5, 115, 122.5, 130].map((x) => `<circle cx="${x}" cy="${(132 + 9 * (1 - ((x - 100) / 32) ** 2)).toFixed(1)}" r="3.3" fill="#fff" stroke="#e5ddcf" stroke-width="1"/>`).join('') },
+  { id: 'brillitos', cat: 'extra', anchor: 'head', name: 'Brillitos en la cara', hours: 6, style: 'Gen Z', svg: () => sparkle(56, 70, 6, '#f5d76e') + sparkle(146, 112, 5, '#f28bb3') + sparkle(52, 116, 4, '#c9b6f2') + sparkle(150, 60, 4.5, '#fff') + `<circle cx="68" cy="106" r="1.4" fill="#f5d76e"/><circle cx="72" cy="110" r="1.2" fill="#fff"/><circle cx="132" cy="106" r="1.4" fill="#f5d76e"/><circle cx="128" cy="110" r="1.2" fill="#fff"/>` },
+  { id: 'tiara', cat: 'cabeza', name: 'Tiara de princesa', hours: 7, style: 'Princesa', svg: () => `<path d="M76 56 L84 38 L92 50 L100 30 L108 50 L116 38 L124 56 Z" fill="#f5d76e" stroke="#e0b93f" stroke-width="2" stroke-linejoin="round"/><circle cx="100" cy="44" r="3.5" fill="#f28bb3"/><circle cx="84" cy="48" r="2.5" fill="#6c9eeb"/><circle cx="116" cy="48" r="2.5" fill="#6c9eeb"/>` },
+  { id: 'perlas', cat: 'cuello', name: 'Collar de perlas', hours: 7, style: 'Princesa', svg: () => [70, 77.5, 85, 92.5, 100, 107.5, 115, 122.5, 130].map((x) => `<circle cx="${x}" cy="${(128 + 9 * (1 - ((x - 100) / 32) ** 2)).toFixed(1)}" r="3.3" fill="#fff" stroke="#e5ddcf" stroke-width="1"/>`).join('') },
   { id: 'vaso', cat: 'abrazando', name: 'Vaso térmico XL', hours: 8, style: 'Gen Z', svg: () => `<path d="M86 148 L114 148 L110 204 L90 204 Z" fill="#9fd8c8"/><rect x="84" y="140" width="32" height="10" rx="4" fill="#7cc4b0"/><path d="M104 140 L110 120" stroke="#f28bb3" stroke-width="4" stroke-linecap="round"/><path d="M114 156 q14 2 12 18 q-2 12 -14 12" stroke="#7cc4b0" stroke-width="5" fill="none"/><rect x="88" y="190" width="24" height="3" fill="#7cc4b0"/>` },
-  { id: 'lentes_sol', cat: 'ojos', name: 'Lentes de sol', hours: 10, style: 'Clásico', svg: () => `<rect x="72" y="85" width="26" height="18" rx="7" fill="#1d1512"/><rect x="102" y="85" width="26" height="18" rx="7" fill="#1d1512"/><path d="M98 92 L102 92 M72 90 L56 86 M128 90 L144 86" stroke="#1d1512" stroke-width="3"/><path d="M76 89 L84 89 M106 89 L114 89" stroke="#fff" stroke-width="2" opacity=".5"/>` },
+  { id: 'lentes_sol', cat: 'ojos', name: 'Lentes de sol', hours: 10, style: 'Clásico', svg: () => `<rect x="64" y="86" width="29" height="19" rx="8" fill="#1d1512"/><rect x="107" y="86" width="29" height="19" rx="8" fill="#1d1512"/><path d="M93 93 L107 93 M64 91 L50 87 M136 91 L150 87" stroke="#1d1512" stroke-width="3"/><path d="M69 90 L78 90 M112 90 L121 90" stroke="#fff" stroke-width="2" opacity=".5"/>` },
   { id: 'libro', cat: 'abrazando', name: 'Libro', hours: 10, style: 'Clásico', svg: () => `<g transform="rotate(-8 100 176)"><rect x="80" y="158" width="42" height="32" rx="3" fill="${ACCENT}"/><rect x="84" y="161" width="36" height="26" fill="#fffdf8"/><rect x="80" y="158" width="8" height="32" rx="2" fill="#2a2238" opacity=".35"/><path d="M92 168 L114 168 M92 174 L114 174 M92 180 L108 180" stroke="#cfc6dc" stroke-width="2"/></g>` },
-  { id: 'vestido_rosa', cat: 'cuerpo', name: 'Vestido de princesa rosa', hours: 12, style: 'Princesa', svg: () => princessDress('#f7b8d2', '#f28bb3', '#fff', sparkle(60, 212, 4, '#fff') + sparkle(140, 206, 4, '#fff') + sparkle(100, 218, 3.5, '#fff') + sparkle(84, 194, 3, '#fff') + sparkle(120, 190, 3, '#fff')) },
-  { id: 'varita', cat: 'abrazando', name: 'Varita con estrella', hours: 12, style: 'Princesa', svg: () => `<path d="M84 204 L114 154" stroke="#f5d76e" stroke-width="4" stroke-linecap="round"/><path d="M116 136 l4 9 l10 1 l-7 7 l2 10 l-9 -5 l-9 5 l2 -10 l-7 -7 l10 -1z" fill="#f5d76e" stroke="#e0b43a" stroke-width="1.5"/>${sparkle(134, 134, 3, '#fff')}` },
-  { id: 'matcha', cat: 'abrazando', name: 'Matcha latte', hours: 14, style: 'Gen Z', svg: () => `<path d="M88 158 L112 158 L109 196 L91 196 Z" fill="rgba(255,255,255,.75)" stroke="#d8d0c0" stroke-width="2"/><path d="M89.5 172 L110.5 172 L109 196 L91 196 Z" fill="#9bc36b"/><path d="M89 172 Q100 167 111 172" stroke="#f4f0e6" stroke-width="3" fill="none"/><path d="M104 158 L112 136" stroke="${MOSS}" stroke-width="5" stroke-linecap="round"/><ellipse cx="100" cy="158" rx="13" ry="3" fill="#fff" stroke="#d8d0c0"/>` },
-  { id: 'cinta', cat: 'cabeza', name: 'Cinta de guerrero', hours: 15, style: 'Maestro', svg: () => `<path d="M52 78 Q100 64 148 78 L148 90 Q100 76 52 90 Z" fill="#d9546e"/><path d="M54 82 L30 90 L36 98 L56 90 Z" fill="#c43d58"/><path d="M54 86 L34 104 L42 108 L58 90 Z" fill="#d9546e"/><circle cx="100" cy="76" r="5" fill="#fff"/><circle cx="100" cy="76" r="2.4" fill="#d9546e"/>` },
-  { id: 'capucha_dino', cat: 'cabeza', name: 'Capucha de dino', hours: 15, style: 'Dino', svg: () => `<path d="M70 44 L76 24 L86 36 L94 16 L100 30 L106 16 L114 36 L124 24 L130 44 Z" fill="#4e9a54"/><path d="M56 112 Q42 38 100 36 Q158 38 144 112" stroke="#7bc47f" stroke-width="16" fill="none" stroke-linecap="round"/><circle cx="72" cy="52" r="5" fill="#fff"/><circle cx="73" cy="52" r="2.4" fill="#1d1512"/><circle cx="128" cy="52" r="5" fill="#fff"/><circle cx="127" cy="52" r="2.4" fill="#1d1512"/>` },
+  { id: 'vestido_rosa', cat: 'cuerpo', name: 'Vestido de princesa rosa', hours: 12, style: 'Princesa', outfit: { top: '#f7b8d2', skirt: '#f28bb3', trim: '#fff', deco: 'sparkle' } },
+  { id: 'varita', cat: 'abrazando', name: 'Varita con estrella', hours: 12, style: 'Princesa', svg: () => `<path d="M100 214 L112 158" stroke="#f5d76e" stroke-width="5" stroke-linecap="round"/><path d="M112 136 l5 11 l12 1 l-9 8 l3 12 l-11 -6 l-11 6 l3 -12 l-9 -8 l12 -1z" fill="#f5d76e" stroke="#e0b43a" stroke-width="1.5"/>${sparkle(134, 134, 4, '#fff')}` },
+  { id: 'matcha', cat: 'abrazando', name: 'Matcha latte', hours: 14, style: 'Gen Z', svg: () => `<path d="M88 158 L112 158 L109 196 L91 196 Z" fill="rgba(255,255,255,.8)" stroke="#d8d0c0" stroke-width="2"/><path d="M89.5 172 L110.5 172 L109 196 L91 196 Z" fill="#9bc36b"/><path d="M89 172 Q100 167 111 172" stroke="#f4f0e6" stroke-width="3" fill="none"/><path d="M104 158 L112 136" stroke="${MOSS}" stroke-width="5" stroke-linecap="round"/><ellipse cx="100" cy="158" rx="13" ry="3" fill="#fff" stroke="#d8d0c0"/>` },
+  { id: 'cinta', cat: 'cabeza', name: 'Cinta de guerrero', hours: 15, style: 'Maestro', svg: () => `<path d="M52 74 Q100 60 148 74 L148 86 Q100 72 52 86 Z" fill="#d9546e"/><path d="M146 78 L170 86 L164 94 L144 86 Z" fill="#c43d58"/><path d="M146 82 L166 100 L158 104 L142 86 Z" fill="#d9546e"/><circle cx="100" cy="72" r="5" fill="#fff"/><circle cx="100" cy="72" r="2.4" fill="#d9546e"/>` },
+  { id: 'capucha_dino', cat: 'cabeza', name: 'Capucha de dino', hours: 15, style: 'Dino', svg: () => `<path d="M70 42 L76 22 L86 34 L94 14 L100 28 L106 14 L114 34 L124 22 L130 42 Z" fill="#4e9a54"/><path d="M56 112 Q42 36 100 34 Q158 36 144 112" stroke="#7bc47f" stroke-width="16" fill="none" stroke-linecap="round"/><circle cx="72" cy="50" r="5" fill="#fff"/><circle cx="73" cy="50" r="2.4" fill="#1d1512"/><circle cx="128" cy="50" r="5" fill="#fff"/><circle cx="127" cy="50" r="2.4" fill="#1d1512"/>` },
   { id: 'celular', cat: 'abrazando', name: 'Celu con funda cute', hours: 16, style: 'Gen Z', svg: () => `<rect x="86" y="150" width="28" height="48" rx="6" fill="#c9b6f2"/><rect x="90" y="155" width="20" height="36" rx="3" fill="#2a2238"/><circle cx="100" cy="194" r="2" fill="#fff"/><path d="M114 156 q10 4 8 16" stroke="#f28bb3" stroke-width="2" fill="none"/><circle cx="122" cy="174" r="4" fill="#f5d76e"/>${sparkle(100, 170, 6, '#f28bb3')}` },
-  { id: 'pijama_dino', cat: 'cuerpo', name: 'Pijama de dino', hours: 18, style: 'Dino', svg: () => `<path d="M146 196 Q178 204 188 232 Q162 220 142 212 Z" fill="#7bc47f"/><path d="M160 204 l4 -8 l4 9 M172 212 l5 -7 l3 10" fill="#4e9a54"/><ellipse cx="100" cy="166" rx="51" ry="57" fill="#7bc47f"/><ellipse cx="100" cy="178" rx="30" ry="38" fill="#c9ecb8"/><path d="M80 160 Q100 166 120 160 M78 176 Q100 182 122 176 M80 192 Q100 198 120 192" stroke="#a7d99a" stroke-width="3" fill="none"/><ellipse cx="72" cy="218" rx="18" ry="12" fill="#7bc47f"/><ellipse cx="128" cy="218" rx="18" ry="12" fill="#7bc47f"/>` },
-  { id: 'choker', cat: 'cuello', name: 'Choker con corazón', hours: 18, style: 'Gen Z', svg: () => `<path d="M68 130 Q100 142 132 130" stroke="#2a2238" stroke-width="5" fill="none"/>${heart(100, 144, 0.55, '#ff5fa2')}` },
+  { id: 'pijama_dino', cat: 'cuerpo', name: 'Pijama de dino', hours: 18, style: 'Dino', outfit: { top: '#7bc47f', belly: '#c9ecb8', trim: '#4e9a54', deco: 'dino' } },
+  { id: 'choker', cat: 'cuello', name: 'Choker con corazón', hours: 18, style: 'Gen Z', svg: () => `<path d="M66 126 Q100 138 134 126" stroke="#2a2238" stroke-width="5" fill="none"/>${heart(100, 140, 0.55, '#ff5fa2')}` },
   { id: 'corona_flores', cat: 'cabeza', name: 'Corona de flores', hours: 20, style: 'Clásico', svg: () => {
-    const pts = [[60, 70], [70, 57], [84, 49], [100, 46], [116, 49], [130, 57], [140, 70]];
+    const pts = [[58, 70], [68, 56], [83, 48], [100, 45], [117, 48], [132, 56], [142, 70]];
     const cols = ['#f28bb3', '#f5d76e', '#c9b6f2', '#fff', '#f28bb3', '#f5d76e', '#c9b6f2'];
-    return `<path d="M56 74 Q100 34 144 74" stroke="${MOSS}" stroke-width="5" fill="none"/>` + pts.map(([x, y], i) => flower(x, y, cols[i])).join('');
+    return `<path d="M54 74 Q100 32 146 74" stroke="${LEAF}" stroke-width="5" fill="none"/>` + pts.map(([x, y], i) => flower(x, y, cols[i])).join('');
   } },
-  { id: 'monito', cat: 'cuello', name: 'Moñito', hours: 20, style: 'Clásico', svg: () => `<path d="M100 138 L84 128 L84 148 Z" fill="${ACCENT}"/><path d="M100 138 L116 128 L116 148 Z" fill="${ACCENT}"/><circle cx="100" cy="138" r="4.5" fill="#2a2238" opacity=".45"/>` },
+  { id: 'monito', cat: 'cuello', name: 'Moñito', hours: 20, style: 'Clásico', svg: () => `<path d="M100 134 L84 124 L84 144 Z" fill="${ACCENT}"/><path d="M100 134 L116 124 L116 144 Z" fill="${ACCENT}"/><circle cx="100" cy="134" r="4.5" fill="#2a2238" opacity=".45"/>` },
   { id: 'dino_peluche', cat: 'abrazando', name: 'Dino de peluche', hours: 20, style: 'Dino', svg: () => `<path d="M90 168 l3 -7 l3 7 M98 166 l3 -7 l3 7 M106 168 l3 -7 l3 7" fill="#4e9a54"/><ellipse cx="100" cy="180" rx="18" ry="14" fill="#7bc47f"/><circle cx="116" cy="164" r="10" fill="#7bc47f"/><circle cx="119" cy="162" r="2" fill="#1d1512"/><path d="M84 184 Q72 188 70 178 Q78 180 84 176Z" fill="#7bc47f"/><ellipse cx="92" cy="192" rx="4" ry="3" fill="#4e9a54"/><ellipse cx="108" cy="192" rx="4" ry="3" fill="#4e9a54"/>` },
-  { id: 'bucket', cat: 'cabeza', name: 'Bucket hat', hours: 22, style: 'Gen Z', svg: () => `<path d="M62 72 Q62 36 100 36 Q138 36 138 72 Z" fill="#f2c94c"/><path d="M42 76 Q100 60 158 76 Q152 88 100 84 Q48 88 42 76 Z" fill="#e0b43a"/>${flower(82, 54, '#fff', 3)}${flower(106, 46, '#fff', 3)}${flower(122, 62, '#fff', 3)}` },
-  { id: 'buzo', cat: 'cuerpo', name: 'Buzo oversize', hours: 22, style: 'Gen Z', svg: () => `<path d="M52 132 Q100 116 148 132 L152 208 Q100 218 48 208 Z" fill="#c9b6f2"/><path d="M76 178 L124 178 L118 200 L82 200 Z" fill="#b8a2ea"/><path d="M92 134 L90 160 M108 134 L110 160" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M50 203 L150 203" stroke="#b8a2ea" stroke-width="8"/>${sparkle(100, 158, 6, '#fff')}` },
-  { id: 'y2k', cat: 'ojos', name: 'Gafas Y2K', hours: 22, style: 'Gen Z', svg: () => `<ellipse cx="86" cy="94" rx="13" ry="7" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><ellipse cx="114" cy="94" rx="13" ry="7" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><path d="M99 94 L101 94 M73 93 L56 89 M127 93 L144 89" stroke="#b8c4d6" stroke-width="2.5"/>` },
-  { id: 'barba', cat: 'cara', name: 'Barba de maestro', hours: 25, style: 'Maestro', svg: () => `<path d="M84 116 Q100 126 116 116 Q114 152 100 174 Q86 152 84 116 Z" fill="#f4f1ea" stroke="#d8d2c4" stroke-width="1.5"/><path d="M86 112 Q94 104 100 110 Q106 104 114 112 Q106 110 100 114 Q94 110 86 112Z" fill="#f4f1ea" stroke="#d8d2c4"/><path d="M94 130 Q100 150 98 162 M106 130 Q102 150 104 160" stroke="#e2dccf" stroke-width="1.5" fill="none"/>` },
-  { id: 'fashionista', cat: 'cuerpo', name: 'Look fashionista rosa', hours: 27, style: 'Muñeca fashion', svg: () => `<path d="M64 126 Q100 118 136 126 L146 206 Q100 216 54 206 Z" fill="#ff5fa2"/><path d="M64 126 Q100 118 136 126 L132 138 Q100 130 68 138 Z" fill="#fff"/><rect x="62" y="160" width="76" height="8" rx="4" fill="#fff"/>${heart(100, 150, 0.6, '#fff')}${sparkle(76, 190, 3.5, '#fff')}${sparkle(126, 184, 3.5, '#fff')}` },
-  { id: 'gafas_corazon', cat: 'ojos', name: 'Gafas de corazón', hours: 27, style: 'Muñeca fashion', svg: () => `${heart(86, 94, 1.15, '#ff5fa2', '#e0428a')}${heart(114, 94, 1.15, '#ff5fa2', '#e0428a')}<path d="M98 92 L102 92 M72 90 L56 86 M128 90 L144 86" stroke="#e0428a" stroke-width="2.5"/>` },
-  { id: 'mono_gigante', cat: 'cabeza', name: 'Moño gigante rosa chicle', hours: 27, style: 'Muñeca fashion', svg: () => `<g transform="translate(100 42)"><path d="M0 0 L-30 -18 Q-38 0 -30 18 Z" fill="#ff5fa2"/><path d="M0 0 L30 -18 Q38 0 30 18 Z" fill="#ff5fa2"/><path d="M-4 4 L-14 26 L-8 26 L0 8 Z M4 4 L14 26 L8 26 L0 8 Z" fill="#ff85b8"/><rect x="-7" y="-7" width="14" height="14" rx="4" fill="#e0428a"/></g>` },
-  { id: 'tunica', cat: 'cuerpo', name: 'Túnica de maestro', hours: 28, style: 'Maestro', svg: () => `<path d="M54 128 Q100 116 146 128 L152 214 Q100 226 48 214 Z" fill="#c8733a"/><path d="M76 124 L100 172 L124 124" fill="none" stroke="#f5d76e" stroke-width="5"/><rect x="52" y="172" width="96" height="11" fill="#2a2238"/><path d="M60 214 Q100 224 140 214" stroke="#f5d76e" stroke-width="4" fill="none"/>` },
-  { id: 'boina', cat: 'cabeza', name: 'Boina', hours: 30, style: 'Clásico', svg: () => `<ellipse cx="96" cy="56" rx="46" ry="15" fill="#c0392b" transform="rotate(-8 96 56)"/><ellipse cx="96" cy="61" rx="40" ry="6" fill="#a93226" transform="rotate(-8 96 61)"/><circle cx="92" cy="40" r="4" fill="#c0392b"/>` },
-  { id: 'lapiz', cat: 'abrazando', name: 'Lápiz', hours: 30, style: 'Clásico', svg: () => `<g transform="rotate(-35 100 176)"><rect x="74" y="170" width="46" height="12" fill="#f5c542"/><rect x="66" y="170" width="9" height="12" rx="2" fill="#f28bb3"/><rect x="74" y="170" width="4" height="12" fill="#c0c0c0"/><path d="M120 170 L134 176 L120 182 Z" fill="#f1d7b0"/><path d="M130 174.3 L134 176 L130 177.7 Z" fill="#2a2238"/></g>` },
-  { id: 'monstruito', cat: 'cuerpo', name: 'Vestido gótico con costuras', hours: 32, style: 'Monstruito chic', svg: () => `<path d="M64 126 Q100 118 136 126 L150 210 Q100 222 50 210 Z" fill="#2a2238"/><path d="M50 210 L58 200 L66 212 L74 200 L82 213 L90 200 L98 214 L106 200 L114 213 L122 200 L130 212 L138 200 L146 211 L150 210 Q100 222 50 210Z" fill="#8e44ad"/><path d="M78 140 L118 196" stroke="#f28bb3" stroke-width="2.5" stroke-dasharray="5 4"/><path d="M84 146 l8 -4 M92 158 l8 -4 M100 170 l8 -4 M108 182 l8 -4" stroke="#f28bb3" stroke-width="2"/>${skull(124, 150, 0.7)}` },
-  { id: 'calavera', cat: 'cabeza', name: 'Mechón rosa y clip calavera', hours: 32, style: 'Monstruito chic', svg: () => `<path d="M80 56 Q88 36 108 42 Q100 58 86 66 Z" fill="#f28bb3"/><path d="M90 50 Q98 42 106 44" stroke="#2a2238" stroke-width="3" fill="none"/>${skull(130, 58)}<circle cx="142" cy="52" r="3" fill="#f28bb3"/>` },
-  { id: 'baston', cat: 'abrazando', name: 'Bastón de bambú', hours: 35, style: 'Maestro', svg: () => `<path d="M150 104 L58 238" stroke="#9bbf5a" stroke-width="8" stroke-linecap="round"/><path d="M137 123 l8 5 M118 151 l8 5 M99 179 l8 5 M80 207 l8 5" stroke="#6f8f5a" stroke-width="3"/><path d="M150 104 q12 -8 16 -2 q-8 4 -16 2z" fill="${MOSS}"/>` },
-  { id: 'reloj_alien', cat: 'extra', name: 'Reloj alien verde', hours: 38, style: 'Héroe alien', svg: () => `<g transform="translate(138 80) rotate(-10)"><rect x="-13" y="-7" width="26" height="14" rx="4" fill="#1d1d1d"/><circle r="9.5" fill="#39d353" stroke="#1d1d1d" stroke-width="3"/><path d="M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5Z" fill="#dfffe6"/></g>` },
-  { id: 'campera_alien', cat: 'cuerpo', name: 'Campera de héroe alien', hours: 38, style: 'Héroe alien', svg: () => `<path d="M58 128 Q100 118 142 128 L148 206 Q100 216 52 206 Z" fill="#3f9b4a"/><rect x="93" y="122" width="14" height="92" fill="#1d1d1d"/><rect x="97" y="122" width="6" height="92" fill="#f4f4f4"/><path d="M70 126 L86 142 M130 126 L114 142" stroke="#2f7a38" stroke-width="5"/>` },
-  { id: 'birrete', cat: 'cabeza', name: 'Birrete de graduación', hours: 40, style: 'Clásico', svg: () => `<rect x="72" y="50" width="56" height="18" rx="3" fill="#2a2238"/><path d="M100 24 L156 44 L100 64 L44 44 Z" fill="#3a3050"/><path d="M152 45 L156 76" stroke="#f5d76e" stroke-width="3"/><circle cx="156" cy="79" r="5" fill="#f5d76e"/><circle cx="100" cy="44" r="3" fill="#f5d76e"/>` },
-  { id: 'vestido_hielo', cat: 'cuerpo', name: 'Vestido de princesa de hielo', hours: 45, style: 'Princesa', svg: () => princessDress('#cdeeff', '#9fd8f7', '#fff', snowflake(62, 212, 5) + snowflake(138, 206, 5) + snowflake(100, 222, 4) + snowflake(86, 192, 3.5) + snowflake(118, 188, 3.5)) },
-  { id: 'alas', cat: 'extra', name: 'Alas de hada', hours: 45, style: 'Princesa', back: true, svg: () => `<g opacity=".88"><path d="M60 150 Q10 90 16 150 Q20 196 64 176 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M140 150 Q190 90 184 150 Q180 196 136 176 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M60 170 Q26 190 36 212 Q54 214 66 186 Z" fill="#f7d6ff" stroke="#e0b0f0"/><path d="M140 170 Q174 190 164 212 Q146 214 134 186 Z" fill="#f7d6ff" stroke="#e0b0f0"/></g>` },
-  { id: 'corona', cat: 'cabeza', name: 'Corona dorada', hours: 50, style: 'Princesa', svg: () => `<path d="M64 62 L64 32 L82 48 L100 24 L118 48 L136 32 L136 62 Z" fill="#f5c542" stroke="#c99a1a" stroke-width="2" stroke-linejoin="round"/><rect x="64" y="56" width="72" height="8" fill="#e0ad2e"/><circle cx="100" cy="46" r="4.5" fill="#d9546e"/><circle cx="80" cy="54" r="3" fill="#6c9eeb"/><circle cx="120" cy="54" r="3" fill="#5fb3a1"/>` },
-  { id: 'vestido_dorado', cat: 'cuerpo', name: 'Vestido de gala dorado', hours: 50, style: 'Princesa', svg: () => princessDress('#f7e08a', '#f5c542', '#fff7d6', flower(62, 210, '#e46a6a', 3.5) + flower(138, 206, '#e46a6a', 3.5) + flower(100, 220, '#e46a6a', 3.5) + sparkle(84, 192, 3, '#fff') + sparkle(118, 190, 3, '#fff')) },
+  { id: 'bucket', cat: 'cabeza', name: 'Bucket hat', hours: 22, style: 'Gen Z', svg: () => `<path d="M62 70 Q62 34 100 34 Q138 34 138 70 Z" fill="#f2c94c"/><path d="M42 74 Q100 58 158 74 Q152 86 100 82 Q48 86 42 74 Z" fill="#e0b43a"/>${flower(82, 52, '#fff', 3)}${flower(106, 44, '#fff', 3)}${flower(122, 60, '#fff', 3)}` },
+  { id: 'buzo', cat: 'cuerpo', name: 'Buzo oversize', hours: 22, style: 'Gen Z', outfit: { top: '#c9b6f2', trim: '#b8a2ea', deco: 'hoodie' } },
+  { id: 'y2k', cat: 'ojos', name: 'Gafas Y2K', hours: 22, style: 'Gen Z', svg: () => `<ellipse cx="79" cy="95" rx="14" ry="7.5" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><ellipse cx="121" cy="95" rx="14" ry="7.5" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><path d="M93 95 L107 95 M65 94 L50 90 M135 94 L150 90" stroke="#b8c4d6" stroke-width="2.5"/>` },
+  { id: 'barba', cat: 'cara', name: 'Barba de maestro', hours: 25, style: 'Maestro', svg: () => `<path d="M84 118 Q100 128 116 118 Q114 154 100 176 Q86 154 84 118 Z" fill="#f4f1ea" stroke="#d8d2c4" stroke-width="1.5"/><path d="M86 114 Q94 106 100 112 Q106 106 114 114 Q106 112 100 116 Q94 112 86 114Z" fill="#f4f1ea" stroke="#d8d2c4"/><path d="M94 132 Q100 152 98 164 M106 132 Q102 152 104 162" stroke="#e2dccf" stroke-width="1.5" fill="none"/>` },
+  { id: 'fashionista', cat: 'cuerpo', name: 'Look fashionista rosa', hours: 27, style: 'Muñeca fashion', outfit: { top: '#ff5fa2', trim: '#fff', deco: 'heart' } },
+  { id: 'gafas_corazon', cat: 'ojos', name: 'Gafas de corazón', hours: 27, style: 'Muñeca fashion', svg: () => `${heart(79, 94, 1.25, '#ff5fa2', '#e0428a')}${heart(121, 94, 1.25, '#ff5fa2', '#e0428a')}<path d="M93 93 L107 93 M64 90 L50 86 M136 90 L150 86" stroke="#e0428a" stroke-width="2.5"/>` },
+  { id: 'mono_gigante', cat: 'cabeza', name: 'Moño gigante rosa chicle', hours: 27, style: 'Muñeca fashion', svg: () => `<g transform="translate(100 40)"><path d="M0 0 L-30 -18 Q-38 0 -30 18 Z" fill="#ff5fa2"/><path d="M0 0 L30 -18 Q38 0 30 18 Z" fill="#ff5fa2"/><path d="M-4 4 L-14 26 L-8 26 L0 8 Z M4 4 L14 26 L8 26 L0 8 Z" fill="#ff85b8"/><rect x="-7" y="-7" width="14" height="14" rx="4" fill="#e0428a"/></g>` },
+  { id: 'tunica', cat: 'cuerpo', name: 'Túnica de maestro', hours: 28, style: 'Maestro', outfit: { top: '#c8733a', trim: '#f5d76e', deco: 'sash' } },
+  { id: 'boina', cat: 'cabeza', name: 'Boina', hours: 30, style: 'Clásico', svg: () => `<ellipse cx="96" cy="54" rx="46" ry="15" fill="#c0392b" transform="rotate(-8 96 54)"/><ellipse cx="96" cy="59" rx="40" ry="6" fill="#a93226" transform="rotate(-8 96 59)"/><circle cx="92" cy="38" r="4" fill="#c0392b"/>` },
+  { id: 'lapiz', cat: 'abrazando', name: 'Lápiz', hours: 30, style: 'Clásico', svg: () => `<g transform="rotate(-70 100 176)"><rect x="74" y="170" width="46" height="12" fill="#f5c542"/><rect x="66" y="170" width="9" height="12" rx="2" fill="#f28bb3"/><rect x="74" y="170" width="4" height="12" fill="#c0c0c0"/><path d="M120 170 L134 176 L120 182 Z" fill="#f1d7b0"/><path d="M130 174.3 L134 176 L130 177.7 Z" fill="#2a2238"/></g>` },
+  { id: 'monstruito', cat: 'cuerpo', name: 'Vestido gótico con costuras', hours: 32, style: 'Monstruito chic', outfit: { top: '#2a2238', skirt: '#8e44ad', trim: '#f28bb3', deco: 'stitch' } },
+  { id: 'calavera', cat: 'cabeza', name: 'Mechón rosa y clip calavera', hours: 32, style: 'Monstruito chic', svg: () => `<path d="M78 56 Q86 34 108 40 Q100 56 84 66 Z" fill="#f28bb3"/><path d="M88 48 Q98 40 106 42" stroke="#2a2238" stroke-width="3" fill="none"/>${skull(132, 58)}<circle cx="144" cy="52" r="3" fill="#f28bb3"/>` },
+  { id: 'baston', cat: 'abrazando', name: 'Bastón de bambú', hours: 35, style: 'Maestro', svg: () => `<path d="M104 90 L96 262" stroke="#9bbf5a" stroke-width="9" stroke-linecap="round"/><path d="M94 120 l12 1 M93 160 l12 1 M91 200 l12 1 M90 240 l12 1" stroke="#6f8f5a" stroke-width="3"/><path d="M104 90 q12 -10 18 -4 q-8 6 -18 4z" fill="${LEAF}"/>` },
+  { id: 'reloj_alien', cat: 'extra', anchor: 'arm', name: 'Reloj alien verde', hours: 38, style: 'Héroe alien', svg: () => `<g transform="translate(138 80)"><rect x="-15" y="-7" width="30" height="14" rx="4" fill="#1d1d1d"/><circle r="10" fill="#39d353" stroke="#1d1d1d" stroke-width="3"/><path d="M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5Z" fill="#dfffe6"/></g>` },
+  { id: 'campera_alien', cat: 'cuerpo', name: 'Campera de héroe alien', hours: 38, style: 'Héroe alien', outfit: { top: '#3f9b4a', trim: '#2f7a38', deco: 'stripe' } },
+  { id: 'birrete', cat: 'cabeza', name: 'Birrete de graduación', hours: 40, style: 'Clásico', svg: () => `<rect x="72" y="48" width="56" height="18" rx="3" fill="#2a2238"/><path d="M100 22 L156 42 L100 62 L44 42 Z" fill="#3a3050"/><path d="M152 43 L156 74" stroke="#f5d76e" stroke-width="3"/><circle cx="156" cy="77" r="5" fill="#f5d76e"/><circle cx="100" cy="42" r="3" fill="#f5d76e"/>` },
+  { id: 'vestido_hielo', cat: 'cuerpo', name: 'Vestido de princesa de hielo', hours: 45, style: 'Princesa', outfit: { top: '#cdeeff', skirt: '#9fd8f7', trim: '#fff', deco: 'snow' } },
+  { id: 'alas', cat: 'extra', anchor: 'back', name: 'Alas de hada', hours: 45, style: 'Princesa', svg: () => `<g opacity=".9"><path d="M92 150 Q40 60 30 120 Q28 170 90 168 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M110 150 Q160 56 176 112 Q182 166 112 168 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M92 160 Q50 150 52 190 Q76 200 94 170 Z" fill="#f7d6ff" stroke="#e0b0f0"/><path d="M110 160 Q156 146 158 188 Q134 200 108 170 Z" fill="#f7d6ff" stroke="#e0b0f0"/></g>` },
+  { id: 'corona', cat: 'cabeza', name: 'Corona dorada', hours: 50, style: 'Princesa', svg: () => `<path d="M64 60 L64 30 L82 46 L100 22 L118 46 L136 30 L136 60 Z" fill="#f5c542" stroke="#c99a1a" stroke-width="2" stroke-linejoin="round"/><rect x="64" y="54" width="72" height="8" fill="#e0ad2e"/><circle cx="100" cy="44" r="4.5" fill="#d9546e"/><circle cx="80" cy="52" r="3" fill="#6c9eeb"/><circle cx="120" cy="52" r="3" fill="#5fb3a1"/>` },
+  { id: 'vestido_dorado', cat: 'cuerpo', name: 'Vestido de gala dorado', hours: 50, style: 'Princesa', outfit: { top: '#f7e08a', skirt: '#f5c542', trim: '#fff7d6', deco: 'roses' } },
 ];
 
 function wardrobeItem(id) { return WARDROBE.find((w) => w.id === id); }
+function itemAnchor(w) { return w.anchor || ({ abrazando: 'hand', cuerpo: 'body' })[w.cat] || 'head'; }
 
 /* ---------- Dibujo ---------- */
 
 function slothColors(fur) {
-  return { fur, mask: mixHex(fur, '#ffffff', 0.74), belly: mixHex(fur, '#ffffff', 0.34), patch: mixHex(fur, '#1d1512', 0.5), dark: '#3a2a20' };
+  return {
+    fur,
+    furDark: mixHex(fur, '#3b2616', 0.22),
+    mask: mixHex(fur, '#ffffff', 0.72),
+    stripe: mixHex(fur, '#1d1209', 0.66),
+    nose: '#2b1a12',
+  };
 }
 
 function slothEyes(mood, c, sage) {
-  const open = (r = 4.6) => `<circle cx="86" cy="94" r="${r}" fill="#1d1512"/><circle cx="87.6" cy="92.4" r="1.6" fill="#fff"/><circle cx="114" cy="94" r="${r}" fill="#1d1512"/><circle cx="115.6" cy="92.4" r="1.6" fill="#fff"/>`;
-  const arcs = (d) => `<path d="M80 ${94 - d} Q86 ${94 + d} 92 ${94 - d} M108 ${94 - d} Q114 ${94 + d} 120 ${94 - d}" stroke="#1d1512" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
+  const L = [79, 95], R = [121, 95];
+  const lid = mixHex(c.mask, '#ffffff', 0.4);
+  const arcs = (d) => `<path d="M${L[0] - 7} ${L[1] + d} Q${L[0]} ${L[1] - d} ${L[0] + 7} ${L[1] + d} M${R[0] - 7} ${R[1] + d} Q${R[0]} ${R[1] - d} ${R[0] + 7} ${R[1] + d}" stroke="${lid}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  const open = (ry = 4.4) => [L, R].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="4.6" ry="${ry}" fill="${lid}"/><circle cx="${x + 0.6}" cy="${y + 0.4}" r="2.5" fill="#1d1209"/><circle cx="${x + 1.4}" cy="${y - 0.8}" r=".9" fill="#fff"/>`).join('');
   switch (mood) {
-    case 'orgulloso': return arcs(-4);
+    case 'orgulloso': return arcs(3.5);
     case 'dormido':
-    case 'estirandose': return arcs(3);
-    case 'preocupado': return open(3.8) + `<path d="M78 84 L92 79 M108 79 L122 84" stroke="${c.dark}" stroke-width="2.6" stroke-linecap="round"/>`;
+    case 'estirandose': return arcs(-2.5);
+    case 'preocupado': return open() + `<path d="M66 84 L86 79 M114 79 L134 84" stroke="${c.stripe}" stroke-width="2.6" stroke-linecap="round"/>`;
     default:
-      // Mirada entrecerrada de maestro sabio
       return sage
-        ? open() + `<path d="M80.4 94 A5.6 5.6 0 0 1 91.6 94 Z M108.4 94 A5.6 5.6 0 0 1 119.6 94 Z" fill="${c.patch}"/><path d="M80 94 L92 94 M108 94 L120 94" stroke="#1d1512" stroke-width="1.6"/>`
-        : `<g class="sl-blink">${open()}</g>`;
+        ? open(3) + `<path d="M73 93 L85 93 M115 93 L127 93" stroke="${c.stripe}" stroke-width="2.4" stroke-linecap="round"/>`
+        : arcs(2.5); // feliz: ojitos cerrados contentos, como en los dibujos
   }
 }
 
 function slothMouth(mood, c) {
   switch (mood) {
-    case 'orgulloso': return `<path d="M89 113 Q100 128 111 113 Z" fill="#6b2f3a"/><path d="M95 120 Q100 124 105 120" fill="#e57a8f"/>`;
-    case 'preocupado': return `<path d="M92 118 Q96 114 100 118 Q104 122 108 118" stroke="${c.dark}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
-    case 'dormido': return `<circle cx="100" cy="117" r="2.6" fill="${c.dark}"/>`;
-    case 'estirandose': return `<ellipse cx="100" cy="118" rx="5.5" ry="7.5" fill="#6b2f3a"/>`;
-    default: return `<path d="M91 114 Q100 122 109 114" stroke="${c.dark}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    case 'orgulloso': return `<path d="M90 115 Q100 128 110 115 Z" fill="#6b2f3a"/><path d="M95 121 Q100 125 105 121" fill="#e57a8f"/>`;
+    case 'preocupado': return `<path d="M92 119 Q96 115 100 119 Q104 123 108 119" stroke="${c.nose}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    case 'dormido': return `<ellipse cx="100" cy="118" rx="2.6" ry="2.2" fill="${c.nose}"/>`;
+    case 'estirandose': return `<ellipse cx="100" cy="119" rx="5.5" ry="7" fill="#6b2f3a"/>`;
+    default: return `<path d="M90 115 Q100 123 110 115" stroke="${c.nose}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
   }
 }
 
 function slothMoodExtras(mood) {
   switch (mood) {
-    case 'dormido': return `<g class="sl-zzz" fill="${MOSS}" font-family="Gaegu, cursive" font-weight="700"><text x="140" y="64" font-size="18">z</text><text x="152" y="46" font-size="24">Z</text></g>`;
-    case 'preocupado': return `<path d="M144 76 q6 9 0 13 q-6 -4 0 -13z" fill="#8fd0f5"/>`;
-    case 'orgulloso': return sparkle(46, 72, 7, '#f5d76e') + sparkle(156, 70, 6, '#f5d76e') + sparkle(160, 104, 4, '#f5d76e');
+    case 'dormido': return `<g class="sl-zzz" fill="${MOSS}" font-family="Gaegu, cursive" font-weight="700"><text x="138" y="58" font-size="18">z</text><text x="150" y="40" font-size="24">Z</text></g>`;
+    case 'preocupado': return `<path d="M146 74 q6 9 0 13 q-6 -4 0 -13z" fill="#8fd0f5"/>`;
+    case 'orgulloso': return sparkle(46, 66, 7, '#f5d76e') + sparkle(156, 64, 6, '#f5d76e') + sparkle(160, 100, 4, '#f5d76e');
     case 'estirandose': return `<path d="M40 70 q-6 -6 -2 -14 M160 70 q6 -6 2 -14" stroke="#b9aec9" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
     default: return '';
   }
 }
 
+function slothHead(c, m, sage) {
+  return `
+    <path d="M60 72 Q64 52 82 54 Q90 42 102 48 Q116 42 126 56 Q140 58 140 74 Z" fill="${c.fur}"/>
+    <ellipse cx="100" cy="92" rx="48" ry="43" fill="${c.fur}"/>
+    <path d="M57 94 Q58 64 100 62 Q142 64 143 94 Q142 126 100 130 Q58 126 57 94 Z" fill="${c.mask}"/>
+    <path d="M96 91 Q82 82 61 92 Q57 101 66 104 Q83 103 97 98 Z" fill="${c.stripe}"/>
+    <path d="M104 91 Q118 82 139 92 Q143 101 134 104 Q117 103 103 98 Z" fill="${c.stripe}"/>
+    ${slothEyes(m, c, sage)}
+    <path d="M90 103 Q100 97 110 103 Q109 112 100 113 Q91 112 90 103 Z" fill="${c.nose}"/>
+    <ellipse cx="96.5" cy="102.5" rx="2.6" ry="1.3" fill="#fff" opacity=".45"/>
+    ${slothMouth(m, c)}
+    <circle cx="68" cy="112" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.8 : 0.45}"/>
+    <circle cx="132" cy="112" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.8 : 0.45}"/>`;
+}
+
+function claws(x, y) {
+  return `<path d="M${x - 9} ${y} q-4 16 4 28 M${x} ${y + 2} q-2 17 5 29 M${x + 9} ${y} q0 15 6 26" stroke="${CLAW}" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M${x - 9} ${y} q-4 16 4 28 M${x} ${y + 2} q-2 17 5 29 M${x + 9} ${y} q0 15 6 26" stroke="${CLAW_EDGE}" stroke-width="1" fill="none" stroke-linecap="round" transform="translate(1.6 0)"/>`;
+}
+
 /**
  * Devuelve el SVG del perezoso.
- * view: 'full' (colgado de la rama), 'vine' (bajando por la liana) o 'head' (solo la cabeza)
+ * view: 'full' (acostado en la rama), 'vine' (la rama colgando de lianas) o 'head' (solo la cara)
  */
 function slothSVG({ view = 'full', mood, sloth } = {}) {
   const sl = sloth || Store.data.sloth;
   const m = mood || Sloth.mood();
-  const c = slothColors(sl.fur || '#a88a6d');
+  const c = slothColors(sl.fur || DEFAULT_FUR);
   const eq = sl.equipped || {};
-  const item = (cat) => { const it = eq[cat] && wardrobeItem(eq[cat]); return it ? it : null; };
-  const layer = (cat, filterBack) => { const it = item(cat); if (!it || (filterBack !== undefined && !!it.back !== filterBack)) return ''; return it.svg(c); };
   const sage = m === 'feliz' && sl.personality === 'dramatico';
+  const items = Object.values(eq).map(wardrobeItem).filter(Boolean);
+  const at = (anchor) => items.filter((w) => w.svg && itemAnchor(w) === anchor).map((w) => w.svg(c)).join('');
 
-  const vine = view === 'vine';
-  const L = vine ? [94, 24] : [68, 22];
-  const R = vine ? [106, 24] : [132, 22];
-  const claws = ([x, y]) => `M${x - 6} ${y - 8} l1 9 M${x} ${y - 10} l0 10 M${x + 6} ${y - 8} l-1 9`;
-
-  const perch = vine
-    ? `<path d="M100 -70 C 94 -40 106 -12 100 28" stroke="${MOSS}" stroke-width="6" fill="none" stroke-linecap="round"/>
-       <ellipse cx="92" cy="-30" rx="9" ry="4" fill="${MOSS}" transform="rotate(-30 92 -30)"/><ellipse cx="108" cy="-4" rx="9" ry="4" fill="${MOSS}" transform="rotate(25 108 -4)"/>`
-    : `<path d="M-20 24 Q100 6 220 26" stroke="#7a5a3c" stroke-width="12" fill="none" stroke-linecap="round"/>
-       <path d="M160 18 q10 -12 24 -10" stroke="#7a5a3c" stroke-width="5" fill="none" stroke-linecap="round"/>
-       <ellipse cx="22" cy="12" rx="11" ry="5" fill="${MOSS}" transform="rotate(-25 22 12)"/>
-       <ellipse cx="186" cy="4" rx="10" ry="4.6" fill="${MOSS}" transform="rotate(20 186 4)"/>
-       <ellipse cx="174" cy="30" rx="9" ry="4" fill="${MOSS}" opacity=".85" transform="rotate(-30 174 30)"/>`;
-
-  const head = `
-    <path d="M56 78 Q58 52 76 54 Q82 40 96 48 Q106 38 118 48 Q134 44 138 60 Q148 66 144 80 Z" fill="${c.fur}"/>
-    <ellipse cx="100" cy="92" rx="48" ry="43" fill="${c.fur}"/>
-    <ellipse cx="100" cy="100" rx="36" ry="30" fill="${c.mask}"/>
-    <ellipse cx="84" cy="95" rx="13.5" ry="8" fill="${c.patch}" transform="rotate(-22 84 95)"/>
-    <ellipse cx="116" cy="95" rx="13.5" ry="8" fill="${c.patch}" transform="rotate(22 116 95)"/>
-    ${slothEyes(m, c, sage)}
-    <ellipse cx="100" cy="107" rx="7" ry="5" fill="${c.dark}"/>
-    ${slothMouth(m, c)}
-    <circle cx="70" cy="109" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.85 : 0.55}"/>
-    <circle cx="130" cy="109" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.85 : 0.55}"/>`;
-
-  const headLayers = `${head}${layer('cara')}${layer('cuello')}${layer('ojos')}${layer('cabeza')}`;
+  const headInner = `${slothHead(c, m, sage)}${items.filter((w) => w.cat === 'cara').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'cuello').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'ojos').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'cabeza').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'extra' && itemAnchor(w) === 'head').map((w) => w.svg(c)).join('')}
+    ${slothMoodExtras(m)}`;
 
   if (view === 'head') {
-    return `<svg viewBox="36 18 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">${headLayers}${slothMoodExtras(m)}</svg>`;
+    return `<svg viewBox="34 14 132 132" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">${headInner}</svg>`;
   }
 
-  const body = `
-    ${layer('extra', true)}
-    <path d="M74 128 Q${vine ? 58 : 56} ${vine ? 80 : 76} ${L[0]} ${L[1]}" stroke="${c.fur}" stroke-width="20" fill="none" stroke-linecap="round"/>
-    <path d="M126 128 Q${vine ? 142 : 144} ${vine ? 80 : 76} ${R[0]} ${R[1]}" stroke="${c.fur}" stroke-width="20" fill="none" stroke-linecap="round"/>
-    <path d="${claws(L)} ${claws(R)}" stroke="${c.dark}" stroke-width="2.6" stroke-linecap="round"/>
-    <ellipse cx="100" cy="164" rx="50" ry="58" fill="${c.fur}"/>
-    <ellipse cx="100" cy="176" rx="31" ry="40" fill="${c.belly}"/>
-    <ellipse cx="72" cy="218" rx="17" ry="12" fill="${c.fur}"/>
-    <ellipse cx="128" cy="218" rx="17" ry="12" fill="${c.fur}"/>
-    <path d="M62 226 l-2 6 M70 228 l-1 6 M78 227 l0 6 M122 227 l0 6 M130 228 l1 6 M138 226 l2 6" stroke="${c.dark}" stroke-width="2.2" stroke-linecap="round"/>
-    ${layer('cuerpo')}
-    ${layer('abrazando')}`;
+  const outfitItem = items.find((w) => w.outfit);
+  const outfit = outfitItem ? outfitSVG(outfitItem.outfit) : { back: '', front: '' };
+  const vine = view === 'vine';
 
-  const vb = vine ? '-12 -70 224 320' : '-12 -6 224 256';
+  const branch = `
+    <path d="M-10 152 C 80 142, 200 128, 330 112" stroke="${BARK}" stroke-width="26" fill="none" stroke-linecap="round"/>
+    <path d="M-10 145 C 80 135, 200 121, 330 105" stroke="${BARK_LIGHT}" stroke-width="10" fill="none" stroke-linecap="round" opacity=".85"/>
+    <path d="M40 154 q22 -3 40 -3 M230 134 q18 -3 32 -5 M120 146 q14 -2 26 -2" stroke="${BARK_DARK}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M34 146 Q24 118 40 88" stroke="${BARK}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    ${leaf(40, 90, 10)}${leaf(30, 110, -55, 0.8)}
+    <path d="M292 114 Q300 96 318 84" stroke="${BARK}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    ${leaf(318, 86, 40)}${leaf(302, 100, 90, 0.75)}`;
+  const vines = vine ? `<path d="M40 146 C 30 90 50 20 40 -90 M292 114 C 302 60 282 0 292 -90" stroke="${MOSS}" stroke-width="5" fill="none" stroke-linecap="round"/>` : '';
+
+  const hair = outfitItem ? '' : `<path d="M170 84 q10 -4 20 0 M210 80 q10 -3 18 2 M186 104 q10 -4 18 0 M232 104 q8 -3 16 1 M156 100 q8 -4 14 -1" stroke="${c.furDark}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>`;
+
+  const vb = vine ? '-12 -90 344 330' : '-12 10 344 240';
   return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">
-    ${perch}${body}${headLayers}${layer('extra', false)}${slothMoodExtras(m)}</svg>`;
+    ${vines}
+    <path d="M250 126 C 258 160, 262 186, 258 206" stroke="${c.furDark}" stroke-width="22" fill="none" stroke-linecap="round"/>
+    ${claws(258, 208)}
+    ${branch}
+    <g transform="${BACK_TF}">${at('back')}</g>
+    ${outfit.back}
+    <path d="${BODY_PATH}" fill="${c.fur}"/>
+    ${hair}
+    ${outfit.front}
+    <path d="M150 112 C 146 150, 148 180, 150 206" stroke="${c.fur}" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M186 114 C 190 150, 190 176, 188 198" stroke="${c.fur}" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M144 150 q6 4 12 0 M182 150 q6 4 12 0" stroke="${c.furDark}" stroke-width="1.8" fill="none" opacity=".5"/>
+    ${claws(150, 210)}${claws(188, 202)}
+    <g transform="${ARM_TF}">${at('arm')}</g>
+    <g transform="${HAND_TF}">${at('hand')}</g>
+    <g transform="${HEAD_TF}">${headInner}</g>
+  </svg>`;
 }
 
 /* ---------- Comportamiento ---------- */
@@ -271,7 +366,7 @@ const Sloth = {
   paint(root = document, force = false) {
     const mood = this.mood();
     $$('[data-sloth]', root).forEach((el) => {
-      const view = el.dataset.sloth === 'hang' ? 'full' : el.dataset.sloth;
+      const view = el.dataset.sloth;
       const m = el.id === 'sloth-body' && this.peekMood ? this.peekMood : mood;
       const key = `${view}|${m}|${JSON.stringify(this.data())}`;
       if (!force && el.dataset.key === key) return;
@@ -301,8 +396,8 @@ const Sloth = {
     return phrase('aleatoria');
   },
 
-  show(msg, { mood = null, ms = 8000 } = {}) {
-    if (this.data().frequency === 'nunca' && !msg) return;
+  show(msg, { mood = null, ms = 8000, force = false } = {}) {
+    if (this.data().frequency === 'nunca' && !msg && !force) return;
     const peek = $('#sloth-peek');
     this.peekMood = mood;
     this.paint(peek, true);
@@ -317,15 +412,8 @@ const Sloth = {
 
   hide() { $('#sloth-peek').classList.remove('show'); this.peekMood = null; },
 
-  // Habla desde la barra lateral
-  speak(msg) {
-    const b = $('#dock-bubble');
-    if (!b || !b.offsetParent) { this.show(msg || this.contextPhrase()); return; }
-    b.textContent = msg || this.contextPhrase();
-    b.classList.add('show');
-    clearTimeout(this.speakTimer);
-    this.speakTimer = setTimeout(() => b.classList.remove('show'), 7000);
-  },
+  // Botoncito discreto: lo llama para que diga algo
+  speak(msg) { this.show(msg || this.contextPhrase(), { force: true }); },
 
   // Aparición por evento (sesión, pomodoro, etc.)
   react(context, vars = {}, { mood = null, proud = false } = {}) {
@@ -361,7 +449,7 @@ const Sloth = {
     sl.unlockedSeen.push(...fresh);
     Store.save();
     const names = fresh.map((id) => wardrobeItem(id).name);
-    toast(`🎁 Desbloqueaste: ${names.join(', ')}`);
+    toast(`Desbloqueaste: ${names.join(', ')}`);
     setTimeout(() => this.react('desbloqueo', { accesorio: names[0] }, { proud: true }), 1500);
   },
 

@@ -28,19 +28,19 @@ function renderSlothPage() {
           <div class="unlock-bar">
             <p><strong>${hours.toFixed(1)} h</strong> estudiadas este semestre · ${unlockedCount}/${WARDROBE.length} prendas</p>
             ${next ? `<div class="bar" style="margin:.4rem 0"><span style="width:${((hours - prevStep) / (next.hours - prevStep)) * 100}%"></span></div>
-              <p class="hint">Próximo: <strong>${esc(next.name)}</strong> a las ${next.hours} h (faltan ${fmtHM((next.hours - hours) * 60)})</p>` : '<p class="hint">¡Desbloqueaste todo el ropero! 👑</p>'}
+              <p class="hint">Próximo: <strong>${esc(next.name)}</strong> a las ${next.hours} h (faltan ${fmtHM((next.hours - hours) * 60)})</p>` : '<p class="hint">¡Desbloqueaste todo el ropero! </p>'}
           </div>
         </div>
 
         <div class="page" style="gap:1rem">
           <section class="card">
             <div class="list-head">
-              <h2>👗 Ropero</h2>
+              <h2>Ropero</h2>
               <button class="btn ghost sm" id="undress">Sacarle todo</button>
             </div>
             <div class="chip-row" style="margin-bottom:.8rem">
               <button class="chip-opt ${wardrobeCat === 'todo' ? 'on' : ''}" data-wcat="todo">Todo</button>
-              ${WARDROBE_CATS.map((c) => `<button class="chip-opt ${wardrobeCat === c.id ? 'on' : ''}" data-wcat="${c.id}">${c.icon} ${c.label}</button>`).join('')}
+              ${WARDROBE_CATS.map((c) => `<button class="chip-opt ${wardrobeCat === c.id ? 'on' : ''}" data-wcat="${c.id}">${c.label}</button>`).join('')}
             </div>
             <div class="wardrobe">
               ${items.map((w) => {
@@ -50,7 +50,7 @@ function renderSlothPage() {
                 return `<button class="item ${on ? 'on' : ''} ${locked ? 'locked' : ''}" data-item="${w.id}" ${locked ? 'aria-disabled="true"' : ''}
                     aria-pressed="${on}" aria-label="${esc(w.name)}${locked ? `, se desbloquea a las ${w.hours} horas` : ''}">
                   <span class="thumb">${slothSVG({ view, mood: 'feliz', sloth: { ...sl, personality: 'tierno', equipped: { [w.cat]: w.id } } })}</span>
-                  ${locked ? `<span class="lock">🔒 ${w.hours} h</span>` : ''}
+                  ${locked ? `<span class="lock">${w.hours} h</span>` : ''}
                   <span class="i-name">${esc(w.name)}</span>
                   <span class="i-style">${esc(w.style)}${locked ? ` · faltan ${fmtHM((w.hours - hours) * 60)}` : ''}</span>
                 </button>`;
@@ -59,7 +59,7 @@ function renderSlothPage() {
           </section>
 
           <section class="card form">
-            <h2>✏️ Cómo es</h2>
+            <h2>Cómo es</h2>
             <label>Nombre<input id="sl-name" value="${esc(sl.name)}" maxlength="24"></label>
             <div class="field"><strong>Color de pelo</strong>
               <div class="swatches" style="margin-top:.4rem">
@@ -70,15 +70,15 @@ function renderSlothPage() {
           </section>
 
           <section class="card">
-            <h2>🎭 Personalidad</h2>
-            <p class="hint">Cambia todas sus frases. Ahora: <strong>${pers.icon} ${pers.label}</strong>.</p>
+            <h2>Personalidad</h2>
+            <p class="hint">Cambia todas sus frases. Ahora: <strong>${pers.label}</strong>.</p>
             <div class="pers-grid" style="margin-top:.6rem">
-              ${PERSONALITIES.map((p) => `<button class="pers ${p.id === sl.personality ? 'on' : ''}" data-pers="${p.id}"><strong>${p.icon} ${p.label}</strong><span>${p.desc}</span></button>`).join('')}
+              ${PERSONALITIES.map((p) => `<button class="pers ${p.id === sl.personality ? 'on' : ''}" data-pers="${p.id}"><strong>${p.label}</strong><span>${p.desc}</span></button>`).join('')}
             </div>
           </section>
 
           <section class="card form">
-            <h2>🔔 Apariciones</h2>
+            <h2>Apariciones</h2>
             <div class="chip-row" role="radiogroup" aria-label="Frecuencia">
               ${[['nunca', 'Nunca'], ['a_veces', 'A veces'], ['seguido', 'Seguido']].map(([v, l]) => `<button class="chip-opt ${sl.frequency === v ? 'on' : ''}" data-freq="${v}">${l}</button>`).join('')}
             </div>
@@ -100,7 +100,7 @@ function renderSlothPage() {
   $$('[data-wcat]', v).forEach((b) => (b.onclick = () => { wardrobeCat = b.dataset.wcat; renderSlothPage(); }));
   $$('[data-item]', v).forEach((b) => (b.onclick = () => {
     const w = wardrobeItem(b.dataset.item);
-    if (w.hours > hours) { toast(`🔒 Se desbloquea con ${w.hours} h de estudio en el semestre. ¡Te faltan ${fmtHM((w.hours - hours) * 60)}!`); return; }
+    if (w.hours > hours) { toast(`Se desbloquea con ${w.hours} h de estudio en el semestre. ¡Te faltan ${fmtHM((w.hours - hours) * 60)}!`); return; }
     if (sl.equipped[w.cat] === w.id) delete sl.equipped[w.cat];
     else sl.equipped[w.cat] = w.id;
     save();

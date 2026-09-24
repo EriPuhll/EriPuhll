@@ -19,13 +19,13 @@ function renderProjects() {
         const next = projectEvents(p).find((e) => eventDate(e) >= new Date());
         const col = p.subjectId ? subjectColor(p.subjectId) : 'var(--accent)';
         return `<a class="card subj-card" href="#proyecto/${p.id}" style="--c:${col}">
-          <div class="subj-card-top"><h3>🤝 ${esc(p.name)}</h3></div>
+          <div class="subj-card-top"><h3>${esc(p.name)}</h3></div>
           <p class="muted">${p.subjectId ? esc(subjectName(p.subjectId)) : 'Sin materia'} · ${p.members.length} integrantes</p>
           <div class="bar" style="--c:${col}"><span style="width:${p.tasks.length ? (done / p.tasks.length) * 100 : 0}%"></span></div>
           <div class="bar-legend">${done}/${p.tasks.length} tareas hechas</div>
-          <p class="next">${next ? `📦 ${esc(next.title || typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin entregas cargadas</span>'}</p>
+          <p class="next">${next ? `${esc(next.title || typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin entregas cargadas</span>'}</p>
         </a>`;
-      }).join('')}</div>` : `<div class="card empty"><span class="empty-sloth big" data-sloth="head"></span><h2>No hay proyectos</h2><p>Creá uno para repartir tareas con tu grupo.</p></div>`}
+      }).join('')}</div>` : `<div class="card empty"><h2>No hay proyectos</h2><p>Creá uno para repartir tareas con tu grupo.</p></div>`}
     </section>`;
   Sloth.paint($('#view'));
   $('#add-proj').onclick = () => openProjectForm();
@@ -78,16 +78,16 @@ function renderProject(id) {
       <a href="#proyectos" class="back">← Proyectos</a>
       <header class="card subj-hero" style="--c:${col}">
         <div>
-          <h1>🤝 ${esc(p.name)}</h1>
+          <h1>${esc(p.name)}</h1>
           <p class="muted">${p.subjectId ? `<a href="#materia/${p.subjectId}">${esc(subjectName(p.subjectId))}</a>` : 'Sin materia'} · ${done}/${p.tasks.length} tareas hechas</p>
         </div>
         <div class="hero-actions"><button class="btn ghost" id="p-edit">✎ Editar</button></div>
       </header>
       <div class="grid-2">
         <section class="card">
-          <h2>👥 Integrantes</h2>
+          <h2>Integrantes</h2>
           <div class="members">${p.members.map((m) => `<span class="pill">${esc(m)}</span>`).join('') || '<span class="muted">Sin integrantes</span>'}</div>
-          <h2 style="margin-top:1.2rem">🔗 Links</h2>
+          <h2 style="margin-top:1.2rem">Links</h2>
           <ul class="plain">${p.links.map((l, i) => `<li><a href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener">${esc(l.title || l.url)}</a> <button class="icon-btn sm danger" data-rmlink="${i}" aria-label="Quitar link">✕</button></li>`).join('') || '<li class="muted">Sin links</li>'}</ul>
           <form class="add-row" id="link-form">
             <input name="title" placeholder="Nombre (ej: Repositorio)" aria-label="Nombre del link">
@@ -96,12 +96,12 @@ function renderProject(id) {
           </form>
         </section>
         <section class="card">
-          <div class="list-head"><h2>📦 Entregas</h2><button class="btn sm" id="p-add-ev">+ Entrega</button></div>
+          <div class="list-head"><h2>Entregas</h2><button class="btn sm" id="p-add-ev">+ Entrega</button></div>
           <div id="p-events" class="ev-list"></div>
         </section>
       </div>
       <section class="card">
-        <h2>✅ Tareas</h2>
+        <h2>Tareas</h2>
         <ul class="plain task-list" style="margin-top:.6rem">
           ${p.tasks.map((t) => `<li class="${t.done ? 'done' : ''}">
             <input type="checkbox" data-tdone="${t.id}" ${t.done ? 'checked' : ''} aria-label="Hecha">

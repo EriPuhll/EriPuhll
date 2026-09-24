@@ -17,8 +17,8 @@ function renderCalendar() {
           <p class="sub">${mode === 'pruebas' ? 'Pruebas, entregas y todo lo que se viene.' : 'Tu semana de clases en la facu.'}</p>
         </div>
         <div class="switch" role="tablist">
-          <button role="tab" aria-selected="${mode === 'horario'}" data-mode="horario" class="${mode === 'horario' ? 'on' : ''}">🏫 Horario de facultad</button>
-          <button role="tab" aria-selected="${mode === 'pruebas'}" data-mode="pruebas" class="${mode === 'pruebas' ? 'on' : ''}">📝 Calendario de pruebas</button>
+          <button role="tab" aria-selected="${mode === 'horario'}" data-mode="horario" class="${mode === 'horario' ? 'on' : ''}">Horario de facultad</button>
+          <button role="tab" aria-selected="${mode === 'pruebas'}" data-mode="pruebas" class="${mode === 'pruebas' ? 'on' : ''}">Calendario de pruebas</button>
         </div>
       </div>
       <div id="cal-content"></div>
@@ -40,7 +40,7 @@ function chipHtml(ev) {
   const cd = countdown(eventDate(ev));
   return `<button class="chip ${cd.level === 'urgent' ? 'near' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
       title="${esc(`${typeLabel(ev)}${subj ? ' · ' + subj : ''}${ev.title ? ' · ' + ev.title : ''}${ev.time ? ' · ' + ev.time : ''}`)}">
-      <span class="chip-ic">${t.icon}</span><span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
+      <span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
     </button>`;
 }
 
@@ -63,7 +63,7 @@ function renderExams(el) {
     cells += `
       <div class="day ${d.getMonth() !== m ? 'out' : ''} ${iso === today ? 'today' : ''} ${crit[wk] ? 'crit' : ''}" data-date="${iso}">
         <span class="dnum">${d.getDate()}</span>
-        ${crit[wk] && i % 7 === 0 ? `<span class="crit-tag" title="${crit[wk]} pruebas esta semana">🔥 Semana crítica</span>` : ''}
+        ${crit[wk] && i % 7 === 0 ? `<span class="crit-tag" title="${crit[wk]} pruebas esta semana">Semana crítica</span>` : ''}
         <div class="chips">${evs.map(chipHtml).join('')}</div>
       </div>`;
   }
@@ -80,10 +80,10 @@ function renderExams(el) {
       <div class="actions">
         <button class="btn" id="add-ev">+ Nuevo evento</button>
         <button class="btn ghost" id="pdf">⬇ PDF</button>
-        <button class="btn ghost" id="ics" title="Para importar en Google Calendar o el celular">📆 Exportar .ics</button>
+        <button class="btn ghost" id="ics" title="Para importar en Google Calendar o el celular">Exportar .ics</button>
       </div>
     </div>
-    ${monthCrit.length ? `<div class="alert warn">🔥 <span><strong>Semana crítica:</strong> ${monthCrit.map((k) => `semana del ${fmtDateShort(parseDate(k))} (${crit[k]} pruebas)`).join(', ')}. Organizate con tiempo.</span></div>` : ''}
+    ${monthCrit.length ? `<div class="alert warn"><span><strong>Semana crítica:</strong> ${monthCrit.map((k) => `semana del ${fmtDateShort(parseDate(k))} (${crit[k]} pruebas)`).join(', ')}. Organizate con tiempo.</span></div>` : ''}
     <div class="card month">
       <div class="dow">${DAYS_SHORT.map((d) => `<span>${d}</span>`).join('')}</div>
       <div class="grid">${cells}</div>
@@ -95,7 +95,7 @@ function renderExams(el) {
         <div class="filters">
           <select id="f-subj" aria-label="Filtrar por materia"><option value="">Todas las materias</option>${subjectOptions(listFilter.subject)}</select>
           <select id="f-type" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option>
-            ${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === listFilter.type ? 'selected' : ''}>${t.icon} ${t.label}</option>`).join('')}</select>
+            ${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === listFilter.type ? 'selected' : ''}>${t.label}</option>`).join('')}</select>
           <label class="check"><input type="checkbox" id="f-past" ${listFilter.past ? 'checked' : ''}> Ver pasados</label>
         </div>
       </div>
@@ -128,14 +128,14 @@ function renderExams(el) {
         && (!listFilter.type || ev.type === listFilter.type)
         && (listFilter.past || eventDate(ev) >= now || daysUntil(ev.date) === 0))
       .sort(byEventDate);
-    renderEventList($('#ev-list', el), evs, listFilter.past ? 'No hay eventos con esos filtros.' : 'No tenés nada pendiente. Disfrutá (como un perezoso). 🦥');
+    renderEventList($('#ev-list', el), evs, listFilter.past ? 'No hay eventos con esos filtros.' : 'No tenés nada pendiente. Disfrutá (como un perezoso). ');
   }
   paintList();
 }
 
 function renderEventList(container, evs, emptyMsg) {
   if (!evs.length) {
-    container.innerHTML = `<div class="empty small"><span class="empty-sloth" data-sloth="head"></span><p>${esc(emptyMsg)}</p></div>`;
+    container.innerHTML = `<div class="empty small"><p>${esc(emptyMsg)}</p></div>`;
     Sloth.paint(container);
     return;
   }
@@ -148,8 +148,8 @@ function renderEventList(container, evs, emptyMsg) {
       <article class="ev-row" data-ev="${ev.id}" data-level="${cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" role="button">
         <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
         <div class="ev-main">
-          <div class="ev-type">${t.icon} ${esc(typeLabel(ev))}</div>
-          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · 🤝 ${esc(proj.name)}` : ''}</div>
+          <div class="ev-type">${esc(typeLabel(ev))}</div>
+          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · ${esc(proj.name)}` : ''}</div>
           ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
           <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
         </div>
@@ -173,7 +173,7 @@ function openEventForm(ev, preset = {}) {
   Modal.open(isNew ? 'Nuevo evento' : 'Editar evento', `
     <form class="form" id="ev-form">
       <label>Tipo de evento
-        <select name="type">${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === data.type ? 'selected' : ''}>${t.icon} ${t.label}</option>`).join('')}</select>
+        <select name="type">${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === data.type ? 'selected' : ''}>${t.label}</option>`).join('')}</select>
       </label>
       <label class="custom-type" ${data.type === 'otro' ? '' : 'hidden'}>¿Qué es?
         <input name="customType" value="${esc(data.customType)}" placeholder="Ej: Defensa oral, tutoría, feria…">
@@ -206,7 +206,7 @@ function openEventForm(ev, preset = {}) {
     };
     f.onsubmit = (e) => {
       e.preventDefault();
-      if (el.type.value === 'otro' && !el.customType.value.trim()) { toast('Contá qué tipo de evento es 🙂'); el.customType.focus(); return; }
+      if (el.type.value === 'otro' && !el.customType.value.trim()) { toast('Contá qué tipo de evento es '); el.customType.focus(); return; }
       const changedDate = !isNew && (ev.date !== el.date.value);
       Object.assign(data, {
         type: el.type.value,
@@ -223,7 +223,7 @@ function openEventForm(ev, preset = {}) {
       if (changedDate) delete Store.data.remindersSent[data.id];
       Store.save();
       Modal.close();
-      toast(isNew ? 'Evento agregado 🦥' : 'Evento actualizado');
+      toast(isNew ? 'Evento agregado ' : 'Evento actualizado');
       rerender();
       Sloth.paint();
     };
@@ -272,7 +272,7 @@ function exportICS() {
   }
   lines.push('END:VCALENDAR');
   downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar' }), 'pruebas-semestre.ics');
-  toast('Calendario exportado. Abrilo o importalo en Google Calendar 📆');
+  toast('Calendario exportado. Abrilo o importalo en Google Calendar ');
 }
 
 /* ===== PDF ===== */
@@ -399,7 +399,7 @@ function downloadMonthPDF() {
   });
 
   doc.save(`calendario-pruebas-${y}-${pad(m + 1)}.pdf`);
-  toast('PDF descargado 📄');
+  toast('PDF descargado ');
 }
 
 function downloadTimetablePDF() {
@@ -435,7 +435,7 @@ function downloadTimetablePDF() {
     if (h > 10) doc.text(fitText(doc, `${c.kind}${c.room ? ' - ' + c.room : ''}`, cw - 4), x + 1.5, y0 + 10.2);
   });
   doc.save('horario-facultad.pdf');
-  toast('PDF del horario descargado 📄');
+  toast('PDF del horario descargado ');
 }
 
 /* ===== Horario de facultad ===== */
@@ -461,7 +461,7 @@ function freeGaps(day) {
 function renderTimetable(el) {
   const classes = Store.data.classes;
   if (!Store.data.subjects.length) {
-    el.innerHTML = `<div class="card empty"><span class="empty-sloth big" data-sloth="head"></span>
+    el.innerHTML = `<div class="card empty">
       <h2>Primero creá una materia</h2><p>Después vas a poder cargar tus horarios de clase acá.</p>
       <a class="btn" href="#materias">Ir a Materias</a></div>`;
     Sloth.paint(el);
@@ -489,7 +489,7 @@ function renderTimetable(el) {
           <span>${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</span>
         </button>`;
     }).join('');
-    const free = showFree ? freeGaps(d).map(([a, b]) => `<div class="free" style="top:${pos(a) + 3}px;height:${pos(b) - pos(a) - 6}px" title="Tiempo libre entre clases">📖 ${fmtHM(b - a)} libres para estudiar</div>`).join('') : '';
+    const free = showFree ? freeGaps(d).map(([a, b]) => `<div class="free" style="top:${pos(a) + 3}px;height:${pos(b) - pos(a) - 6}px" title="Tiempo libre entre clases">${fmtHM(b - a)} libres para estudiar</div>`).join('') : '';
     const nowLine = d === todayIdx && nowMin >= minH * 60 && nowMin <= maxH * 60 ? `<div class="now-line" style="top:${pos(nowMin)}px"></div>` : '';
     cols += `<div class="tt-col ${d === todayIdx ? 'today' : ''}"><div class="tt-day">${DAYS[d - 1]}</div>
       <div class="tt-body" style="height:${(maxH - minH) * PX}px;--px:${PX}px">${free}${blocks}${nowLine}</div></div>`;
@@ -507,7 +507,7 @@ function renderTimetable(el) {
     </div>
     <div class="card today-strip">
       <strong>Hoy, ${DAYS[todayIdx - 1].toLowerCase()}:</strong>
-      ${todays.length ? todays.map((c) => `<span class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start} ${esc(subjectName(c.subjectId))}${c.room ? ' · ' + esc(c.room) : ''}</span>`).join('') : '<span class="muted">no tenés clases. 🌿</span>'}
+      ${todays.length ? todays.map((c) => `<span class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start} ${esc(subjectName(c.subjectId))}${c.room ? ' · ' + esc(c.room) : ''}</span>`).join('') : '<span class="muted">no tenés clases. </span>'}
     </div>
     <div class="card timetable">
       <div class="tt-scroll">

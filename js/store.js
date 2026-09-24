@@ -29,7 +29,7 @@ const Store = {
       remindersSent: {},
       pomodoro: { work: 25, short: 5, long: 15, cycles: 4, subjectId: '', autoNext: true },
       sloth: {
-        name: 'Paco', fur: '#a88a6d', personality: 'dramatico', frequency: 'a_veces', sound: true,
+        name: 'Paco', fur: '#c39b76', personality: 'dramatico', frequency: 'a_veces', sound: true,
         equipped: {}, unlockedSeen: null, proudUntil: 0,
       },
       settings: {
@@ -40,6 +40,7 @@ const Store = {
         reminderDays: [7, 2, 1],
         calMode: 'pruebas',
         showFreeTime: true,
+        bullet: '•',
         seedDismissed: false,
         theme: defaultGlobalTheme(),
       },
@@ -64,6 +65,7 @@ const Store = {
     d.pomodoro = Object.assign(fresh.pomodoro, saved.pomodoro || {});
     d.sloth = Object.assign(fresh.sloth, saved.sloth || {});
     d.sloth.equipped = Object.assign({}, (saved.sloth || {}).equipped || {});
+    if (d.sloth.fur === '#a88a6d') d.sloth.fur = '#c39b76'; // color del dibujo anterior
     const sset = saved.settings || {};
     d.settings = Object.assign(fresh.settings, sset);
     d.settings.theme = migrateGlobalTheme(sset.theme);

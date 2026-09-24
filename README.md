@@ -27,8 +27,8 @@ App web personal para organizar el semestre de facultad, con un perezoso que te 
 | ⏱️ **Horas de estudio** | Cronómetro que sobrevive a cerrar la app, registro editable con origen, carga manual, últimos 14 días, semana por materia, total del semestre y racha. |
 | 🍅 **Pomodoro** | Tiempos configurables; cada bloque terminado se suma a la materia. **Simulacro de parcial** con tiempo por ejercicio y comparación con simulacros anteriores. |
 | 🤝 **Proyectos** | Integrantes, links, tareas con responsable y entregas que aparecen también en el calendario. |
-| 🦥 **Perezoso** | Nombre, color de pelo, 6 personalidades (Maestro dramático por defecto), frecuencia, y un **ropero de 45 prendas** que se desbloquean con horas de estudio. |
-| ⚙️ **Ajustes** | Nombre, horas por crédito, fechas del semestre, recordatorios, **apariencia completa** (6 colores, tipografía, bordes, modo oscuro, fondo y temas listos), guardado automático, instalar, respaldo. |
+| 🦥 **Perezoso** | Nombre, color de pelo, 6 personalidades (Maestro dramático por defecto), frecuencia, y un **ropero de 45 prendas** que se desbloquean con horas de estudio. Aparece de vez en cuando bajando con su rama; también lo podés llamar con el botoncito de abajo a la derecha. |
+| ⚙️ **Ajustes** | Nombre, horas por crédito, fechas del semestre, recordatorios, **apariencia completa** (6 colores, tipografía, bordes, modo oscuro, fondo, temas listos y el símbolo de las listas), guardado automático, instalar, respaldo. |
 
 ### El ropero del perezoso
 Prendas originales en estilos **clásico, princesa, muñeca fashion, monstruito chic, dino, héroe alien, Gen Z y maestro**: vestidos de princesa (rosa, de hielo, dorado), tiara, corona, alas de hada, look fashionista rosa, vestido gótico con costuras, pijama y capucha de dino, reloj alien, bucket hat, gafas Y2K, vaso térmico XL, matcha, y más. Se desbloquean entre 0 y 50 horas de estudio en el semestre.
@@ -40,7 +40,7 @@ Su cara cambia según cómo vas: **feliz**, **dormido** (3+ días sin estudiar),
 Sin dependencias ni compilación: HTML + CSS + JavaScript. La capa de datos está en `js/store.js` para poder migrar a un backend más adelante.
 
 ```
-index.html               estructura (barra lateral / navegación inferior)
+index.html               estructura (menú arriba / navegación inferior en celular)
 css/styles.css           estilos (todo con variables de color)
 js/util.js               utilidades, fechas, modal
 js/store.js              datos, migraciones, datos iniciales y consultas

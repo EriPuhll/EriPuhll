@@ -16,6 +16,7 @@
  */
 
 :root {
+  --bullet: "•";
   --accent: #a075ea;
   --accent-ink: #6c4fa0;
   --accent-soft: #efe7fb;
@@ -71,58 +72,58 @@ a { color: var(--accent-ink); }
 
 /* ---------- Estructura ---------- */
 
-.app { display: grid; grid-template-columns: var(--side-w) 1fr; min-height: 100vh; }
-.main-col { min-width: 0; }
-main { max-width: 1180px; margin: 0 auto; padding: 1.6rem clamp(16px, 3vw, 36px) 5rem; outline: none; }
+main { max-width: 1180px; margin: 0 auto; padding: 1.4rem clamp(16px, 3vw, 36px) 5rem; outline: none; }
 .page { display: flex; flex-direction: column; gap: 1rem; }
 .page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
 .page-head .sub { margin-top: .3rem; color: var(--muted); font-weight: 600; }
 
-.sidebar {
-  position: sticky; top: 0; height: 100vh; overflow-y: auto;
-  display: flex; flex-direction: column; gap: .6rem;
-  padding: 0 .8rem 1rem;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  border-right: 1px solid var(--line);
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; gap: 1rem;
+  padding: .55rem clamp(16px, 3vw, 32px);
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
   backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
 }
-.dock { position: relative; margin: 0 -.8rem; }
-.dock-sloth { display: block; width: 100%; height: 190px; border: 0; padding: 0; background: none; cursor: pointer; }
-.dock-sloth svg { width: 100%; height: 100%; transform-origin: 50% 4%; animation: sway 5s ease-in-out infinite; }
-.dock-bubble {
-  position: absolute; left: 10px; right: 10px; top: 176px; z-index: 5;
-  background: var(--surface); border: 2px solid var(--accent); border-radius: 16px;
-  padding: .6rem .8rem; font-family: var(--hand); font-size: 1.15rem; line-height: 1.15; font-weight: 700;
-  box-shadow: var(--shadow); opacity: 0; transform: translateY(-6px); pointer-events: none; transition: .25s;
-}
-.dock-bubble.show { opacity: 1; transform: none; pointer-events: auto; }
-.dock-bubble::before { content: ''; position: absolute; top: -9px; left: 50%; width: 14px; height: 14px; background: var(--surface); border-left: 2px solid var(--accent); border-top: 2px solid var(--accent); transform: translateX(-50%) rotate(45deg); }
+.brand { display: flex; align-items: center; gap: .55rem; text-decoration: none; color: var(--ink); flex: none; }
+.brand-logo { width: 44px; height: 44px; display: block; transition: transform .3s; }
+.brand-logo svg { width: 100%; height: 100%; }
+.brand:hover .brand-logo { transform: rotate(-8deg) scale(1.06); }
+.brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+.brand-text strong { font-size: 1.3rem; font-weight: 800; color: var(--accent-ink); letter-spacing: -.02em; }
+.brand-text small { font-size: .76rem; color: var(--muted); font-weight: 600; }
 
-.brand { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); padding: 0 .6rem; }
-.brand strong { font-size: 1.45rem; font-weight: 800; color: var(--accent-ink); letter-spacing: -.02em; }
-.brand small { color: var(--muted); font-weight: 600; }
-
-.side-nav { display: flex; flex-direction: column; gap: 2px; margin-top: .4rem; }
-.side-nav a {
-  display: flex; align-items: center; gap: .6rem;
-  padding: .6rem .75rem; border-radius: 12px;
-  text-decoration: none; color: var(--ink); font-weight: 700;
+.tabs { display: flex; gap: .15rem; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.tabs a {
+  display: flex; align-items: center; gap: .35rem; white-space: nowrap;
+  padding: .5rem .75rem; border-radius: 999px;
+  text-decoration: none; color: var(--ink); font-weight: 700; font-size: .93rem;
+  transition: background .2s, color .2s;
 }
-.side-nav a:hover { background: var(--accent-soft); }
-.side-nav a.on { background: var(--accent); color: var(--on-accent); }
-.ic { width: 1.4em; text-align: center; }
+.tabs a:hover { background: var(--accent-soft); }
+.tabs a.on { background: var(--accent); color: var(--on-accent); }
+.ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 .live-pill {
-  display: inline-flex; align-items: center; gap: .4rem; align-self: flex-start;
-  padding: .4rem .8rem; border-radius: 999px; margin: .4rem .4rem 0;
+  display: inline-flex; align-items: center; gap: .4rem; flex: none;
+  padding: .4rem .8rem; border-radius: 999px;
   background: var(--ink); color: var(--surface); font-weight: 800; font-size: .85rem;
   text-decoration: none; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .live-pill .dot { box-shadow: 0 0 0 2px var(--surface); animation: pulse 1.4s infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
 
-.mobile-top { display: none; }
 .bottom-nav, .more-sheet { display: none; }
+
+/* Botoncito discreto para llamar al perezoso */
+.sloth-fab {
+  position: fixed; right: 18px; bottom: 18px; z-index: 60;
+  width: 46px; height: 46px; padding: 4px; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow);
+  cursor: pointer; opacity: .55; transition: opacity .2s, transform .2s;
+}
+.sloth-fab:hover, .sloth-fab:focus-visible { opacity: 1; transform: scale(1.08); }
+.sloth-fab svg { width: 100%; height: 100%; }
 
 .save-banner {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .6rem;
@@ -140,7 +141,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 1.6rem clamp(16px, 3vw, 36px)
   min-width: 0;
 }
 /* Con fondos llamativos, las tarjetas se vuelven semitransparentes con desenfoque */
-body.glass .card, body.glass .sidebar { background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(14px) saturate(1.2); }
+body.glass .card { background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(14px) saturate(1.2); }
 .card h2 + * { margin-top: .6rem; }
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
 .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
@@ -516,14 +517,14 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 
 /* ---------- Inicio ---------- */
 
-.hero { display: grid; grid-template-columns: 190px 1fr; gap: 1.2rem; align-items: center; }
-.hero-sloth { width: 190px; height: 220px; border: 0; background: none; padding: 0; cursor: pointer; }
-.hero-sloth svg { width: 100%; height: 100%; transform-origin: 50% 4%; animation: sway 5s ease-in-out infinite; }
+.hero { display: flex; flex-direction: column; gap: .4rem; }
+.sloth-quote { font-family: var(--hand); font-size: 1.35rem; line-height: 1.2; font-weight: 700; color: var(--accent-ink); margin-top: .4rem; }
+.sloth-quote cite { display: block; font-family: var(--font); font-style: normal; font-size: .82rem; font-weight: 700; color: var(--muted); margin-top: .2rem; }
 .speech {
   position: relative; background: var(--surface); border: 2px solid var(--accent); border-radius: 20px;
-  padding: .9rem 1.1rem; font-family: var(--hand); font-size: 1.35rem; line-height: 1.2; font-weight: 700;
+  padding: .8rem 1rem; font-family: var(--hand); font-size: 1.2rem; line-height: 1.2; font-weight: 700;
 }
-.speech::before { content: ''; position: absolute; left: -10px; top: 28px; width: 16px; height: 16px; background: var(--surface); border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(45deg); }
+.speech::before { content: ''; position: absolute; left: 50%; top: -10px; width: 16px; height: 16px; background: var(--surface); border-left: 2px solid var(--accent); border-top: 2px solid var(--accent); transform: translateX(-50%) rotate(45deg); }
 .hero h1 { margin-bottom: .6rem; }
 .alert-list { display: flex; flex-direction: column; gap: .45rem; }
 .alert { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem .75rem; border-radius: 12px; background: var(--accent-soft); font-weight: 600; }
@@ -536,7 +537,7 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 
 .sloth-studio { display: grid; grid-template-columns: minmax(240px, 340px) 1fr; gap: 1rem; align-items: start; }
 .studio-preview { position: sticky; top: 1rem; display: flex; flex-direction: column; align-items: center; gap: .6rem; text-align: center; }
-.studio-preview .big-sloth { width: 100%; max-width: 300px; aspect-ratio: 224 / 256; border: 0; background: none; padding: 0; cursor: pointer; }
+.studio-preview .big-sloth { width: 100%; max-width: 340px; aspect-ratio: 344 / 240; border: 0; background: none; padding: 0; cursor: pointer; }
 .studio-preview .big-sloth svg { width: 100%; height: 100%; }
 .moods { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: center; }
 .wardrobe { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: .6rem; }
@@ -547,13 +548,15 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 }
 .item:hover { border-color: var(--accent); }
 .item.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
-.item .thumb { width: 84px; height: 84px; }
+.item .thumb { width: 100%; height: 84px; }
 .item .thumb svg { width: 100%; height: 100%; }
 .item .i-name { font-size: .8rem; font-weight: 700; line-height: 1.1; }
 .item .i-style { font-size: .68rem; color: var(--muted); font-weight: 700; }
 .item.locked { cursor: not-allowed; }
-.item.locked .thumb { filter: grayscale(1) blur(1.5px); opacity: .45; }
-.item .lock { position: absolute; top: 34px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--surface); font-size: .72rem; font-weight: 800; padding: .2rem .5rem; border-radius: 999px; white-space: nowrap; }
+.item.locked { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.item.locked .thumb { opacity: .62; }
+.item.locked .i-name, .item.locked .i-style { opacity: .8; }
+.item .lock { position: absolute; top: 6px; right: 6px; background: color-mix(in srgb, var(--ink) 80%, transparent); color: var(--surface); font-size: .68rem; font-weight: 800; padding: .12rem .45rem; border-radius: 999px; white-space: nowrap; }
 .pers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .5rem; }
 .pers {
   text-align: left; font: inherit; color: var(--ink); cursor: pointer;
@@ -563,6 +566,12 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .pers strong { display: block; }
 .pers span { font-size: .8rem; color: var(--muted); }
 .unlock-bar { width: 100%; }
+
+/* Listas con la viñeta que elige la usuaria (Ajustes) */
+ul.plain:not(.check-list):not(.task-list) > li { display: flex; gap: .5em; align-items: baseline; }
+ul.plain:not(.check-list):not(.task-list) > li::before, .alert::before, .bl::before { content: var(--bullet); color: var(--accent); font-weight: 800; flex: none; }
+ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
+.alert { gap: .55rem; }
 
 /* ---------- Estados vacíos ---------- */
 
@@ -576,15 +585,15 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 /* ---------- El perezoso que baja por la liana ---------- */
 
 .sloth-peek {
-  position: fixed; top: 0; right: clamp(8px, 5vw, 60px); z-index: 70;
-  display: flex; align-items: flex-start; gap: .4rem;
+  position: fixed; top: 0; right: clamp(8px, 4vw, 48px); z-index: 70;
+  display: flex; align-items: flex-start; gap: .2rem;
   transform: translateY(-115%); pointer-events: none;
 }
 .sloth-peek.show { animation: slothIn 8.5s ease-in-out forwards; pointer-events: auto; }
-.sloth-body { width: 130px; height: 186px; border: 0; background: none; padding: 0; cursor: pointer; transform-origin: 50% 0; animation: sway 3.4s ease-in-out infinite; }
+.sloth-body { width: 250px; height: 240px; border: 0; background: none; padding: 0; cursor: pointer; transform-origin: 50% 0; animation: sway 4s ease-in-out infinite; }
 .sloth-body svg { width: 100%; height: 100%; }
 .sloth-bubble {
-  order: -1; margin-top: 118px; max-width: 250px;
+  order: -1; margin-top: 150px; max-width: 260px;
   background: var(--surface); color: var(--ink); font-family: var(--hand); font-weight: 700; font-size: 1.2rem; line-height: 1.15;
   padding: .7rem .9rem; border-radius: 18px 18px 4px 18px;
   border: 2px solid var(--accent); box-shadow: var(--shadow);
@@ -607,19 +616,18 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
   .studio-preview { position: static; }
 }
 
+@media (max-width: 1100px) {
+  .brand-text small { display: none; }
+  .tabs a span { display: none; }
+  .tabs a { padding: .55rem; }
+  .tabs a.on span { display: inline; }
+}
+
 @media (max-width: 760px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .mobile-top {
-    position: sticky; top: 0; z-index: 30;
-    display: flex; align-items: center; gap: .6rem;
-    padding: .4rem 16px; background: var(--bg); border-bottom: 1px solid var(--line);
-  }
-  .mobile-top .brand { padding: 0; }
-  .mobile-top .brand strong { font-size: 1.25rem; }
-  .mobile-top .live-pill { margin: 0 0 0 auto; }
-  .mobile-sloth { width: 44px; height: 44px; border: 0; background: none; padding: 0; cursor: pointer; }
-  .mobile-sloth svg { width: 100%; height: 100%; }
+  .topbar { padding: .45rem 16px; backdrop-filter: none; background: var(--bg); }
+  .tabs { display: none; }
+  .topbar .live-pill { margin-left: auto; }
+  .brand-logo { width: 38px; height: 38px; }
   .bottom-nav {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     display: grid; grid-template-columns: repeat(5, 1fr);
@@ -627,11 +635,11 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
     background: var(--surface); border-top: 1px solid var(--line);
   }
   .bottom-nav a, .bottom-nav button {
-    display: flex; flex-direction: column; align-items: center; gap: 1px;
-    padding: .3rem .2rem; border-radius: 12px; border: 0; background: none; font: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: .35rem .2rem; border-radius: 12px; border: 0; background: none; font: inherit;
     text-decoration: none; color: var(--ink); font-size: .68rem; font-weight: 700; cursor: pointer;
   }
-  .bottom-nav .ic { font-size: 1.3rem; }
+  .bottom-nav .ic { width: 22px; height: 22px; }
   .bottom-nav .on { background: var(--accent-soft); color: var(--accent-ink); }
   .more-sheet {
     position: fixed; left: 12px; right: 12px; bottom: calc(70px + env(safe-area-inset-bottom)); z-index: 41;
@@ -641,6 +649,7 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
   .more-sheet[hidden] { display: none !important; }
   .more-sheet a { display: flex; align-items: center; gap: .5rem; padding: .75rem; border-radius: 12px; text-decoration: none; color: var(--ink); font-weight: 700; background: var(--bg); }
   .more-sheet a.on { background: var(--accent); color: var(--on-accent); }
+  .sloth-fab { bottom: calc(78px + env(safe-area-inset-bottom)); right: 12px; width: 40px; height: 40px; }
   main { padding: 1rem 16px 6.5rem; }
   .toast { bottom: calc(84px + env(safe-area-inset-bottom)); }
   .switch { width: 100%; }
@@ -649,16 +658,13 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
   .day { min-height: 62px; padding: .2rem; }
   .dnum { width: 22px; height: 22px; font-size: .75rem; }
   .chip { padding: 0; border: 0; width: 100%; height: 6px; border-radius: 3px; background: var(--c); }
-  .chip-ic, .chip-t { display: none; }
+  .chip-t { display: none; }
   .crit-tag { font-size: 0; padding: 0; width: 8px; height: 8px; top: 5px; right: 5px; background: var(--danger); }
   .month-nav h2 { min-width: 0; font-size: 1.05rem; }
   .log-row { grid-template-columns: auto 1fr auto auto; }
   .log-row .muted, .log-row .src { display: none; }
-  .hero { grid-template-columns: 1fr; justify-items: center; text-align: center; }
-  .hero-sloth { width: 150px; height: 170px; }
-  .speech::before { left: 50%; top: -10px; transform: translateX(-50%) rotate(135deg); }
-  .sloth-body { width: 96px; height: 138px; }
-  .sloth-bubble { margin-top: 86px; max-width: 190px; font-size: 1.05rem; }
+  .sloth-body { width: 170px; height: 165px; }
+  .sloth-bubble { margin-top: 110px; max-width: 180px; font-size: 1.05rem; }
   .stats { grid-template-columns: 1fr 1fr; }
 }
 
@@ -670,7 +676,7 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 /* ---------- Impresión ---------- */
 
 @media print {
-  .sidebar, .mobile-top, .bottom-nav, .more-sheet, .toolbar .actions, .sloth-peek, .toast, .switch, .hint, .filters { display: none !important; }
+  .topbar, .sloth-fab, .bottom-nav, .more-sheet, .toolbar .actions, .sloth-peek, .toast, .switch, .hint, .filters { display: none !important; }
   .app { display: block; }
   body { background: #fff !important; }
   .card { box-shadow: none; }
@@ -680,52 +686,44 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="dock">
-        <button class="dock-sloth" data-sloth="full" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
-        <div class="dock-bubble" id="dock-bubble" role="status"></div>
-      </div>
-      <a class="brand" href="#inicio"><strong>Perezoso</strong><small>despacito, pero al día</small></a>
-      <nav class="side-nav" aria-label="Secciones">
-        <a href="#inicio" data-tab="inicio"><span class="ic">🏡</span>Inicio</a>
-        <a href="#calendario" data-tab="calendario"><span class="ic">📅</span>Calendario</a>
-        <a href="#materias" data-tab="materias"><span class="ic">📚</span>Materias</a>
-        <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span>Horas de estudio</a>
-        <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span>Pomodoro</a>
-        <a href="#proyectos" data-tab="proyectos"><span class="ic">🤝</span>Proyectos</a>
-        <a href="#perezoso" data-tab="perezoso"><span class="ic">🦥</span>Perezoso</a>
-        <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span>Ajustes</a>
-      </nav>
-      <a class="live-pill" href="#estudio" hidden></a>
-    </aside>
-
-    <div class="main-col">
-      <header class="mobile-top">
-        <button class="mobile-sloth" data-sloth="head" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
-        <a class="brand" href="#inicio"><strong>Perezoso</strong></a>
-        <a class="live-pill" href="#estudio" hidden></a>
-      </header>
-      <div id="save-banner" class="save-banner" hidden></div>
-      <main id="view" tabindex="-1"></main>
-    </div>
-  </div>
+  <header class="topbar">
+    <a class="brand" href="#inicio">
+      <span class="brand-logo" data-sloth="head"></span>
+      <span class="brand-text"><strong>Perezoso</strong><small>despacito, pero al día</small></span>
+    </a>
+    <nav class="tabs" aria-label="Secciones">
+        <a href="#inicio" data-tab="inicio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Inicio</span></a>
+        <a href="#calendario" data-tab="calendario"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></a>
+        <a href="#materias" data-tab="materias"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h12"/></svg><span>Materias</span></a>
+        <a href="#estudio" data-tab="estudio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span>Estudio</span></a>
+        <a href="#pomodoro" data-tab="pomodoro"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 5c0-2 2-3 4-3M8.5 5.8c2 1.2 5 1.2 7 0"/></svg><span>Pomodoro</span></a>
+        <a href="#proyectos" data-tab="proyectos"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15.5 14.5c3 0 5.5 2 5.5 5"/></svg><span>Proyectos</span></a>
+        <a href="#perezoso" data-tab="perezoso"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.5 11.5c1.5-1.4 3.2-1.4 4.2 0M13.3 11.5c1-1.4 2.7-1.4 4.2 0M10 16c1.3 1 2.7 1 4 0"/></svg><span>Perezoso</span></a>
+        <a href="#ajustes" data-tab="ajustes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Ajustes</span></a>
+    </nav>
+    <a class="live-pill" href="#estudio" hidden></a>
+  </header>
+  <div id="save-banner" class="save-banner" hidden></div>
+  <main id="view" tabindex="-1"></main>
 
   <nav class="bottom-nav" aria-label="Secciones">
-    <a href="#inicio" data-tab="inicio"><span class="ic">🏡</span><span>Inicio</span></a>
-    <a href="#calendario" data-tab="calendario"><span class="ic">📅</span><span>Calendario</span></a>
-    <a href="#materias" data-tab="materias"><span class="ic">📚</span><span>Materias</span></a>
-    <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span><span>Estudio</span></a>
-    <button type="button" id="more-btn" aria-expanded="false" aria-controls="more-sheet"><span class="ic">☰</span><span>Más</span></button>
+    <a href="#inicio" data-tab="inicio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Inicio</span></a>
+    <a href="#calendario" data-tab="calendario"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></a>
+    <a href="#materias" data-tab="materias"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h12"/></svg><span>Materias</span></a>
+    <a href="#estudio" data-tab="estudio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span>Estudio</span></a>
+    <button type="button" id="more-btn" aria-expanded="false" aria-controls="more-sheet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Más</span></button>
   </nav>
   <div id="more-sheet" class="more-sheet" hidden>
-    <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span>Pomodoro</a>
-    <a href="#proyectos" data-tab="proyectos"><span class="ic">🤝</span>Proyectos</a>
-    <a href="#perezoso" data-tab="perezoso"><span class="ic">🦥</span>Perezoso</a>
-    <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span>Ajustes</a>
+    <a href="#pomodoro" data-tab="pomodoro"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 5c0-2 2-3 4-3M8.5 5.8c2 1.2 5 1.2 7 0"/></svg>Pomodoro</a>
+    <a href="#proyectos" data-tab="proyectos"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15.5 14.5c3 0 5.5 2 5.5 5"/></svg>Proyectos</a>
+    <a href="#perezoso" data-tab="perezoso"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.5 11.5c1.5-1.4 3.2-1.4 4.2 0M13.3 11.5c1-1.4 2.7-1.4 4.2 0M10 16c1.3 1 2.7 1 4 0"/></svg>Perezoso</a>
+    <a href="#ajustes" data-tab="ajustes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Ajustes</a>
   </div>
 
-  <!-- El perezoso que baja por la liana de vez en cuando -->
+  <!-- Botoncito discreto para llamar al perezoso -->
+  <button class="sloth-fab" id="sloth-fab" data-sloth="head" data-sloth-talk title="Llamar al perezoso" aria-label="Llamar al perezoso"></button>
+
+  <!-- El perezoso que baja colgado de su rama de vez en cuando -->
   <div id="sloth-peek" class="sloth-peek" aria-live="polite">
     <div class="sloth-bubble" id="sloth-bubble"></div>
     <button class="sloth-body" id="sloth-body" data-sloth="vine" aria-label="Perezoso (tocá para despedirlo)"></button>
@@ -1156,14 +1154,14 @@ const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', '
 const DAYS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 const EVENT_TYPES = [
-  { id: 'control', label: 'Control', icon: '✏️' },
-  { id: 'laboratorio', label: 'Entrega de laboratorio', icon: '🧪' },
-  { id: 'entregable', label: 'Entregable', icon: '📦' },
-  { id: 'parcial', label: 'Parcial', icon: '📝' },
-  { id: 'examen', label: 'Examen', icon: '🎓' },
-  { id: 'practico', label: 'Práctico', icon: '📐' },
-  { id: 'charla', label: 'Charla', icon: '🎤' },
-  { id: 'otro', label: 'Otro', icon: '✨' },
+  { id: 'control', label: 'Control', icon: '' },
+  { id: 'laboratorio', label: 'Entrega de laboratorio', icon: '' },
+  { id: 'entregable', label: 'Entregable', icon: '' },
+  { id: 'parcial', label: 'Parcial', icon: '' },
+  { id: 'examen', label: 'Examen', icon: '' },
+  { id: 'practico', label: 'Práctico', icon: '' },
+  { id: 'charla', label: 'Charla', icon: '' },
+  { id: 'otro', label: 'Otro', icon: '' },
 ];
 // Tipos que cuentan como "prueba" para marcar semanas críticas
 const EXAM_TYPES = ['control', 'laboratorio', 'entregable', 'parcial', 'examen', 'practico'];
@@ -1335,14 +1333,14 @@ function fmtBytes(n) {
 
 function fileIcon(name) {
   const ext = (String(name).split('.').pop() || '').toLowerCase();
-  if (ext === 'pdf') return '📕';
-  if (['doc', 'docx', 'odt', 'txt', 'md'].includes(ext)) return '📄';
-  if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return '📊';
-  if (['ppt', 'pptx', 'odp', 'key'].includes(ext)) return '📽️';
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '🖼️';
-  if (['zip', 'rar', '7z'].includes(ext)) return '🗜️';
-  if (['py', 'js', 'c', 'cpp', 'java', 'm', 'r', 'ipynb', 'html', 'sql'].includes(ext)) return '💻';
-  return '📎';
+  if (ext === 'pdf') return '';
+  if (['doc', 'docx', 'odt', 'txt', 'md'].includes(ext)) return '';
+  if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return '';
+  if (['ppt', 'pptx', 'odp', 'key'].includes(ext)) return '';
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '';
+  if (['zip', 'rar', '7z'].includes(ext)) return '';
+  if (['py', 'js', 'c', 'cpp', 'java', 'm', 'r', 'ipynb', 'html', 'sql'].includes(ext)) return '';
+  return '';
 }
 
 function safeUrl(u) {
@@ -1386,7 +1384,7 @@ const Store = {
       remindersSent: {},
       pomodoro: { work: 25, short: 5, long: 15, cycles: 4, subjectId: '', autoNext: true },
       sloth: {
-        name: 'Paco', fur: '#a88a6d', personality: 'dramatico', frequency: 'a_veces', sound: true,
+        name: 'Paco', fur: '#c39b76', personality: 'dramatico', frequency: 'a_veces', sound: true,
         equipped: {}, unlockedSeen: null, proudUntil: 0,
       },
       settings: {
@@ -1397,6 +1395,7 @@ const Store = {
         reminderDays: [7, 2, 1],
         calMode: 'pruebas',
         showFreeTime: true,
+        bullet: '•',
         seedDismissed: false,
         theme: defaultGlobalTheme(),
       },
@@ -1421,6 +1420,7 @@ const Store = {
     d.pomodoro = Object.assign(fresh.pomodoro, saved.pomodoro || {});
     d.sloth = Object.assign(fresh.sloth, saved.sloth || {});
     d.sloth.equipped = Object.assign({}, (saved.sloth || {}).equipped || {});
+    if (d.sloth.fur === '#a88a6d') d.sloth.fur = '#c39b76'; // color del dibujo anterior
     const sset = saved.settings || {};
     d.settings = Object.assign(fresh.settings, sset);
     d.settings.theme = migrateGlobalTheme(sset.theme);
@@ -1849,16 +1849,22 @@ function phrase(context, vars = {}, personality) {
   <script>
 'use strict';
 
-/* ---------- El perezoso: dibujo por capas, ropa, ánimo y apariciones ---------- */
+/* ---------- El perezoso: dibujo por capas, ropa, ánimo y apariciones ----------
+ * Acostado sobre una rama, con la cara crema, las manchas oscuras de lado y los
+ * brazos colgando con garras largas. La cabeza se dibuja en su propio marco
+ * (centro 100,92) y se ubica sobre la rama con una transformación; así los
+ * accesorios de cabeza sirven igual para la vista completa y para la cara sola.
+ */
 
 const FUR_PRESETS = [
-  { id: 'marron', label: 'Marrón clásico', color: '#a88a6d' },
-  { id: 'gris', label: 'Gris', color: '#9a9aa3' },
-  { id: 'caramelo', label: 'Caramelo', color: '#c98a4b' },
+  { id: 'marron', label: 'Marrón clásico', color: '#c39b76' },
+  { id: 'gris', label: 'Gris', color: '#a3a0a6' },
+  { id: 'caramelo', label: 'Caramelo', color: '#cf9255' },
   { id: 'lavanda', label: 'Lavanda', color: '#a075ea' },
   { id: 'menta', label: 'Menta', color: '#7cc4a4' },
   { id: 'rosa', label: 'Rosa', color: '#f0a3c0' },
 ];
+const DEFAULT_FUR = '#c39b76';
 
 const MOODS = {
   feliz: 'Feliz', dormido: 'Dormido', preocupado: 'Preocupado', orgulloso: 'Orgulloso', estirandose: 'Estirándose',
@@ -1866,6 +1872,23 @@ const MOODS = {
 
 const ACCENT = 'var(--accent, #a075ea)';
 const MOSS = 'var(--moss, #6f8f5a)';
+const LEAF = '#7cbf45';
+const LEAF_LIGHT = '#a3d86a';
+const BARK = '#a5652c';
+const BARK_LIGHT = '#c5843f';
+const BARK_DARK = '#7a4a1f';
+const CLAW = '#f1e6cc';
+const CLAW_EDGE = '#cdb88f';
+
+// Dónde va la cabeza sobre la rama (vista completa)
+const HEAD_TF = 'translate(104 110) rotate(-10) scale(1.1) translate(-100 -92)';
+// Dónde cuelga lo que "abraza" (de la garra delantera) y el reloj (en el brazo)
+const HAND_TF = 'translate(150 220) scale(0.74) translate(-100 -176)';
+const ARM_TF = 'translate(12 88)';
+const BACK_TF = 'translate(205 96) scale(0.78) translate(-100 -160)';
+const BODY_PATH = 'M120 128 C 110 90, 150 62, 205 64 C 255 66, 285 92, 280 122 C 276 140, 250 146, 205 142 L 140 140 Z';
+
+let svgSerial = 0;
 
 function sparkle(x, y, s, color) {
   const k = s * 0.3;
@@ -1893,187 +1916,259 @@ function flower(x, y, color, r = 4.2) {
   }).join('');
   return `${petals}<circle cx="${x}" cy="${y}" r="${r * 0.62}" fill="#f2a65a"/>`;
 }
-function princessDress(top, skirt, trim, deco) {
-  return `<circle cx="68" cy="132" r="11" fill="${top}"/><circle cx="132" cy="132" r="11" fill="${top}"/>
-    <path d="M70 128 Q100 120 130 128 L126 168 Q100 174 74 168 Z" fill="${top}"/>
-    <path d="M74 166 Q100 174 126 166 Q156 196 164 232 Q100 248 36 232 Q44 196 74 166 Z" fill="${skirt}"/>
-    <path d="M36 232 Q48 222 60 233 Q72 222 84 234 Q96 222 108 234 Q120 222 132 234 Q144 222 164 232" fill="none" stroke="${trim}" stroke-width="3"/>
-    <path d="M74 166 Q100 176 126 166" stroke="${trim}" stroke-width="4" fill="none"/>${deco}`;
-}
 function snowflake(x, y, s) {
   return `<path d="M${x - s} ${y} L${x + s} ${y} M${x} ${y - s} L${x} ${y + s} M${x - s * 0.7} ${y - s * 0.7} L${x + s * 0.7} ${y + s * 0.7} M${x - s * 0.7} ${y + s * 0.7} L${x + s * 0.7} ${y - s * 0.7}" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`;
+}
+function leaf(x, y, rot, s = 1) {
+  return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 0 C -10 -10 -9 -28 0 -36 C 9 -28 10 -10 0 0 Z" fill="${LEAF}"/><path d="M0 -2 L0 -30" stroke="${LEAF_LIGHT}" stroke-width="1.6"/></g>`;
+}
+
+/* Ropa del cuerpo: se pinta sobre el cuerpo acostado (recortada a su forma) */
+const DECO_SPOTS = [[160, 92, 5], [198, 80, 4], [238, 94, 5], [215, 120, 3.6], [176, 120, 4], [258, 112, 3.6]];
+function outfitSVG(o) {
+  const id = `sl-body-${++svgSerial}`;
+  let deco = '';
+  let skirtDeco = '';
+  switch (o.deco) {
+    case 'sparkle':
+      deco = DECO_SPOTS.map(([x, y, s]) => sparkle(x, y, s, '#fff')).join('');
+      skirtDeco = sparkle(180, 158, 3.5, '#fff') + sparkle(236, 156, 3.5, '#fff');
+      break;
+    case 'snow':
+      deco = DECO_SPOTS.map(([x, y, s]) => snowflake(x, y, s)).join('');
+      skirtDeco = snowflake(180, 157, 4) + snowflake(236, 155, 4);
+      break;
+    case 'roses':
+      deco = DECO_SPOTS.slice(0, 4).map(([x, y]) => flower(x, y, '#e46a6a', 3.4)).join('');
+      skirtDeco = flower(200, 158, '#e46a6a', 3.4);
+      break;
+    case 'heart':
+      deco = `<rect x="100" y="112" width="200" height="8" fill="${o.trim}"/>${heart(205, 88, 1, '#fff')}${sparkle(170, 96, 4, '#fff')}${sparkle(245, 100, 4, '#fff')}`;
+      break;
+    case 'stitch':
+      deco = `<path d="M150 82 L262 126" stroke="${o.trim}" stroke-width="2.5" stroke-dasharray="6 4"/><path d="M168 84 l6 10 M190 93 l6 10 M212 102 l6 10 M234 111 l6 10" stroke="${o.trim}" stroke-width="2"/>${skull(240, 86, 0.8)}`;
+      break;
+    case 'dino':
+      deco = `<ellipse cx="205" cy="146" rx="80" ry="30" fill="${o.belly}"/><path d="M160 126 Q205 136 250 124 M170 136 Q205 144 242 134" stroke="#a7d99a" stroke-width="3" fill="none"/>`;
+      break;
+    case 'stripe':
+      deco = `<rect x="192" y="40" width="20" height="120" fill="#1d1d1d"/><rect x="198" y="40" width="8" height="120" fill="#f4f4f4"/>`;
+      break;
+    case 'hoodie':
+      deco = `<path d="M182 110 L234 110 L228 134 L188 134 Z" fill="${o.trim}"/><path d="M146 88 l4 24 M154 84 l8 24" stroke="#fff" stroke-width="3" stroke-linecap="round"/>${sparkle(212, 88, 6, '#fff')}`;
+      break;
+    case 'sash':
+      deco = `<rect x="198" y="40" width="14" height="120" fill="#2a2238"/><path d="M138 80 L198 108 L146 136" fill="none" stroke="${o.trim}" stroke-width="5"/>`;
+      break;
+    default: break;
+  }
+  const front = `<defs><clipPath id="${id}"><path d="${BODY_PATH}"/></clipPath></defs>
+    <g clip-path="url(#${id})"><rect x="100" y="40" width="200" height="130" fill="${o.top}"/>${deco}</g>
+    <path d="M137 84 Q127 108 139 134" stroke="${o.trim}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    ${o.skirt ? `<path d="M138 132 Q205 152 276 126 L284 160 Q272 170 260 162 Q248 172 236 164 Q224 174 212 165 Q200 174 188 165 Q176 173 164 164 Q150 170 136 160 Z" fill="${o.skirt}"/>
+      <path d="M136 160 Q150 170 164 164 Q176 173 188 165 Q200 174 212 165 Q224 174 236 164 Q248 172 260 162 Q272 170 284 160" fill="none" stroke="${o.trim}" stroke-width="3"/>${skirtDeco}` : ''}`;
+  const back = o.deco === 'dino'
+    ? `<path d="M272 112 Q306 114 318 136 Q296 134 276 128Z" fill="${o.top}"/>` + [[150, 80], [172, 70], [196, 65], [220, 65], [244, 72], [266, 86]].map(([x, y]) => `<path d="M${x - 9} ${y + 8} L${x} ${y - 12} L${x + 9} ${y + 8} Z" fill="#4e9a54"/>`).join('')
+    : '';
+  return { back, front };
 }
 
 /* Ropero. hours = horas de estudio del semestre para desbloquear. */
 const WARDROBE_CATS = [
-  { id: 'cabeza', label: 'Cabeza', icon: '👒' },
-  { id: 'ojos', label: 'Ojos', icon: '👓' },
-  { id: 'cara', label: 'Cara', icon: '🧔' },
-  { id: 'cuello', label: 'Cuello', icon: '🧣' },
-  { id: 'cuerpo', label: 'Ropa', icon: '👗' },
-  { id: 'abrazando', label: 'Abrazando', icon: '🤲' },
-  { id: 'extra', label: 'Extras', icon: '✨' },
+  { id: 'cabeza', label: 'Cabeza' },
+  { id: 'ojos', label: 'Ojos' },
+  { id: 'cara', label: 'Cara' },
+  { id: 'cuello', label: 'Cuello' },
+  { id: 'cuerpo', label: 'Ropa' },
+  { id: 'abrazando', label: 'En la garra' },
+  { id: 'extra', label: 'Extras' },
 ];
 
 const WARDROBE = [
   // --- 0 h
-  { id: 'mono', cat: 'cabeza', name: 'Moño', hours: 0, style: 'Clásico', svg: () => `<g transform="translate(132 56) rotate(18)"><path d="M0 0 L-17 -11 Q-21 0 -17 11 Z" fill="#f28bb3"/><path d="M0 0 L17 -11 Q21 0 17 11 Z" fill="#f28bb3"/><circle r="5.5" fill="#e0679a"/></g>` },
-  { id: 'lentes', cat: 'ojos', name: 'Lentes redondos', hours: 0, style: 'Clásico', svg: () => `<g fill="rgba(255,255,255,.18)" stroke="#2a2238" stroke-width="3"><circle cx="86" cy="94" r="12"/><circle cx="114" cy="94" r="12"/></g><path d="M98 94 Q100 90 102 94" stroke="#2a2238" stroke-width="3" fill="none"/><path d="M74 92 L56 88 M126 92 L144 88" stroke="#2a2238" stroke-width="3"/>` },
-  { id: 'bufanda', cat: 'cuello', name: 'Bufanda', hours: 0, style: 'Clásico', svg: () => `<path d="M62 128 Q100 144 138 128 L138 142 Q100 158 62 142 Z" fill="#e46a6a"/><path d="M116 144 L124 178 L110 178 L106 148 Z" fill="#e46a6a"/><path d="M110 170 L124 170 M109 175 L125 175" stroke="#fff" stroke-width="2"/><path d="M78 134 L79 146 M100 140 L100 152 M122 134 L121 146" stroke="#f7c9c9" stroke-width="3"/>` },
-  { id: 'hojita', cat: 'abrazando', name: 'Hojita', hours: 0, style: 'Clásico', svg: () => `<path d="M84 190 Q92 150 126 156 Q120 190 84 190 Z" fill="${MOSS}"/><path d="M88 186 Q104 172 122 160" stroke="#dcebd0" stroke-width="2" fill="none"/>` },
+  { id: 'mono', cat: 'cabeza', name: 'Moño', hours: 0, style: 'Clásico', svg: () => `<g transform="translate(130 54) rotate(18)"><path d="M0 0 L-17 -11 Q-21 0 -17 11 Z" fill="#f28bb3"/><path d="M0 0 L17 -11 Q21 0 17 11 Z" fill="#f28bb3"/><circle r="5.5" fill="#e0679a"/></g>` },
+  { id: 'lentes', cat: 'ojos', name: 'Lentes redondos', hours: 0, style: 'Clásico', svg: () => `<g fill="rgba(255,255,255,.2)" stroke="#2a2238" stroke-width="3"><circle cx="79" cy="95" r="13"/><circle cx="121" cy="95" r="13"/></g><path d="M92 95 Q100 90 108 95" stroke="#2a2238" stroke-width="3" fill="none"/><path d="M66 92 L52 88 M134 92 L148 88" stroke="#2a2238" stroke-width="3"/>` },
+  { id: 'bufanda', cat: 'cuello', name: 'Bufanda', hours: 0, style: 'Clásico', svg: () => `<path d="M62 124 Q100 140 138 124 L138 138 Q100 154 62 138 Z" fill="#e46a6a"/><path d="M116 140 L124 172 L110 172 L106 144 Z" fill="#e46a6a"/><path d="M110 164 L124 164 M109 169 L125 169" stroke="#fff" stroke-width="2"/><path d="M78 130 L79 142 M100 136 L100 148 M122 130 L121 142" stroke="#f7c9c9" stroke-width="3"/>` },
+  { id: 'hojita', cat: 'abrazando', name: 'Hojita', hours: 0, style: 'Clásico', svg: () => `<path d="M84 190 Q92 150 126 156 Q120 190 84 190 Z" fill="${LEAF}"/><path d="M88 186 Q104 172 122 160" stroke="${LEAF_LIGHT}" stroke-width="2" fill="none"/>` },
   // --- progreso
-  { id: 'gorro', cat: 'cabeza', name: 'Gorro de lana con pompón', hours: 2, style: 'Clásico', svg: () => `<path d="M54 80 Q54 34 100 32 Q146 34 146 80 Z" fill="#6c9eeb"/><path d="M70 44 L70 78 M85 36 L85 78 M100 33 L100 78 M115 36 L115 78 M130 44 L130 78" stroke="#5a8ad6" stroke-width="3"/><rect x="50" y="72" width="100" height="15" rx="7.5" fill="#4a7fd4"/><circle cx="100" cy="28" r="11" fill="#fff" stroke="#dfe7f5" stroke-width="2"/>` },
-  { id: 'mariposas', cat: 'cabeza', name: 'Clips de mariposa', hours: 3, style: 'Gen Z', svg: () => butterfly(70, 60, -20, '#c78bd9', '#f28bb3') + butterfly(130, 56, 18, '#8fd3ff', '#7cc4a4') },
-  { id: 'auriculares', cat: 'cabeza', name: 'Auriculares', hours: 5, style: 'Clásico', svg: () => `<path d="M50 98 Q50 36 100 36 Q150 36 150 98" stroke="#2a2238" stroke-width="7" fill="none"/><rect x="38" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/><rect x="144" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/>` },
+  { id: 'gorro', cat: 'cabeza', name: 'Gorro de lana con pompón', hours: 2, style: 'Clásico', svg: () => `<path d="M54 78 Q54 32 100 30 Q146 32 146 78 Z" fill="#6c9eeb"/><path d="M70 42 L70 76 M85 34 L85 76 M100 31 L100 76 M115 34 L115 76 M130 42 L130 76" stroke="#5a8ad6" stroke-width="3"/><rect x="50" y="70" width="100" height="15" rx="7.5" fill="#4a7fd4"/><circle cx="100" cy="26" r="11" fill="#fff" stroke="#dfe7f5" stroke-width="2"/>` },
+  { id: 'mariposas', cat: 'cabeza', name: 'Clips de mariposa', hours: 3, style: 'Gen Z', svg: () => butterfly(68, 60, -20, '#c78bd9', '#f28bb3') + butterfly(132, 56, 18, '#8fd3ff', '#7cc4a4') },
+  { id: 'auriculares', cat: 'cabeza', name: 'Auriculares', hours: 5, style: 'Clásico', svg: () => `<path d="M50 98 Q50 34 100 34 Q150 34 150 98" stroke="#2a2238" stroke-width="7" fill="none"/><rect x="38" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/><rect x="144" y="84" width="18" height="30" rx="8" fill="${ACCENT}"/>` },
   { id: 'taza', cat: 'abrazando', name: 'Taza de café', hours: 5, style: 'Clásico', svg: () => `<rect x="86" y="160" width="28" height="30" rx="5" fill="#fff" stroke="#d8d0c0" stroke-width="2"/><path d="M114 166 q12 0 12 9 q0 9 -12 9" stroke="#d8d0c0" stroke-width="4" fill="none"/><ellipse cx="100" cy="162" rx="12" ry="3" fill="#7a4a2a"/><path d="M92 152 q-4 -6 0 -12 M100 150 q-4 -6 0 -12 M108 152 q-4 -6 0 -12" stroke="#b9aec9" stroke-width="2" fill="none"/>${heart(100, 174, 0.45, '#f28bb3')}` },
-  { id: 'brillitos', cat: 'extra', name: 'Brillitos en la cara', hours: 6, style: 'Gen Z', svg: () => sparkle(58, 72, 6, '#f5d76e') + sparkle(146, 110, 5, '#f28bb3') + sparkle(52, 116, 4, '#c9b6f2') + sparkle(150, 62, 4.5, '#fff') + `<circle cx="74" cy="104" r="1.4" fill="#f5d76e"/><circle cx="78" cy="108" r="1.2" fill="#fff"/><circle cx="124" cy="104" r="1.4" fill="#f5d76e"/><circle cx="121" cy="108" r="1.2" fill="#fff"/>` },
-  { id: 'tiara', cat: 'cabeza', name: 'Tiara de princesa', hours: 7, style: 'Princesa', svg: () => `<path d="M76 58 L84 40 L92 52 L100 32 L108 52 L116 40 L124 58 Z" fill="#f5d76e" stroke="#e0b93f" stroke-width="2" stroke-linejoin="round"/><circle cx="100" cy="46" r="3.5" fill="#f28bb3"/><circle cx="84" cy="50" r="2.5" fill="#6c9eeb"/><circle cx="116" cy="50" r="2.5" fill="#6c9eeb"/>` },
-  { id: 'perlas', cat: 'cuello', name: 'Collar de perlas', hours: 7, style: 'Princesa', svg: () => [70, 77.5, 85, 92.5, 100, 107.5, 115, 122.5, 130].map((x) => `<circle cx="${x}" cy="${(132 + 9 * (1 - ((x - 100) / 32) ** 2)).toFixed(1)}" r="3.3" fill="#fff" stroke="#e5ddcf" stroke-width="1"/>`).join('') },
+  { id: 'brillitos', cat: 'extra', anchor: 'head', name: 'Brillitos en la cara', hours: 6, style: 'Gen Z', svg: () => sparkle(56, 70, 6, '#f5d76e') + sparkle(146, 112, 5, '#f28bb3') + sparkle(52, 116, 4, '#c9b6f2') + sparkle(150, 60, 4.5, '#fff') + `<circle cx="68" cy="106" r="1.4" fill="#f5d76e"/><circle cx="72" cy="110" r="1.2" fill="#fff"/><circle cx="132" cy="106" r="1.4" fill="#f5d76e"/><circle cx="128" cy="110" r="1.2" fill="#fff"/>` },
+  { id: 'tiara', cat: 'cabeza', name: 'Tiara de princesa', hours: 7, style: 'Princesa', svg: () => `<path d="M76 56 L84 38 L92 50 L100 30 L108 50 L116 38 L124 56 Z" fill="#f5d76e" stroke="#e0b93f" stroke-width="2" stroke-linejoin="round"/><circle cx="100" cy="44" r="3.5" fill="#f28bb3"/><circle cx="84" cy="48" r="2.5" fill="#6c9eeb"/><circle cx="116" cy="48" r="2.5" fill="#6c9eeb"/>` },
+  { id: 'perlas', cat: 'cuello', name: 'Collar de perlas', hours: 7, style: 'Princesa', svg: () => [70, 77.5, 85, 92.5, 100, 107.5, 115, 122.5, 130].map((x) => `<circle cx="${x}" cy="${(128 + 9 * (1 - ((x - 100) / 32) ** 2)).toFixed(1)}" r="3.3" fill="#fff" stroke="#e5ddcf" stroke-width="1"/>`).join('') },
   { id: 'vaso', cat: 'abrazando', name: 'Vaso térmico XL', hours: 8, style: 'Gen Z', svg: () => `<path d="M86 148 L114 148 L110 204 L90 204 Z" fill="#9fd8c8"/><rect x="84" y="140" width="32" height="10" rx="4" fill="#7cc4b0"/><path d="M104 140 L110 120" stroke="#f28bb3" stroke-width="4" stroke-linecap="round"/><path d="M114 156 q14 2 12 18 q-2 12 -14 12" stroke="#7cc4b0" stroke-width="5" fill="none"/><rect x="88" y="190" width="24" height="3" fill="#7cc4b0"/>` },
-  { id: 'lentes_sol', cat: 'ojos', name: 'Lentes de sol', hours: 10, style: 'Clásico', svg: () => `<rect x="72" y="85" width="26" height="18" rx="7" fill="#1d1512"/><rect x="102" y="85" width="26" height="18" rx="7" fill="#1d1512"/><path d="M98 92 L102 92 M72 90 L56 86 M128 90 L144 86" stroke="#1d1512" stroke-width="3"/><path d="M76 89 L84 89 M106 89 L114 89" stroke="#fff" stroke-width="2" opacity=".5"/>` },
+  { id: 'lentes_sol', cat: 'ojos', name: 'Lentes de sol', hours: 10, style: 'Clásico', svg: () => `<rect x="64" y="86" width="29" height="19" rx="8" fill="#1d1512"/><rect x="107" y="86" width="29" height="19" rx="8" fill="#1d1512"/><path d="M93 93 L107 93 M64 91 L50 87 M136 91 L150 87" stroke="#1d1512" stroke-width="3"/><path d="M69 90 L78 90 M112 90 L121 90" stroke="#fff" stroke-width="2" opacity=".5"/>` },
   { id: 'libro', cat: 'abrazando', name: 'Libro', hours: 10, style: 'Clásico', svg: () => `<g transform="rotate(-8 100 176)"><rect x="80" y="158" width="42" height="32" rx="3" fill="${ACCENT}"/><rect x="84" y="161" width="36" height="26" fill="#fffdf8"/><rect x="80" y="158" width="8" height="32" rx="2" fill="#2a2238" opacity=".35"/><path d="M92 168 L114 168 M92 174 L114 174 M92 180 L108 180" stroke="#cfc6dc" stroke-width="2"/></g>` },
-  { id: 'vestido_rosa', cat: 'cuerpo', name: 'Vestido de princesa rosa', hours: 12, style: 'Princesa', svg: () => princessDress('#f7b8d2', '#f28bb3', '#fff', sparkle(60, 212, 4, '#fff') + sparkle(140, 206, 4, '#fff') + sparkle(100, 218, 3.5, '#fff') + sparkle(84, 194, 3, '#fff') + sparkle(120, 190, 3, '#fff')) },
-  { id: 'varita', cat: 'abrazando', name: 'Varita con estrella', hours: 12, style: 'Princesa', svg: () => `<path d="M84 204 L114 154" stroke="#f5d76e" stroke-width="4" stroke-linecap="round"/><path d="M116 136 l4 9 l10 1 l-7 7 l2 10 l-9 -5 l-9 5 l2 -10 l-7 -7 l10 -1z" fill="#f5d76e" stroke="#e0b43a" stroke-width="1.5"/>${sparkle(134, 134, 3, '#fff')}` },
-  { id: 'matcha', cat: 'abrazando', name: 'Matcha latte', hours: 14, style: 'Gen Z', svg: () => `<path d="M88 158 L112 158 L109 196 L91 196 Z" fill="rgba(255,255,255,.75)" stroke="#d8d0c0" stroke-width="2"/><path d="M89.5 172 L110.5 172 L109 196 L91 196 Z" fill="#9bc36b"/><path d="M89 172 Q100 167 111 172" stroke="#f4f0e6" stroke-width="3" fill="none"/><path d="M104 158 L112 136" stroke="${MOSS}" stroke-width="5" stroke-linecap="round"/><ellipse cx="100" cy="158" rx="13" ry="3" fill="#fff" stroke="#d8d0c0"/>` },
-  { id: 'cinta', cat: 'cabeza', name: 'Cinta de guerrero', hours: 15, style: 'Maestro', svg: () => `<path d="M52 78 Q100 64 148 78 L148 90 Q100 76 52 90 Z" fill="#d9546e"/><path d="M54 82 L30 90 L36 98 L56 90 Z" fill="#c43d58"/><path d="M54 86 L34 104 L42 108 L58 90 Z" fill="#d9546e"/><circle cx="100" cy="76" r="5" fill="#fff"/><circle cx="100" cy="76" r="2.4" fill="#d9546e"/>` },
-  { id: 'capucha_dino', cat: 'cabeza', name: 'Capucha de dino', hours: 15, style: 'Dino', svg: () => `<path d="M70 44 L76 24 L86 36 L94 16 L100 30 L106 16 L114 36 L124 24 L130 44 Z" fill="#4e9a54"/><path d="M56 112 Q42 38 100 36 Q158 38 144 112" stroke="#7bc47f" stroke-width="16" fill="none" stroke-linecap="round"/><circle cx="72" cy="52" r="5" fill="#fff"/><circle cx="73" cy="52" r="2.4" fill="#1d1512"/><circle cx="128" cy="52" r="5" fill="#fff"/><circle cx="127" cy="52" r="2.4" fill="#1d1512"/>` },
+  { id: 'vestido_rosa', cat: 'cuerpo', name: 'Vestido de princesa rosa', hours: 12, style: 'Princesa', outfit: { top: '#f7b8d2', skirt: '#f28bb3', trim: '#fff', deco: 'sparkle' } },
+  { id: 'varita', cat: 'abrazando', name: 'Varita con estrella', hours: 12, style: 'Princesa', svg: () => `<path d="M100 214 L112 158" stroke="#f5d76e" stroke-width="5" stroke-linecap="round"/><path d="M112 136 l5 11 l12 1 l-9 8 l3 12 l-11 -6 l-11 6 l3 -12 l-9 -8 l12 -1z" fill="#f5d76e" stroke="#e0b43a" stroke-width="1.5"/>${sparkle(134, 134, 4, '#fff')}` },
+  { id: 'matcha', cat: 'abrazando', name: 'Matcha latte', hours: 14, style: 'Gen Z', svg: () => `<path d="M88 158 L112 158 L109 196 L91 196 Z" fill="rgba(255,255,255,.8)" stroke="#d8d0c0" stroke-width="2"/><path d="M89.5 172 L110.5 172 L109 196 L91 196 Z" fill="#9bc36b"/><path d="M89 172 Q100 167 111 172" stroke="#f4f0e6" stroke-width="3" fill="none"/><path d="M104 158 L112 136" stroke="${MOSS}" stroke-width="5" stroke-linecap="round"/><ellipse cx="100" cy="158" rx="13" ry="3" fill="#fff" stroke="#d8d0c0"/>` },
+  { id: 'cinta', cat: 'cabeza', name: 'Cinta de guerrero', hours: 15, style: 'Maestro', svg: () => `<path d="M52 74 Q100 60 148 74 L148 86 Q100 72 52 86 Z" fill="#d9546e"/><path d="M146 78 L170 86 L164 94 L144 86 Z" fill="#c43d58"/><path d="M146 82 L166 100 L158 104 L142 86 Z" fill="#d9546e"/><circle cx="100" cy="72" r="5" fill="#fff"/><circle cx="100" cy="72" r="2.4" fill="#d9546e"/>` },
+  { id: 'capucha_dino', cat: 'cabeza', name: 'Capucha de dino', hours: 15, style: 'Dino', svg: () => `<path d="M70 42 L76 22 L86 34 L94 14 L100 28 L106 14 L114 34 L124 22 L130 42 Z" fill="#4e9a54"/><path d="M56 112 Q42 36 100 34 Q158 36 144 112" stroke="#7bc47f" stroke-width="16" fill="none" stroke-linecap="round"/><circle cx="72" cy="50" r="5" fill="#fff"/><circle cx="73" cy="50" r="2.4" fill="#1d1512"/><circle cx="128" cy="50" r="5" fill="#fff"/><circle cx="127" cy="50" r="2.4" fill="#1d1512"/>` },
   { id: 'celular', cat: 'abrazando', name: 'Celu con funda cute', hours: 16, style: 'Gen Z', svg: () => `<rect x="86" y="150" width="28" height="48" rx="6" fill="#c9b6f2"/><rect x="90" y="155" width="20" height="36" rx="3" fill="#2a2238"/><circle cx="100" cy="194" r="2" fill="#fff"/><path d="M114 156 q10 4 8 16" stroke="#f28bb3" stroke-width="2" fill="none"/><circle cx="122" cy="174" r="4" fill="#f5d76e"/>${sparkle(100, 170, 6, '#f28bb3')}` },
-  { id: 'pijama_dino', cat: 'cuerpo', name: 'Pijama de dino', hours: 18, style: 'Dino', svg: () => `<path d="M146 196 Q178 204 188 232 Q162 220 142 212 Z" fill="#7bc47f"/><path d="M160 204 l4 -8 l4 9 M172 212 l5 -7 l3 10" fill="#4e9a54"/><ellipse cx="100" cy="166" rx="51" ry="57" fill="#7bc47f"/><ellipse cx="100" cy="178" rx="30" ry="38" fill="#c9ecb8"/><path d="M80 160 Q100 166 120 160 M78 176 Q100 182 122 176 M80 192 Q100 198 120 192" stroke="#a7d99a" stroke-width="3" fill="none"/><ellipse cx="72" cy="218" rx="18" ry="12" fill="#7bc47f"/><ellipse cx="128" cy="218" rx="18" ry="12" fill="#7bc47f"/>` },
-  { id: 'choker', cat: 'cuello', name: 'Choker con corazón', hours: 18, style: 'Gen Z', svg: () => `<path d="M68 130 Q100 142 132 130" stroke="#2a2238" stroke-width="5" fill="none"/>${heart(100, 144, 0.55, '#ff5fa2')}` },
+  { id: 'pijama_dino', cat: 'cuerpo', name: 'Pijama de dino', hours: 18, style: 'Dino', outfit: { top: '#7bc47f', belly: '#c9ecb8', trim: '#4e9a54', deco: 'dino' } },
+  { id: 'choker', cat: 'cuello', name: 'Choker con corazón', hours: 18, style: 'Gen Z', svg: () => `<path d="M66 126 Q100 138 134 126" stroke="#2a2238" stroke-width="5" fill="none"/>${heart(100, 140, 0.55, '#ff5fa2')}` },
   { id: 'corona_flores', cat: 'cabeza', name: 'Corona de flores', hours: 20, style: 'Clásico', svg: () => {
-    const pts = [[60, 70], [70, 57], [84, 49], [100, 46], [116, 49], [130, 57], [140, 70]];
+    const pts = [[58, 70], [68, 56], [83, 48], [100, 45], [117, 48], [132, 56], [142, 70]];
     const cols = ['#f28bb3', '#f5d76e', '#c9b6f2', '#fff', '#f28bb3', '#f5d76e', '#c9b6f2'];
-    return `<path d="M56 74 Q100 34 144 74" stroke="${MOSS}" stroke-width="5" fill="none"/>` + pts.map(([x, y], i) => flower(x, y, cols[i])).join('');
+    return `<path d="M54 74 Q100 32 146 74" stroke="${LEAF}" stroke-width="5" fill="none"/>` + pts.map(([x, y], i) => flower(x, y, cols[i])).join('');
   } },
-  { id: 'monito', cat: 'cuello', name: 'Moñito', hours: 20, style: 'Clásico', svg: () => `<path d="M100 138 L84 128 L84 148 Z" fill="${ACCENT}"/><path d="M100 138 L116 128 L116 148 Z" fill="${ACCENT}"/><circle cx="100" cy="138" r="4.5" fill="#2a2238" opacity=".45"/>` },
+  { id: 'monito', cat: 'cuello', name: 'Moñito', hours: 20, style: 'Clásico', svg: () => `<path d="M100 134 L84 124 L84 144 Z" fill="${ACCENT}"/><path d="M100 134 L116 124 L116 144 Z" fill="${ACCENT}"/><circle cx="100" cy="134" r="4.5" fill="#2a2238" opacity=".45"/>` },
   { id: 'dino_peluche', cat: 'abrazando', name: 'Dino de peluche', hours: 20, style: 'Dino', svg: () => `<path d="M90 168 l3 -7 l3 7 M98 166 l3 -7 l3 7 M106 168 l3 -7 l3 7" fill="#4e9a54"/><ellipse cx="100" cy="180" rx="18" ry="14" fill="#7bc47f"/><circle cx="116" cy="164" r="10" fill="#7bc47f"/><circle cx="119" cy="162" r="2" fill="#1d1512"/><path d="M84 184 Q72 188 70 178 Q78 180 84 176Z" fill="#7bc47f"/><ellipse cx="92" cy="192" rx="4" ry="3" fill="#4e9a54"/><ellipse cx="108" cy="192" rx="4" ry="3" fill="#4e9a54"/>` },
-  { id: 'bucket', cat: 'cabeza', name: 'Bucket hat', hours: 22, style: 'Gen Z', svg: () => `<path d="M62 72 Q62 36 100 36 Q138 36 138 72 Z" fill="#f2c94c"/><path d="M42 76 Q100 60 158 76 Q152 88 100 84 Q48 88 42 76 Z" fill="#e0b43a"/>${flower(82, 54, '#fff', 3)}${flower(106, 46, '#fff', 3)}${flower(122, 62, '#fff', 3)}` },
-  { id: 'buzo', cat: 'cuerpo', name: 'Buzo oversize', hours: 22, style: 'Gen Z', svg: () => `<path d="M52 132 Q100 116 148 132 L152 208 Q100 218 48 208 Z" fill="#c9b6f2"/><path d="M76 178 L124 178 L118 200 L82 200 Z" fill="#b8a2ea"/><path d="M92 134 L90 160 M108 134 L110 160" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M50 203 L150 203" stroke="#b8a2ea" stroke-width="8"/>${sparkle(100, 158, 6, '#fff')}` },
-  { id: 'y2k', cat: 'ojos', name: 'Gafas Y2K', hours: 22, style: 'Gen Z', svg: () => `<ellipse cx="86" cy="94" rx="13" ry="7" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><ellipse cx="114" cy="94" rx="13" ry="7" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><path d="M99 94 L101 94 M73 93 L56 89 M127 93 L144 89" stroke="#b8c4d6" stroke-width="2.5"/>` },
-  { id: 'barba', cat: 'cara', name: 'Barba de maestro', hours: 25, style: 'Maestro', svg: () => `<path d="M84 116 Q100 126 116 116 Q114 152 100 174 Q86 152 84 116 Z" fill="#f4f1ea" stroke="#d8d2c4" stroke-width="1.5"/><path d="M86 112 Q94 104 100 110 Q106 104 114 112 Q106 110 100 114 Q94 110 86 112Z" fill="#f4f1ea" stroke="#d8d2c4"/><path d="M94 130 Q100 150 98 162 M106 130 Q102 150 104 160" stroke="#e2dccf" stroke-width="1.5" fill="none"/>` },
-  { id: 'fashionista', cat: 'cuerpo', name: 'Look fashionista rosa', hours: 27, style: 'Muñeca fashion', svg: () => `<path d="M64 126 Q100 118 136 126 L146 206 Q100 216 54 206 Z" fill="#ff5fa2"/><path d="M64 126 Q100 118 136 126 L132 138 Q100 130 68 138 Z" fill="#fff"/><rect x="62" y="160" width="76" height="8" rx="4" fill="#fff"/>${heart(100, 150, 0.6, '#fff')}${sparkle(76, 190, 3.5, '#fff')}${sparkle(126, 184, 3.5, '#fff')}` },
-  { id: 'gafas_corazon', cat: 'ojos', name: 'Gafas de corazón', hours: 27, style: 'Muñeca fashion', svg: () => `${heart(86, 94, 1.15, '#ff5fa2', '#e0428a')}${heart(114, 94, 1.15, '#ff5fa2', '#e0428a')}<path d="M98 92 L102 92 M72 90 L56 86 M128 90 L144 86" stroke="#e0428a" stroke-width="2.5"/>` },
-  { id: 'mono_gigante', cat: 'cabeza', name: 'Moño gigante rosa chicle', hours: 27, style: 'Muñeca fashion', svg: () => `<g transform="translate(100 42)"><path d="M0 0 L-30 -18 Q-38 0 -30 18 Z" fill="#ff5fa2"/><path d="M0 0 L30 -18 Q38 0 30 18 Z" fill="#ff5fa2"/><path d="M-4 4 L-14 26 L-8 26 L0 8 Z M4 4 L14 26 L8 26 L0 8 Z" fill="#ff85b8"/><rect x="-7" y="-7" width="14" height="14" rx="4" fill="#e0428a"/></g>` },
-  { id: 'tunica', cat: 'cuerpo', name: 'Túnica de maestro', hours: 28, style: 'Maestro', svg: () => `<path d="M54 128 Q100 116 146 128 L152 214 Q100 226 48 214 Z" fill="#c8733a"/><path d="M76 124 L100 172 L124 124" fill="none" stroke="#f5d76e" stroke-width="5"/><rect x="52" y="172" width="96" height="11" fill="#2a2238"/><path d="M60 214 Q100 224 140 214" stroke="#f5d76e" stroke-width="4" fill="none"/>` },
-  { id: 'boina', cat: 'cabeza', name: 'Boina', hours: 30, style: 'Clásico', svg: () => `<ellipse cx="96" cy="56" rx="46" ry="15" fill="#c0392b" transform="rotate(-8 96 56)"/><ellipse cx="96" cy="61" rx="40" ry="6" fill="#a93226" transform="rotate(-8 96 61)"/><circle cx="92" cy="40" r="4" fill="#c0392b"/>` },
-  { id: 'lapiz', cat: 'abrazando', name: 'Lápiz', hours: 30, style: 'Clásico', svg: () => `<g transform="rotate(-35 100 176)"><rect x="74" y="170" width="46" height="12" fill="#f5c542"/><rect x="66" y="170" width="9" height="12" rx="2" fill="#f28bb3"/><rect x="74" y="170" width="4" height="12" fill="#c0c0c0"/><path d="M120 170 L134 176 L120 182 Z" fill="#f1d7b0"/><path d="M130 174.3 L134 176 L130 177.7 Z" fill="#2a2238"/></g>` },
-  { id: 'monstruito', cat: 'cuerpo', name: 'Vestido gótico con costuras', hours: 32, style: 'Monstruito chic', svg: () => `<path d="M64 126 Q100 118 136 126 L150 210 Q100 222 50 210 Z" fill="#2a2238"/><path d="M50 210 L58 200 L66 212 L74 200 L82 213 L90 200 L98 214 L106 200 L114 213 L122 200 L130 212 L138 200 L146 211 L150 210 Q100 222 50 210Z" fill="#8e44ad"/><path d="M78 140 L118 196" stroke="#f28bb3" stroke-width="2.5" stroke-dasharray="5 4"/><path d="M84 146 l8 -4 M92 158 l8 -4 M100 170 l8 -4 M108 182 l8 -4" stroke="#f28bb3" stroke-width="2"/>${skull(124, 150, 0.7)}` },
-  { id: 'calavera', cat: 'cabeza', name: 'Mechón rosa y clip calavera', hours: 32, style: 'Monstruito chic', svg: () => `<path d="M80 56 Q88 36 108 42 Q100 58 86 66 Z" fill="#f28bb3"/><path d="M90 50 Q98 42 106 44" stroke="#2a2238" stroke-width="3" fill="none"/>${skull(130, 58)}<circle cx="142" cy="52" r="3" fill="#f28bb3"/>` },
-  { id: 'baston', cat: 'abrazando', name: 'Bastón de bambú', hours: 35, style: 'Maestro', svg: () => `<path d="M150 104 L58 238" stroke="#9bbf5a" stroke-width="8" stroke-linecap="round"/><path d="M137 123 l8 5 M118 151 l8 5 M99 179 l8 5 M80 207 l8 5" stroke="#6f8f5a" stroke-width="3"/><path d="M150 104 q12 -8 16 -2 q-8 4 -16 2z" fill="${MOSS}"/>` },
-  { id: 'reloj_alien', cat: 'extra', name: 'Reloj alien verde', hours: 38, style: 'Héroe alien', svg: () => `<g transform="translate(138 80) rotate(-10)"><rect x="-13" y="-7" width="26" height="14" rx="4" fill="#1d1d1d"/><circle r="9.5" fill="#39d353" stroke="#1d1d1d" stroke-width="3"/><path d="M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5Z" fill="#dfffe6"/></g>` },
-  { id: 'campera_alien', cat: 'cuerpo', name: 'Campera de héroe alien', hours: 38, style: 'Héroe alien', svg: () => `<path d="M58 128 Q100 118 142 128 L148 206 Q100 216 52 206 Z" fill="#3f9b4a"/><rect x="93" y="122" width="14" height="92" fill="#1d1d1d"/><rect x="97" y="122" width="6" height="92" fill="#f4f4f4"/><path d="M70 126 L86 142 M130 126 L114 142" stroke="#2f7a38" stroke-width="5"/>` },
-  { id: 'birrete', cat: 'cabeza', name: 'Birrete de graduación', hours: 40, style: 'Clásico', svg: () => `<rect x="72" y="50" width="56" height="18" rx="3" fill="#2a2238"/><path d="M100 24 L156 44 L100 64 L44 44 Z" fill="#3a3050"/><path d="M152 45 L156 76" stroke="#f5d76e" stroke-width="3"/><circle cx="156" cy="79" r="5" fill="#f5d76e"/><circle cx="100" cy="44" r="3" fill="#f5d76e"/>` },
-  { id: 'vestido_hielo', cat: 'cuerpo', name: 'Vestido de princesa de hielo', hours: 45, style: 'Princesa', svg: () => princessDress('#cdeeff', '#9fd8f7', '#fff', snowflake(62, 212, 5) + snowflake(138, 206, 5) + snowflake(100, 222, 4) + snowflake(86, 192, 3.5) + snowflake(118, 188, 3.5)) },
-  { id: 'alas', cat: 'extra', name: 'Alas de hada', hours: 45, style: 'Princesa', back: true, svg: () => `<g opacity=".88"><path d="M60 150 Q10 90 16 150 Q20 196 64 176 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M140 150 Q190 90 184 150 Q180 196 136 176 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M60 170 Q26 190 36 212 Q54 214 66 186 Z" fill="#f7d6ff" stroke="#e0b0f0"/><path d="M140 170 Q174 190 164 212 Q146 214 134 186 Z" fill="#f7d6ff" stroke="#e0b0f0"/></g>` },
-  { id: 'corona', cat: 'cabeza', name: 'Corona dorada', hours: 50, style: 'Princesa', svg: () => `<path d="M64 62 L64 32 L82 48 L100 24 L118 48 L136 32 L136 62 Z" fill="#f5c542" stroke="#c99a1a" stroke-width="2" stroke-linejoin="round"/><rect x="64" y="56" width="72" height="8" fill="#e0ad2e"/><circle cx="100" cy="46" r="4.5" fill="#d9546e"/><circle cx="80" cy="54" r="3" fill="#6c9eeb"/><circle cx="120" cy="54" r="3" fill="#5fb3a1"/>` },
-  { id: 'vestido_dorado', cat: 'cuerpo', name: 'Vestido de gala dorado', hours: 50, style: 'Princesa', svg: () => princessDress('#f7e08a', '#f5c542', '#fff7d6', flower(62, 210, '#e46a6a', 3.5) + flower(138, 206, '#e46a6a', 3.5) + flower(100, 220, '#e46a6a', 3.5) + sparkle(84, 192, 3, '#fff') + sparkle(118, 190, 3, '#fff')) },
+  { id: 'bucket', cat: 'cabeza', name: 'Bucket hat', hours: 22, style: 'Gen Z', svg: () => `<path d="M62 70 Q62 34 100 34 Q138 34 138 70 Z" fill="#f2c94c"/><path d="M42 74 Q100 58 158 74 Q152 86 100 82 Q48 86 42 74 Z" fill="#e0b43a"/>${flower(82, 52, '#fff', 3)}${flower(106, 44, '#fff', 3)}${flower(122, 60, '#fff', 3)}` },
+  { id: 'buzo', cat: 'cuerpo', name: 'Buzo oversize', hours: 22, style: 'Gen Z', outfit: { top: '#c9b6f2', trim: '#b8a2ea', deco: 'hoodie' } },
+  { id: 'y2k', cat: 'ojos', name: 'Gafas Y2K', hours: 22, style: 'Gen Z', svg: () => `<ellipse cx="79" cy="95" rx="14" ry="7.5" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><ellipse cx="121" cy="95" rx="14" ry="7.5" fill="#8fd3ff" opacity=".75" stroke="#b8c4d6" stroke-width="2"/><path d="M93 95 L107 95 M65 94 L50 90 M135 94 L150 90" stroke="#b8c4d6" stroke-width="2.5"/>` },
+  { id: 'barba', cat: 'cara', name: 'Barba de maestro', hours: 25, style: 'Maestro', svg: () => `<path d="M84 118 Q100 128 116 118 Q114 154 100 176 Q86 154 84 118 Z" fill="#f4f1ea" stroke="#d8d2c4" stroke-width="1.5"/><path d="M86 114 Q94 106 100 112 Q106 106 114 114 Q106 112 100 116 Q94 112 86 114Z" fill="#f4f1ea" stroke="#d8d2c4"/><path d="M94 132 Q100 152 98 164 M106 132 Q102 152 104 162" stroke="#e2dccf" stroke-width="1.5" fill="none"/>` },
+  { id: 'fashionista', cat: 'cuerpo', name: 'Look fashionista rosa', hours: 27, style: 'Muñeca fashion', outfit: { top: '#ff5fa2', trim: '#fff', deco: 'heart' } },
+  { id: 'gafas_corazon', cat: 'ojos', name: 'Gafas de corazón', hours: 27, style: 'Muñeca fashion', svg: () => `${heart(79, 94, 1.25, '#ff5fa2', '#e0428a')}${heart(121, 94, 1.25, '#ff5fa2', '#e0428a')}<path d="M93 93 L107 93 M64 90 L50 86 M136 90 L150 86" stroke="#e0428a" stroke-width="2.5"/>` },
+  { id: 'mono_gigante', cat: 'cabeza', name: 'Moño gigante rosa chicle', hours: 27, style: 'Muñeca fashion', svg: () => `<g transform="translate(100 40)"><path d="M0 0 L-30 -18 Q-38 0 -30 18 Z" fill="#ff5fa2"/><path d="M0 0 L30 -18 Q38 0 30 18 Z" fill="#ff5fa2"/><path d="M-4 4 L-14 26 L-8 26 L0 8 Z M4 4 L14 26 L8 26 L0 8 Z" fill="#ff85b8"/><rect x="-7" y="-7" width="14" height="14" rx="4" fill="#e0428a"/></g>` },
+  { id: 'tunica', cat: 'cuerpo', name: 'Túnica de maestro', hours: 28, style: 'Maestro', outfit: { top: '#c8733a', trim: '#f5d76e', deco: 'sash' } },
+  { id: 'boina', cat: 'cabeza', name: 'Boina', hours: 30, style: 'Clásico', svg: () => `<ellipse cx="96" cy="54" rx="46" ry="15" fill="#c0392b" transform="rotate(-8 96 54)"/><ellipse cx="96" cy="59" rx="40" ry="6" fill="#a93226" transform="rotate(-8 96 59)"/><circle cx="92" cy="38" r="4" fill="#c0392b"/>` },
+  { id: 'lapiz', cat: 'abrazando', name: 'Lápiz', hours: 30, style: 'Clásico', svg: () => `<g transform="rotate(-70 100 176)"><rect x="74" y="170" width="46" height="12" fill="#f5c542"/><rect x="66" y="170" width="9" height="12" rx="2" fill="#f28bb3"/><rect x="74" y="170" width="4" height="12" fill="#c0c0c0"/><path d="M120 170 L134 176 L120 182 Z" fill="#f1d7b0"/><path d="M130 174.3 L134 176 L130 177.7 Z" fill="#2a2238"/></g>` },
+  { id: 'monstruito', cat: 'cuerpo', name: 'Vestido gótico con costuras', hours: 32, style: 'Monstruito chic', outfit: { top: '#2a2238', skirt: '#8e44ad', trim: '#f28bb3', deco: 'stitch' } },
+  { id: 'calavera', cat: 'cabeza', name: 'Mechón rosa y clip calavera', hours: 32, style: 'Monstruito chic', svg: () => `<path d="M78 56 Q86 34 108 40 Q100 56 84 66 Z" fill="#f28bb3"/><path d="M88 48 Q98 40 106 42" stroke="#2a2238" stroke-width="3" fill="none"/>${skull(132, 58)}<circle cx="144" cy="52" r="3" fill="#f28bb3"/>` },
+  { id: 'baston', cat: 'abrazando', name: 'Bastón de bambú', hours: 35, style: 'Maestro', svg: () => `<path d="M104 90 L96 262" stroke="#9bbf5a" stroke-width="9" stroke-linecap="round"/><path d="M94 120 l12 1 M93 160 l12 1 M91 200 l12 1 M90 240 l12 1" stroke="#6f8f5a" stroke-width="3"/><path d="M104 90 q12 -10 18 -4 q-8 6 -18 4z" fill="${LEAF}"/>` },
+  { id: 'reloj_alien', cat: 'extra', anchor: 'arm', name: 'Reloj alien verde', hours: 38, style: 'Héroe alien', svg: () => `<g transform="translate(138 80)"><rect x="-15" y="-7" width="30" height="14" rx="4" fill="#1d1d1d"/><circle r="10" fill="#39d353" stroke="#1d1d1d" stroke-width="3"/><path d="M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5Z" fill="#dfffe6"/></g>` },
+  { id: 'campera_alien', cat: 'cuerpo', name: 'Campera de héroe alien', hours: 38, style: 'Héroe alien', outfit: { top: '#3f9b4a', trim: '#2f7a38', deco: 'stripe' } },
+  { id: 'birrete', cat: 'cabeza', name: 'Birrete de graduación', hours: 40, style: 'Clásico', svg: () => `<rect x="72" y="48" width="56" height="18" rx="3" fill="#2a2238"/><path d="M100 22 L156 42 L100 62 L44 42 Z" fill="#3a3050"/><path d="M152 43 L156 74" stroke="#f5d76e" stroke-width="3"/><circle cx="156" cy="77" r="5" fill="#f5d76e"/><circle cx="100" cy="42" r="3" fill="#f5d76e"/>` },
+  { id: 'vestido_hielo', cat: 'cuerpo', name: 'Vestido de princesa de hielo', hours: 45, style: 'Princesa', outfit: { top: '#cdeeff', skirt: '#9fd8f7', trim: '#fff', deco: 'snow' } },
+  { id: 'alas', cat: 'extra', anchor: 'back', name: 'Alas de hada', hours: 45, style: 'Princesa', svg: () => `<g opacity=".9"><path d="M92 150 Q40 60 30 120 Q28 170 90 168 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M110 150 Q160 56 176 112 Q182 166 112 168 Z" fill="#d6ecff" stroke="#9fd0f5" stroke-width="2"/><path d="M92 160 Q50 150 52 190 Q76 200 94 170 Z" fill="#f7d6ff" stroke="#e0b0f0"/><path d="M110 160 Q156 146 158 188 Q134 200 108 170 Z" fill="#f7d6ff" stroke="#e0b0f0"/></g>` },
+  { id: 'corona', cat: 'cabeza', name: 'Corona dorada', hours: 50, style: 'Princesa', svg: () => `<path d="M64 60 L64 30 L82 46 L100 22 L118 46 L136 30 L136 60 Z" fill="#f5c542" stroke="#c99a1a" stroke-width="2" stroke-linejoin="round"/><rect x="64" y="54" width="72" height="8" fill="#e0ad2e"/><circle cx="100" cy="44" r="4.5" fill="#d9546e"/><circle cx="80" cy="52" r="3" fill="#6c9eeb"/><circle cx="120" cy="52" r="3" fill="#5fb3a1"/>` },
+  { id: 'vestido_dorado', cat: 'cuerpo', name: 'Vestido de gala dorado', hours: 50, style: 'Princesa', outfit: { top: '#f7e08a', skirt: '#f5c542', trim: '#fff7d6', deco: 'roses' } },
 ];
 
 function wardrobeItem(id) { return WARDROBE.find((w) => w.id === id); }
+function itemAnchor(w) { return w.anchor || ({ abrazando: 'hand', cuerpo: 'body' })[w.cat] || 'head'; }
 
 /* ---------- Dibujo ---------- */
 
 function slothColors(fur) {
-  return { fur, mask: mixHex(fur, '#ffffff', 0.74), belly: mixHex(fur, '#ffffff', 0.34), patch: mixHex(fur, '#1d1512', 0.5), dark: '#3a2a20' };
+  return {
+    fur,
+    furDark: mixHex(fur, '#3b2616', 0.22),
+    mask: mixHex(fur, '#ffffff', 0.72),
+    stripe: mixHex(fur, '#1d1209', 0.66),
+    nose: '#2b1a12',
+  };
 }
 
 function slothEyes(mood, c, sage) {
-  const open = (r = 4.6) => `<circle cx="86" cy="94" r="${r}" fill="#1d1512"/><circle cx="87.6" cy="92.4" r="1.6" fill="#fff"/><circle cx="114" cy="94" r="${r}" fill="#1d1512"/><circle cx="115.6" cy="92.4" r="1.6" fill="#fff"/>`;
-  const arcs = (d) => `<path d="M80 ${94 - d} Q86 ${94 + d} 92 ${94 - d} M108 ${94 - d} Q114 ${94 + d} 120 ${94 - d}" stroke="#1d1512" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
+  const L = [79, 95], R = [121, 95];
+  const lid = mixHex(c.mask, '#ffffff', 0.4);
+  const arcs = (d) => `<path d="M${L[0] - 7} ${L[1] + d} Q${L[0]} ${L[1] - d} ${L[0] + 7} ${L[1] + d} M${R[0] - 7} ${R[1] + d} Q${R[0]} ${R[1] - d} ${R[0] + 7} ${R[1] + d}" stroke="${lid}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  const open = (ry = 4.4) => [L, R].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="4.6" ry="${ry}" fill="${lid}"/><circle cx="${x + 0.6}" cy="${y + 0.4}" r="2.5" fill="#1d1209"/><circle cx="${x + 1.4}" cy="${y - 0.8}" r=".9" fill="#fff"/>`).join('');
   switch (mood) {
-    case 'orgulloso': return arcs(-4);
+    case 'orgulloso': return arcs(3.5);
     case 'dormido':
-    case 'estirandose': return arcs(3);
-    case 'preocupado': return open(3.8) + `<path d="M78 84 L92 79 M108 79 L122 84" stroke="${c.dark}" stroke-width="2.6" stroke-linecap="round"/>`;
+    case 'estirandose': return arcs(-2.5);
+    case 'preocupado': return open() + `<path d="M66 84 L86 79 M114 79 L134 84" stroke="${c.stripe}" stroke-width="2.6" stroke-linecap="round"/>`;
     default:
-      // Mirada entrecerrada de maestro sabio
       return sage
-        ? open() + `<path d="M80.4 94 A5.6 5.6 0 0 1 91.6 94 Z M108.4 94 A5.6 5.6 0 0 1 119.6 94 Z" fill="${c.patch}"/><path d="M80 94 L92 94 M108 94 L120 94" stroke="#1d1512" stroke-width="1.6"/>`
-        : `<g class="sl-blink">${open()}</g>`;
+        ? open(3) + `<path d="M73 93 L85 93 M115 93 L127 93" stroke="${c.stripe}" stroke-width="2.4" stroke-linecap="round"/>`
+        : arcs(2.5); // feliz: ojitos cerrados contentos, como en los dibujos
   }
 }
 
 function slothMouth(mood, c) {
   switch (mood) {
-    case 'orgulloso': return `<path d="M89 113 Q100 128 111 113 Z" fill="#6b2f3a"/><path d="M95 120 Q100 124 105 120" fill="#e57a8f"/>`;
-    case 'preocupado': return `<path d="M92 118 Q96 114 100 118 Q104 122 108 118" stroke="${c.dark}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
-    case 'dormido': return `<circle cx="100" cy="117" r="2.6" fill="${c.dark}"/>`;
-    case 'estirandose': return `<ellipse cx="100" cy="118" rx="5.5" ry="7.5" fill="#6b2f3a"/>`;
-    default: return `<path d="M91 114 Q100 122 109 114" stroke="${c.dark}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    case 'orgulloso': return `<path d="M90 115 Q100 128 110 115 Z" fill="#6b2f3a"/><path d="M95 121 Q100 125 105 121" fill="#e57a8f"/>`;
+    case 'preocupado': return `<path d="M92 119 Q96 115 100 119 Q104 123 108 119" stroke="${c.nose}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    case 'dormido': return `<ellipse cx="100" cy="118" rx="2.6" ry="2.2" fill="${c.nose}"/>`;
+    case 'estirandose': return `<ellipse cx="100" cy="119" rx="5.5" ry="7" fill="#6b2f3a"/>`;
+    default: return `<path d="M90 115 Q100 123 110 115" stroke="${c.nose}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
   }
 }
 
 function slothMoodExtras(mood) {
   switch (mood) {
-    case 'dormido': return `<g class="sl-zzz" fill="${MOSS}" font-family="Gaegu, cursive" font-weight="700"><text x="140" y="64" font-size="18">z</text><text x="152" y="46" font-size="24">Z</text></g>`;
-    case 'preocupado': return `<path d="M144 76 q6 9 0 13 q-6 -4 0 -13z" fill="#8fd0f5"/>`;
-    case 'orgulloso': return sparkle(46, 72, 7, '#f5d76e') + sparkle(156, 70, 6, '#f5d76e') + sparkle(160, 104, 4, '#f5d76e');
+    case 'dormido': return `<g class="sl-zzz" fill="${MOSS}" font-family="Gaegu, cursive" font-weight="700"><text x="138" y="58" font-size="18">z</text><text x="150" y="40" font-size="24">Z</text></g>`;
+    case 'preocupado': return `<path d="M146 74 q6 9 0 13 q-6 -4 0 -13z" fill="#8fd0f5"/>`;
+    case 'orgulloso': return sparkle(46, 66, 7, '#f5d76e') + sparkle(156, 64, 6, '#f5d76e') + sparkle(160, 100, 4, '#f5d76e');
     case 'estirandose': return `<path d="M40 70 q-6 -6 -2 -14 M160 70 q6 -6 2 -14" stroke="#b9aec9" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
     default: return '';
   }
 }
 
+function slothHead(c, m, sage) {
+  return `
+    <path d="M60 72 Q64 52 82 54 Q90 42 102 48 Q116 42 126 56 Q140 58 140 74 Z" fill="${c.fur}"/>
+    <ellipse cx="100" cy="92" rx="48" ry="43" fill="${c.fur}"/>
+    <path d="M57 94 Q58 64 100 62 Q142 64 143 94 Q142 126 100 130 Q58 126 57 94 Z" fill="${c.mask}"/>
+    <path d="M96 91 Q82 82 61 92 Q57 101 66 104 Q83 103 97 98 Z" fill="${c.stripe}"/>
+    <path d="M104 91 Q118 82 139 92 Q143 101 134 104 Q117 103 103 98 Z" fill="${c.stripe}"/>
+    ${slothEyes(m, c, sage)}
+    <path d="M90 103 Q100 97 110 103 Q109 112 100 113 Q91 112 90 103 Z" fill="${c.nose}"/>
+    <ellipse cx="96.5" cy="102.5" rx="2.6" ry="1.3" fill="#fff" opacity=".45"/>
+    ${slothMouth(m, c)}
+    <circle cx="68" cy="112" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.8 : 0.45}"/>
+    <circle cx="132" cy="112" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.8 : 0.45}"/>`;
+}
+
+function claws(x, y) {
+  return `<path d="M${x - 9} ${y} q-4 16 4 28 M${x} ${y + 2} q-2 17 5 29 M${x + 9} ${y} q0 15 6 26" stroke="${CLAW}" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M${x - 9} ${y} q-4 16 4 28 M${x} ${y + 2} q-2 17 5 29 M${x + 9} ${y} q0 15 6 26" stroke="${CLAW_EDGE}" stroke-width="1" fill="none" stroke-linecap="round" transform="translate(1.6 0)"/>`;
+}
+
 /**
  * Devuelve el SVG del perezoso.
- * view: 'full' (colgado de la rama), 'vine' (bajando por la liana) o 'head' (solo la cabeza)
+ * view: 'full' (acostado en la rama), 'vine' (la rama colgando de lianas) o 'head' (solo la cara)
  */
 function slothSVG({ view = 'full', mood, sloth } = {}) {
   const sl = sloth || Store.data.sloth;
   const m = mood || Sloth.mood();
-  const c = slothColors(sl.fur || '#a88a6d');
+  const c = slothColors(sl.fur || DEFAULT_FUR);
   const eq = sl.equipped || {};
-  const item = (cat) => { const it = eq[cat] && wardrobeItem(eq[cat]); return it ? it : null; };
-  const layer = (cat, filterBack) => { const it = item(cat); if (!it || (filterBack !== undefined && !!it.back !== filterBack)) return ''; return it.svg(c); };
   const sage = m === 'feliz' && sl.personality === 'dramatico';
+  const items = Object.values(eq).map(wardrobeItem).filter(Boolean);
+  const at = (anchor) => items.filter((w) => w.svg && itemAnchor(w) === anchor).map((w) => w.svg(c)).join('');
 
-  const vine = view === 'vine';
-  const L = vine ? [94, 24] : [68, 22];
-  const R = vine ? [106, 24] : [132, 22];
-  const claws = ([x, y]) => `M${x - 6} ${y - 8} l1 9 M${x} ${y - 10} l0 10 M${x + 6} ${y - 8} l-1 9`;
-
-  const perch = vine
-    ? `<path d="M100 -70 C 94 -40 106 -12 100 28" stroke="${MOSS}" stroke-width="6" fill="none" stroke-linecap="round"/>
-       <ellipse cx="92" cy="-30" rx="9" ry="4" fill="${MOSS}" transform="rotate(-30 92 -30)"/><ellipse cx="108" cy="-4" rx="9" ry="4" fill="${MOSS}" transform="rotate(25 108 -4)"/>`
-    : `<path d="M-20 24 Q100 6 220 26" stroke="#7a5a3c" stroke-width="12" fill="none" stroke-linecap="round"/>
-       <path d="M160 18 q10 -12 24 -10" stroke="#7a5a3c" stroke-width="5" fill="none" stroke-linecap="round"/>
-       <ellipse cx="22" cy="12" rx="11" ry="5" fill="${MOSS}" transform="rotate(-25 22 12)"/>
-       <ellipse cx="186" cy="4" rx="10" ry="4.6" fill="${MOSS}" transform="rotate(20 186 4)"/>
-       <ellipse cx="174" cy="30" rx="9" ry="4" fill="${MOSS}" opacity=".85" transform="rotate(-30 174 30)"/>`;
-
-  const head = `
-    <path d="M56 78 Q58 52 76 54 Q82 40 96 48 Q106 38 118 48 Q134 44 138 60 Q148 66 144 80 Z" fill="${c.fur}"/>
-    <ellipse cx="100" cy="92" rx="48" ry="43" fill="${c.fur}"/>
-    <ellipse cx="100" cy="100" rx="36" ry="30" fill="${c.mask}"/>
-    <ellipse cx="84" cy="95" rx="13.5" ry="8" fill="${c.patch}" transform="rotate(-22 84 95)"/>
-    <ellipse cx="116" cy="95" rx="13.5" ry="8" fill="${c.patch}" transform="rotate(22 116 95)"/>
-    ${slothEyes(m, c, sage)}
-    <ellipse cx="100" cy="107" rx="7" ry="5" fill="${c.dark}"/>
-    ${slothMouth(m, c)}
-    <circle cx="70" cy="109" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.85 : 0.55}"/>
-    <circle cx="130" cy="109" r="5.5" fill="#f3a3b5" opacity="${m === 'orgulloso' ? 0.85 : 0.55}"/>`;
-
-  const headLayers = `${head}${layer('cara')}${layer('cuello')}${layer('ojos')}${layer('cabeza')}`;
+  const headInner = `${slothHead(c, m, sage)}${items.filter((w) => w.cat === 'cara').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'cuello').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'ojos').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'cabeza').map((w) => w.svg(c)).join('')}
+    ${items.filter((w) => w.cat === 'extra' && itemAnchor(w) === 'head').map((w) => w.svg(c)).join('')}
+    ${slothMoodExtras(m)}`;
 
   if (view === 'head') {
-    return `<svg viewBox="36 18 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">${headLayers}${slothMoodExtras(m)}</svg>`;
+    return `<svg viewBox="34 14 132 132" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">${headInner}</svg>`;
   }
 
-  const body = `
-    ${layer('extra', true)}
-    <path d="M74 128 Q${vine ? 58 : 56} ${vine ? 80 : 76} ${L[0]} ${L[1]}" stroke="${c.fur}" stroke-width="20" fill="none" stroke-linecap="round"/>
-    <path d="M126 128 Q${vine ? 142 : 144} ${vine ? 80 : 76} ${R[0]} ${R[1]}" stroke="${c.fur}" stroke-width="20" fill="none" stroke-linecap="round"/>
-    <path d="${claws(L)} ${claws(R)}" stroke="${c.dark}" stroke-width="2.6" stroke-linecap="round"/>
-    <ellipse cx="100" cy="164" rx="50" ry="58" fill="${c.fur}"/>
-    <ellipse cx="100" cy="176" rx="31" ry="40" fill="${c.belly}"/>
-    <ellipse cx="72" cy="218" rx="17" ry="12" fill="${c.fur}"/>
-    <ellipse cx="128" cy="218" rx="17" ry="12" fill="${c.fur}"/>
-    <path d="M62 226 l-2 6 M70 228 l-1 6 M78 227 l0 6 M122 227 l0 6 M130 228 l1 6 M138 226 l2 6" stroke="${c.dark}" stroke-width="2.2" stroke-linecap="round"/>
-    ${layer('cuerpo')}
-    ${layer('abrazando')}`;
+  const outfitItem = items.find((w) => w.outfit);
+  const outfit = outfitItem ? outfitSVG(outfitItem.outfit) : { back: '', front: '' };
+  const vine = view === 'vine';
 
-  const vb = vine ? '-12 -70 224 320' : '-12 -6 224 256';
+  const branch = `
+    <path d="M-10 152 C 80 142, 200 128, 330 112" stroke="${BARK}" stroke-width="26" fill="none" stroke-linecap="round"/>
+    <path d="M-10 145 C 80 135, 200 121, 330 105" stroke="${BARK_LIGHT}" stroke-width="10" fill="none" stroke-linecap="round" opacity=".85"/>
+    <path d="M40 154 q22 -3 40 -3 M230 134 q18 -3 32 -5 M120 146 q14 -2 26 -2" stroke="${BARK_DARK}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M34 146 Q24 118 40 88" stroke="${BARK}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    ${leaf(40, 90, 10)}${leaf(30, 110, -55, 0.8)}
+    <path d="M292 114 Q300 96 318 84" stroke="${BARK}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    ${leaf(318, 86, 40)}${leaf(302, 100, 90, 0.75)}`;
+  const vines = vine ? `<path d="M40 146 C 30 90 50 20 40 -90 M292 114 C 302 60 282 0 292 -90" stroke="${MOSS}" stroke-width="5" fill="none" stroke-linecap="round"/>` : '';
+
+  const hair = outfitItem ? '' : `<path d="M170 84 q10 -4 20 0 M210 80 q10 -3 18 2 M186 104 q10 -4 18 0 M232 104 q8 -3 16 1 M156 100 q8 -4 14 -1" stroke="${c.furDark}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>`;
+
+  const vb = vine ? '-12 -90 344 330' : '-12 10 344 240';
   return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">
-    ${perch}${body}${headLayers}${layer('extra', false)}${slothMoodExtras(m)}</svg>`;
+    ${vines}
+    <path d="M250 126 C 258 160, 262 186, 258 206" stroke="${c.furDark}" stroke-width="22" fill="none" stroke-linecap="round"/>
+    ${claws(258, 208)}
+    ${branch}
+    <g transform="${BACK_TF}">${at('back')}</g>
+    ${outfit.back}
+    <path d="${BODY_PATH}" fill="${c.fur}"/>
+    ${hair}
+    ${outfit.front}
+    <path d="M150 112 C 146 150, 148 180, 150 206" stroke="${c.fur}" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M186 114 C 190 150, 190 176, 188 198" stroke="${c.fur}" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M144 150 q6 4 12 0 M182 150 q6 4 12 0" stroke="${c.furDark}" stroke-width="1.8" fill="none" opacity=".5"/>
+    ${claws(150, 210)}${claws(188, 202)}
+    <g transform="${ARM_TF}">${at('arm')}</g>
+    <g transform="${HAND_TF}">${at('hand')}</g>
+    <g transform="${HEAD_TF}">${headInner}</g>
+  </svg>`;
 }
 
 /* ---------- Comportamiento ---------- */
@@ -2120,7 +2215,7 @@ const Sloth = {
   paint(root = document, force = false) {
     const mood = this.mood();
     $$('[data-sloth]', root).forEach((el) => {
-      const view = el.dataset.sloth === 'hang' ? 'full' : el.dataset.sloth;
+      const view = el.dataset.sloth;
       const m = el.id === 'sloth-body' && this.peekMood ? this.peekMood : mood;
       const key = `${view}|${m}|${JSON.stringify(this.data())}`;
       if (!force && el.dataset.key === key) return;
@@ -2150,8 +2245,8 @@ const Sloth = {
     return phrase('aleatoria');
   },
 
-  show(msg, { mood = null, ms = 8000 } = {}) {
-    if (this.data().frequency === 'nunca' && !msg) return;
+  show(msg, { mood = null, ms = 8000, force = false } = {}) {
+    if (this.data().frequency === 'nunca' && !msg && !force) return;
     const peek = $('#sloth-peek');
     this.peekMood = mood;
     this.paint(peek, true);
@@ -2166,15 +2261,8 @@ const Sloth = {
 
   hide() { $('#sloth-peek').classList.remove('show'); this.peekMood = null; },
 
-  // Habla desde la barra lateral
-  speak(msg) {
-    const b = $('#dock-bubble');
-    if (!b || !b.offsetParent) { this.show(msg || this.contextPhrase()); return; }
-    b.textContent = msg || this.contextPhrase();
-    b.classList.add('show');
-    clearTimeout(this.speakTimer);
-    this.speakTimer = setTimeout(() => b.classList.remove('show'), 7000);
-  },
+  // Botoncito discreto: lo llama para que diga algo
+  speak(msg) { this.show(msg || this.contextPhrase(), { force: true }); },
 
   // Aparición por evento (sesión, pomodoro, etc.)
   react(context, vars = {}, { mood = null, proud = false } = {}) {
@@ -2210,7 +2298,7 @@ const Sloth = {
     sl.unlockedSeen.push(...fresh);
     Store.save();
     const names = fresh.map((id) => wardrobeItem(id).name);
-    toast(`🎁 Desbloqueaste: ${names.join(', ')}`);
+    toast(`Desbloqueaste: ${names.join(', ')}`);
     setTimeout(() => this.react('desbloqueo', { accesorio: names[0] }, { proud: true }), 1500);
   },
 
@@ -2363,6 +2451,14 @@ async function applyTheme(t) {
   document.body.classList.toggle('glass', (t.bgType && t.bgType !== 'none') || !!t.glass);
 }
 
+const BULLETS = ['•', '◆', '★', '♥', '✿', '✦', '➜', '○', '☾', '♪', '~', '—'];
+
+// Viñeta de las listas (Ajustes → Apariencia)
+function applyBullet() {
+  const b = String(Store.data.settings.bullet || '•').slice(0, 3);
+  document.documentElement.style.setProperty('--bullet', JSON.stringify(b));
+}
+
 function globalTheme() { return { ...Store.data.settings.theme }; }
 
 function subjectTheme(s) {
@@ -2386,7 +2482,7 @@ function bgEditorHTML(t, patternColor) {
       <div class="presets">${PATTERNS.map((p) => `<button type="button" class="preset ${t.pattern === p.id ? 'on' : ''}" data-pattern="${p.id}" style="background-image:url('${patternUrl(p.id, patternColor)}')">${p.label}</button>`).join('')}</div>
     </div>
     <div class="bg-opts" data-show="image" ${t.bgType === 'image' ? '' : 'hidden'}>
-      <label class="btn ghost sm">🖼️ Elegir imagen<input type="file" accept="image/*" data-bgfile hidden></label>
+      <label class="btn ghost sm">Elegir imagen<input type="file" accept="image/*" data-bgfile hidden></label>
       <span class="muted small">${t.bgImageId ? 'Imagen cargada ✓' : 'Todavía no elegiste ninguna.'}</span>
     </div>`;
 }
@@ -2433,8 +2529,8 @@ function renderCalendar() {
           <p class="sub">${mode === 'pruebas' ? 'Pruebas, entregas y todo lo que se viene.' : 'Tu semana de clases en la facu.'}</p>
         </div>
         <div class="switch" role="tablist">
-          <button role="tab" aria-selected="${mode === 'horario'}" data-mode="horario" class="${mode === 'horario' ? 'on' : ''}">🏫 Horario de facultad</button>
-          <button role="tab" aria-selected="${mode === 'pruebas'}" data-mode="pruebas" class="${mode === 'pruebas' ? 'on' : ''}">📝 Calendario de pruebas</button>
+          <button role="tab" aria-selected="${mode === 'horario'}" data-mode="horario" class="${mode === 'horario' ? 'on' : ''}">Horario de facultad</button>
+          <button role="tab" aria-selected="${mode === 'pruebas'}" data-mode="pruebas" class="${mode === 'pruebas' ? 'on' : ''}">Calendario de pruebas</button>
         </div>
       </div>
       <div id="cal-content"></div>
@@ -2456,7 +2552,7 @@ function chipHtml(ev) {
   const cd = countdown(eventDate(ev));
   return `<button class="chip ${cd.level === 'urgent' ? 'near' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
       title="${esc(`${typeLabel(ev)}${subj ? ' · ' + subj : ''}${ev.title ? ' · ' + ev.title : ''}${ev.time ? ' · ' + ev.time : ''}`)}">
-      <span class="chip-ic">${t.icon}</span><span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
+      <span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
     </button>`;
 }
 
@@ -2479,7 +2575,7 @@ function renderExams(el) {
     cells += `
       <div class="day ${d.getMonth() !== m ? 'out' : ''} ${iso === today ? 'today' : ''} ${crit[wk] ? 'crit' : ''}" data-date="${iso}">
         <span class="dnum">${d.getDate()}</span>
-        ${crit[wk] && i % 7 === 0 ? `<span class="crit-tag" title="${crit[wk]} pruebas esta semana">🔥 Semana crítica</span>` : ''}
+        ${crit[wk] && i % 7 === 0 ? `<span class="crit-tag" title="${crit[wk]} pruebas esta semana">Semana crítica</span>` : ''}
         <div class="chips">${evs.map(chipHtml).join('')}</div>
       </div>`;
   }
@@ -2496,10 +2592,10 @@ function renderExams(el) {
       <div class="actions">
         <button class="btn" id="add-ev">+ Nuevo evento</button>
         <button class="btn ghost" id="pdf">⬇ PDF</button>
-        <button class="btn ghost" id="ics" title="Para importar en Google Calendar o el celular">📆 Exportar .ics</button>
+        <button class="btn ghost" id="ics" title="Para importar en Google Calendar o el celular">Exportar .ics</button>
       </div>
     </div>
-    ${monthCrit.length ? `<div class="alert warn">🔥 <span><strong>Semana crítica:</strong> ${monthCrit.map((k) => `semana del ${fmtDateShort(parseDate(k))} (${crit[k]} pruebas)`).join(', ')}. Organizate con tiempo.</span></div>` : ''}
+    ${monthCrit.length ? `<div class="alert warn"><span><strong>Semana crítica:</strong> ${monthCrit.map((k) => `semana del ${fmtDateShort(parseDate(k))} (${crit[k]} pruebas)`).join(', ')}. Organizate con tiempo.</span></div>` : ''}
     <div class="card month">
       <div class="dow">${DAYS_SHORT.map((d) => `<span>${d}</span>`).join('')}</div>
       <div class="grid">${cells}</div>
@@ -2511,7 +2607,7 @@ function renderExams(el) {
         <div class="filters">
           <select id="f-subj" aria-label="Filtrar por materia"><option value="">Todas las materias</option>${subjectOptions(listFilter.subject)}</select>
           <select id="f-type" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option>
-            ${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === listFilter.type ? 'selected' : ''}>${t.icon} ${t.label}</option>`).join('')}</select>
+            ${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === listFilter.type ? 'selected' : ''}>${t.label}</option>`).join('')}</select>
           <label class="check"><input type="checkbox" id="f-past" ${listFilter.past ? 'checked' : ''}> Ver pasados</label>
         </div>
       </div>
@@ -2544,14 +2640,14 @@ function renderExams(el) {
         && (!listFilter.type || ev.type === listFilter.type)
         && (listFilter.past || eventDate(ev) >= now || daysUntil(ev.date) === 0))
       .sort(byEventDate);
-    renderEventList($('#ev-list', el), evs, listFilter.past ? 'No hay eventos con esos filtros.' : 'No tenés nada pendiente. Disfrutá (como un perezoso). 🦥');
+    renderEventList($('#ev-list', el), evs, listFilter.past ? 'No hay eventos con esos filtros.' : 'No tenés nada pendiente. Disfrutá (como un perezoso). ');
   }
   paintList();
 }
 
 function renderEventList(container, evs, emptyMsg) {
   if (!evs.length) {
-    container.innerHTML = `<div class="empty small"><span class="empty-sloth" data-sloth="head"></span><p>${esc(emptyMsg)}</p></div>`;
+    container.innerHTML = `<div class="empty small"><p>${esc(emptyMsg)}</p></div>`;
     Sloth.paint(container);
     return;
   }
@@ -2564,8 +2660,8 @@ function renderEventList(container, evs, emptyMsg) {
       <article class="ev-row" data-ev="${ev.id}" data-level="${cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" role="button">
         <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
         <div class="ev-main">
-          <div class="ev-type">${t.icon} ${esc(typeLabel(ev))}</div>
-          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · 🤝 ${esc(proj.name)}` : ''}</div>
+          <div class="ev-type">${esc(typeLabel(ev))}</div>
+          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · ${esc(proj.name)}` : ''}</div>
           ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
           <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
         </div>
@@ -2589,7 +2685,7 @@ function openEventForm(ev, preset = {}) {
   Modal.open(isNew ? 'Nuevo evento' : 'Editar evento', `
     <form class="form" id="ev-form">
       <label>Tipo de evento
-        <select name="type">${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === data.type ? 'selected' : ''}>${t.icon} ${t.label}</option>`).join('')}</select>
+        <select name="type">${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === data.type ? 'selected' : ''}>${t.label}</option>`).join('')}</select>
       </label>
       <label class="custom-type" ${data.type === 'otro' ? '' : 'hidden'}>¿Qué es?
         <input name="customType" value="${esc(data.customType)}" placeholder="Ej: Defensa oral, tutoría, feria…">
@@ -2622,7 +2718,7 @@ function openEventForm(ev, preset = {}) {
     };
     f.onsubmit = (e) => {
       e.preventDefault();
-      if (el.type.value === 'otro' && !el.customType.value.trim()) { toast('Contá qué tipo de evento es 🙂'); el.customType.focus(); return; }
+      if (el.type.value === 'otro' && !el.customType.value.trim()) { toast('Contá qué tipo de evento es '); el.customType.focus(); return; }
       const changedDate = !isNew && (ev.date !== el.date.value);
       Object.assign(data, {
         type: el.type.value,
@@ -2639,7 +2735,7 @@ function openEventForm(ev, preset = {}) {
       if (changedDate) delete Store.data.remindersSent[data.id];
       Store.save();
       Modal.close();
-      toast(isNew ? 'Evento agregado 🦥' : 'Evento actualizado');
+      toast(isNew ? 'Evento agregado ' : 'Evento actualizado');
       rerender();
       Sloth.paint();
     };
@@ -2688,7 +2784,7 @@ function exportICS() {
   }
   lines.push('END:VCALENDAR');
   downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar' }), 'pruebas-semestre.ics');
-  toast('Calendario exportado. Abrilo o importalo en Google Calendar 📆');
+  toast('Calendario exportado. Abrilo o importalo en Google Calendar ');
 }
 
 /* ===== PDF ===== */
@@ -2815,7 +2911,7 @@ function downloadMonthPDF() {
   });
 
   doc.save(`calendario-pruebas-${y}-${pad(m + 1)}.pdf`);
-  toast('PDF descargado 📄');
+  toast('PDF descargado ');
 }
 
 function downloadTimetablePDF() {
@@ -2851,7 +2947,7 @@ function downloadTimetablePDF() {
     if (h > 10) doc.text(fitText(doc, `${c.kind}${c.room ? ' - ' + c.room : ''}`, cw - 4), x + 1.5, y0 + 10.2);
   });
   doc.save('horario-facultad.pdf');
-  toast('PDF del horario descargado 📄');
+  toast('PDF del horario descargado ');
 }
 
 /* ===== Horario de facultad ===== */
@@ -2877,7 +2973,7 @@ function freeGaps(day) {
 function renderTimetable(el) {
   const classes = Store.data.classes;
   if (!Store.data.subjects.length) {
-    el.innerHTML = `<div class="card empty"><span class="empty-sloth big" data-sloth="head"></span>
+    el.innerHTML = `<div class="card empty">
       <h2>Primero creá una materia</h2><p>Después vas a poder cargar tus horarios de clase acá.</p>
       <a class="btn" href="#materias">Ir a Materias</a></div>`;
     Sloth.paint(el);
@@ -2905,7 +3001,7 @@ function renderTimetable(el) {
           <span>${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</span>
         </button>`;
     }).join('');
-    const free = showFree ? freeGaps(d).map(([a, b]) => `<div class="free" style="top:${pos(a) + 3}px;height:${pos(b) - pos(a) - 6}px" title="Tiempo libre entre clases">📖 ${fmtHM(b - a)} libres para estudiar</div>`).join('') : '';
+    const free = showFree ? freeGaps(d).map(([a, b]) => `<div class="free" style="top:${pos(a) + 3}px;height:${pos(b) - pos(a) - 6}px" title="Tiempo libre entre clases">${fmtHM(b - a)} libres para estudiar</div>`).join('') : '';
     const nowLine = d === todayIdx && nowMin >= minH * 60 && nowMin <= maxH * 60 ? `<div class="now-line" style="top:${pos(nowMin)}px"></div>` : '';
     cols += `<div class="tt-col ${d === todayIdx ? 'today' : ''}"><div class="tt-day">${DAYS[d - 1]}</div>
       <div class="tt-body" style="height:${(maxH - minH) * PX}px;--px:${PX}px">${free}${blocks}${nowLine}</div></div>`;
@@ -2923,7 +3019,7 @@ function renderTimetable(el) {
     </div>
     <div class="card today-strip">
       <strong>Hoy, ${DAYS[todayIdx - 1].toLowerCase()}:</strong>
-      ${todays.length ? todays.map((c) => `<span class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start} ${esc(subjectName(c.subjectId))}${c.room ? ' · ' + esc(c.room) : ''}</span>`).join('') : '<span class="muted">no tenés clases. 🌿</span>'}
+      ${todays.length ? todays.map((c) => `<span class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start} ${esc(subjectName(c.subjectId))}${c.room ? ' · ' + esc(c.room) : ''}</span>`).join('') : '<span class="muted">no tenés clases. </span>'}
     </div>
     <div class="card timetable">
       <div class="tt-scroll">
@@ -2995,11 +3091,11 @@ function openClassForm(cl, preset = {}) {
 /* ---------- Materias ---------- */
 
 const SUBJECT_TABS = [
-  { id: 'resumen', label: '📋 Resumen' },
-  { id: 'documentos', label: '📂 Documentos' },
-  { id: 'practicos', label: '✅ Prácticos' },
-  { id: 'notas', label: '🎯 Notas' },
-  { id: 'apariencia', label: '🎨 Apariencia' },
+  { id: 'resumen', label: 'Resumen' },
+  { id: 'documentos', label: 'Documentos' },
+  { id: 'practicos', label: 'Prácticos' },
+  { id: 'notas', label: 'Notas' },
+  { id: 'apariencia', label: 'Apariencia' },
 ];
 const practicoUI = { onlyPrio: false, mode: 'estado' };
 
@@ -3033,14 +3129,14 @@ function renderSubjects() {
             return `<a class="card subj-card" href="#materia/${s.id}" style="--c:${s.color}">
               <div class="subj-card-top"><h3>${esc(s.name)}</h3><span class="badge">${Number(s.credits) || 0} cr.</span></div>
               <div class="chip-row">${s.tag ? `<span class="badge tag">${esc(s.tag)}</span>` : ''}${p.behind ? '<span class="badge warn">Atrasada</span>' : ''}</div>
-              <p class="muted">${s.professors.length ? '🧑‍🏫 ' + esc(s.professors.map((x) => x.name).filter(Boolean).join(', ')) : 'Sin docente cargado'}</p>
+              <p class="muted">${s.professors.length ? '' + esc(s.professors.map((x) => x.name).filter(Boolean).join(', ')) : 'Sin docente cargado'}</p>
               ${hoursBar(s)}
-              <p class="next">${next ? `${eventType(next).icon} ${esc(typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin pruebas próximas</span>'}</p>
+              <p class="next">${next ? `${esc(typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin pruebas próximas</span>'}</p>
             </a>`;
           }).join('')}</div>`;
       }).join('') : `
         <div class="card empty">
-          <span class="empty-sloth big" data-sloth="head"></span>
+          
           <h2>Todavía no hay materias</h2>
           <p>Creá tu primera materia, o cargá las del semestre.</p>
           <div class="btn-row"><button class="btn" id="add-subj-2">+ Crear materia</button>
@@ -3050,7 +3146,7 @@ function renderSubjects() {
   Sloth.paint($('#view'));
   $('#add-subj').onclick = () => openSubjectForm();
   const b2 = $('#add-subj-2'); if (b2) b2.onclick = () => openSubjectForm();
-  const seed = $('#seed'); if (seed) seed.onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué tus materias 🦥'); rerender(); };
+  const seed = $('#seed'); if (seed) seed.onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué tus materias '); rerender(); };
 }
 
 function professorRow(p = { name: '', emails: [] }) {
@@ -3112,7 +3208,7 @@ function openSubjectForm(s) {
       else Object.assign(s, data);
       Store.save();
       Modal.close();
-      if (isNew) { toast('¡Materia creada! 🦥'); location.hash = `#materia/${data.id}`; }
+      if (isNew) { toast('¡Materia creada! '); location.hash = `#materia/${data.id}`; }
       else { toast('Materia actualizada'); rerender(); }
     };
   });
@@ -3155,7 +3251,7 @@ function renderSubject(id, tab = 'resumen') {
         </div>
         <div class="hero-actions">
           <button class="btn ghost" id="s-edit">✎ Editar</button>
-          <button class="icon-btn danger" id="s-del" title="Eliminar materia" aria-label="Eliminar materia">🗑</button>
+          <button class="icon-btn danger" id="s-del" title="Eliminar materia" aria-label="Eliminar materia"></button>
         </div>
       </header>
       <div class="tabs-scroll"><nav class="tabs-row" aria-label="Secciones de la materia">
@@ -3183,63 +3279,63 @@ function tabResumen(s, box) {
   box.innerHTML = `
     <div class="grid-2">
       <div class="card">
-        <h2>📌 Info</h2>
+        <h2>Info</h2>
         <dl class="info-list">
           <div><dt>Profesores</dt><dd>${s.professors.length ? s.professors.map((pr) => `<div><strong>${esc(pr.name || 'Sin nombre')}</strong>
-            <div class="mails">${pr.emails.map((m) => `<a class="pill" href="mailto:${esc(m)}">✉️ ${esc(m)}</a><button class="icon-btn sm" data-copy="${esc(m)}" title="Copiar mail" aria-label="Copiar ${esc(m)}">⧉</button>`).join('')}</div></div>`).join('') : '<span class="muted">Sin cargar (✎ Editar)</span>'}</dd></div>
+            <div class="mails">${pr.emails.map((m) => `<a class="pill" href="mailto:${esc(m)}">${esc(m)}</a><button class="icon-btn sm" data-copy="${esc(m)}" title="Copiar mail" aria-label="Copiar ${esc(m)}">⧉</button>`).join('')}</div></div>`).join('') : '<span class="muted">Sin cargar (✎ Editar)</span>'}</dd></div>
           <div><dt>Bibliografía</dt><dd>${s.bibliography ? esc(s.bibliography) : '<span class="muted">Sin cargar</span>'}</dd></div>
-          <div><dt>Regla de aprobación</dt><dd>${s.rule ? `<div class="rule-box">${esc(s.rule)}</div>` : '<span class="muted">Se carga en la pestaña 🎯 Notas</span>'}</dd></div>
+          <div><dt>Regla de aprobación</dt><dd>${s.rule ? `<div class="rule-box">${esc(s.rule)}</div>` : '<span class="muted">Se carga en la pestaña Notas</span>'}</dd></div>
         </dl>
       </div>
 
       <div class="card credits-card">
-        <h2>⏳ Créditos y horas</h2>
+        <h2>Créditos y horas</h2>
         ${p.goal ? `
           <div class="credits-math"><span><strong>${s.credits}</strong> créditos</span><span>×</span><span>${hoursPerCredit()} h</span><span>=</span><span><strong>${fmtHM(p.goal)}</strong> totales</span></div>
           <div class="counter">
             <span class="counter-label">${p.left > 0 ? 'Te quedan' : '¡Meta cumplida!'}</span>
-            <span class="counter-num">${p.left > 0 ? fmtHM(p.left) : '🎉'}</span>
+            <span class="counter-num">${p.left > 0 ? fmtHM(p.left) : ''}</span>
             ${p.over > 0 ? `<span class="counter-label">Superaste la meta por ${fmtHM(p.over)}</span>` : ''}
           </div>
           <div class="bar big" style="--c:${s.color}"><span style="width:${pct}%"></span></div>
           <div class="bar-legend">${fmtHM(p.done)} dedicadas · ${pct.toFixed(0)}% · esta semana ${fmtHM(p.weekDone)}</div>
-          ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? '⚠️ Vas atrasada. ' : '🌿 '}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
+          ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? 'Vas atrasada. ' : ''}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
         : '<p class="muted">Cargá los créditos (✎ Editar) para calcular las horas de esfuerzo.</p>'}
         <button class="btn ${studying ? 'danger' : ''}" id="s-study">${studying ? '■ Terminar sesión' : '▶ Estudiar ahora'}</button>
       </div>
 
       <div class="card">
-        <h2>🙋 Faltas</h2>
+        <h2>Faltas</h2>
         <div class="absences">
           <button class="icon-btn" id="abs-minus" aria-label="Restar falta">−</button>
           <span class="big-num" aria-live="polite">${s.absences}</span>
           <button class="icon-btn" id="abs-plus" aria-label="Sumar falta">+</button>
           <label class="inline">Máximo permitido <input type="number" min="0" id="abs-max" value="${s.maxAbsences ?? ''}" placeholder="—" style="width:80px"></label>
         </div>
-        ${absWarn ? `<div class="alert warn" style="margin-top:.6rem">⚠️ ${s.absences >= s.maxAbsences ? 'Llegaste al máximo de faltas.' : 'Te queda 1 falta antes del máximo.'}</div>` : ''}
+        ${absWarn ? `<div class="alert warn" style="margin-top:.6rem">${s.absences >= s.maxAbsences ? 'Llegaste al máximo de faltas.' : 'Te queda 1 falta antes del máximo.'}</div>` : ''}
       </div>
 
       <div class="card">
-        <h2>📝 Apuntes pendientes</h2>
+        <h2>Apuntes pendientes</h2>
         <p class="hint">Clases que faltaste o apuntes que tenés que conseguir o completar.</p>
         <ul class="plain check-list" style="margin-top:.5rem">
-          ${s.pendingNotes.map((n) => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" data-note="${n.id}" ${n.done ? 'checked' : ''} aria-label="Marcar como hecho"><span>${esc(n.text)}</span><button class="icon-btn sm danger" data-rmnote="${n.id}" aria-label="Borrar">✕</button></li>`).join('') || '<li class="muted">Nada pendiente 🌿</li>'}
+          ${s.pendingNotes.map((n) => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" data-note="${n.id}" ${n.done ? 'checked' : ''} aria-label="Marcar como hecho"><span>${esc(n.text)}</span><button class="icon-btn sm danger" data-rmnote="${n.id}" aria-label="Borrar">✕</button></li>`).join('') || '<li class="muted">Nada pendiente </li>'}
         </ul>
         <form class="add-row" id="note-form"><input name="t" placeholder="Ej: Clase del lunes 14/9" required><button class="btn sm">Agregar</button></form>
       </div>
 
       <div class="card">
-        <div class="list-head"><h2>📝 Próximas pruebas</h2><button class="btn sm" id="s-add-ev">+ Evento</button></div>
+        <div class="list-head"><h2>Próximas pruebas</h2><button class="btn sm" id="s-add-ev">+ Evento</button></div>
         <div id="s-events" class="ev-list"></div>
       </div>
 
       <div class="card">
-        <div class="list-head"><h2>🏫 Horario</h2><button class="btn sm" id="s-add-cl">+ Clase</button></div>
+        <div class="list-head"><h2>Horario</h2><button class="btn sm" id="s-add-cl">+ Clase</button></div>
         ${classes.length ? `<ul class="plain">${classes.map((c) => `<li><button class="link" data-cl="${c.id}">${DAYS[c.day - 1]} ${c.start}–${c.end}</button> · ${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Sin clases cargadas.</p>'}
       </div>
     </div>`;
 
-  renderEventList($('#s-events', box), upcoming.slice(0, 5), 'Nada a la vista. 🌿');
+  renderEventList($('#s-events', box), upcoming.slice(0, 5), 'Nada a la vista. ');
   $('#s-study', box).onclick = () => {
     if (studying) { stopStudy(); rerender(); } else if (startStudy(s.id)) location.hash = '#estudio';
   };
@@ -3264,7 +3360,7 @@ function sortedDocs(s, sectionId) {
 function tabDocumentos(s, box) {
   box.innerHTML = `
     <section class="card">
-      <div class="list-head"><h2>📂 Documentos</h2><button class="btn sm" id="add-sec">+ Nueva sección</button></div>
+      <div class="list-head"><h2>Documentos</h2><button class="btn sm" id="add-sec">+ Nueva sección</button></div>
       <p class="hint">Creá las secciones que quieras (Prácticos, Teórico, Hoja de fórmulas…). Subí archivos, arrastralos, o guardá links de Drive o de la plataforma de la facultad.</p>
       <div class="sections" style="margin-top:.8rem">
         ${s.sections.map((sec, i) => sectionHtml(s, sec, i)).join('') || '<p class="muted">No hay secciones.</p>'}
@@ -3286,22 +3382,22 @@ function sectionHtml(s, sec, i) {
   return `
     <div class="section" data-sec="${sec.id}">
       <div class="sec-head">
-        <h3>📁 ${esc(sec.name)} <span class="count">${docs.length}</span></h3>
+        <h3>${esc(sec.name)} <span class="count">${docs.length}</span></h3>
         <div>
           <button class="icon-btn sm" data-secmove="${sec.id}|-1" ${i === 0 ? 'disabled' : ''} title="Mover antes" aria-label="Mover sección antes">↑</button>
           <button class="icon-btn sm" data-secmove="${sec.id}|1" ${i === last ? 'disabled' : ''} title="Mover después" aria-label="Mover sección después">↓</button>
           <button class="icon-btn sm" data-rename="${sec.id}" title="Renombrar" aria-label="Renombrar sección">✎</button>
-          <button class="icon-btn sm danger" data-rmsec="${sec.id}" title="Eliminar sección" aria-label="Eliminar sección">🗑</button>
+          <button class="icon-btn sm danger" data-rmsec="${sec.id}" title="Eliminar sección" aria-label="Eliminar sección"></button>
         </div>
       </div>
       <div class="dropzone">
         <label class="btn ghost sm">⬆ Subir archivos<input type="file" multiple data-upload="${sec.id}" hidden></label>
-        <button class="btn ghost sm" data-addlink="${sec.id}">🔗 Guardar link</button>
+        <button class="btn ghost sm" data-addlink="${sec.id}">Guardar link</button>
         <span class="muted small">o arrastralos acá</span>
       </div>
       ${docs.length ? `<ul class="files">${docs.map((d, k) => `
         <li>
-          <span class="f-ic">${d.kind === 'link' ? '🔗' : fileIcon(d.name)}</span>
+          <span class="f-ic">${d.kind === 'link' ? '' : fileIcon(d.name)}</span>
           <span class="f-main">
             ${d.kind === 'link' ? `<a class="f-name" href="${esc(safeUrl(d.url))}" target="_blank" rel="noopener">${esc(d.title)}</a>` : `<button class="link f-name" data-open="${d.id}" title="Abrir">${esc(d.title || d.name)}</button>`}
             <span class="f-meta">${d.kind === 'link' ? esc(d.url) : `${fmtBytes(d.size)} · ${fmtDateShort(new Date(d.added))}`}</span>
@@ -3333,7 +3429,7 @@ async function addFiles(s, sectionId, fileList) {
     }
   }
   Store.save();
-  if (ok) toast(ok === 1 ? 'Archivo guardado 📎' : `${ok} archivos guardados 📎`);
+  if (ok) toast(ok === 1 ? 'Archivo guardado ' : `${ok} archivos guardados `);
   rerender();
 }
 
@@ -3434,7 +3530,7 @@ function tabPracticos(s, box) {
   box.innerHTML = `
     <section class="card">
       <div class="list-head">
-        <h2>✅ Prácticos</h2>
+        <h2>Prácticos</h2>
         <button class="btn sm" id="add-prac">+ Nuevo práctico</button>
       </div>
       ${s.practicos.length ? `
@@ -3460,13 +3556,13 @@ function tabPracticos(s, box) {
               <div class="sec-head"><h3>${esc(p.name)}</h3>
                 <div><button class="icon-btn sm" data-pren="${p.id}" aria-label="Renombrar">✎</button>
                 <button class="icon-btn sm" data-pcount="${p.id}" aria-label="Cambiar cantidad de ejercicios">#</button>
-                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico">🗑</button></div></div>
+                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico"></button></div></div>
               <div class="muted small">${ps.done}/${ps.total} resueltos · ★ ${ps.prioDone}/${ps.prio} prioritarios</div>
               <div class="bar" style="--c:var(--moss)"><span style="width:${ps.total ? (ps.done / ps.total) * 100 : 0}%"></span></div>
               <div class="ex-grid">${exs.map((e) => `<button class="ex ${e.priority ? 'prio' : ''}" data-ex="${p.id}|${e.n}" data-state="${e.state}" title="Ejercicio ${e.n}: ${EX_LABEL[e.state]}${e.priority ? ' · prioritario' : ''}" aria-label="Ejercicio ${e.n}, ${EX_LABEL[e.state]}${e.priority ? ', prioritario' : ''}">${e.n}</button>`).join('') || '<span class="muted small">No hay prioritarios acá.</span>'}</div>
             </div>`;
           }).join('')}
-        </div>` : `<div class="empty small"><span class="empty-sloth" data-sloth="head"></span><p>Agregá un práctico con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
+        </div>` : `<div class="empty small"><p>Agregá un práctico con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
     </section>`;
   Sloth.paint(box);
 
@@ -3543,7 +3639,7 @@ function tabNotas(s, box) {
   box.innerHTML = `
     <div class="grid-2">
       <section class="card">
-        <div class="list-head"><h2>🎯 Evaluaciones</h2><button class="btn sm" id="add-eval">+ Evaluación</button></div>
+        <div class="list-head"><h2>Evaluaciones</h2><button class="btn sm" id="add-eval">+ Evaluación</button></div>
         ${s.evaluations.length ? `<div class="table-scroll"><table class="eval-table">
           <thead><tr><th>Nombre</th><th>Nota</th><th>Máx.</th><th>Peso %</th><th></th></tr></thead>
           <tbody>${s.evaluations.map((e) => `<tr data-eval="${e.id}">
@@ -3558,7 +3654,7 @@ function tabNotas(s, box) {
       </section>
 
       <section class="card">
-        <h2>📊 Cómo vas</h2>
+        <h2>Cómo vas</h2>
         ${g.avg == null ? '<p class="muted">Cuando cargues una nota, acá vas a ver tu promedio ponderado.</p>' : `
           <div class="big-stat">${g.avg.toFixed(1)}%</div>
           <p class="muted">Promedio ponderado sobre lo rendido (${g.gradedW}% del total). Acumulado: <strong>${g.earned.toFixed(1)}</strong> de ${g.totalW} puntos posibles.</p>`}
@@ -3591,14 +3687,14 @@ function tabNotas(s, box) {
     if (!g.totalW) { out.innerHTML = '<p class="muted">Primero cargá las evaluaciones con su peso.</p>'; return; }
     const needPts = (target / 100) * g.totalW - g.earned;
     if (g.remainingW <= 0) {
-      out.innerHTML = `<div class="alert ${needPts <= 0 ? 'ok' : 'warn'}">${needPts <= 0 ? '🎉 Ya llegaste a ese objetivo.' : 'No quedan evaluaciones por rendir para llegar a ese objetivo.'}</div>`;
+      out.innerHTML = `<div class="alert ${needPts <= 0 ? 'ok' : 'warn'}">${needPts <= 0 ? 'Ya llegaste a ese objetivo.' : 'No quedan evaluaciones por rendir para llegar a ese objetivo.'}</div>`;
       return;
     }
     const need = (needPts / g.remainingW) * 100;
     out.innerHTML = need <= 0
-      ? '<div class="alert ok">🎉 Ya lo tenés asegurado con lo que rendiste.</div>'
+      ? '<div class="alert ok">Ya lo tenés asegurado con lo que rendiste.</div>'
       : need > 100
-        ? `<div class="alert warn">😬 Necesitarías ${need.toFixed(0)}% en lo que queda (${g.remainingW}% del total): no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</div>`
+        ? `<div class="alert warn">Necesitarías ${need.toFixed(0)}% en lo que queda (${g.remainingW}% del total): no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</div>`
         : `<div class="alert">Necesitás un promedio de <strong>${need.toFixed(1)}%</strong> en lo que te queda por rendir (${g.remainingW}% del total).</div>`;
   };
   $('#need-form', box).onsubmit = (e) => { e.preventDefault(); calc(); };
@@ -3611,7 +3707,7 @@ function tabApariencia(s, box) {
   const t = s.theme;
   box.innerHTML = `
     <section class="card">
-      <h2>🎨 Apariencia de ${esc(s.name)}</h2>
+      <h2>Apariencia de ${esc(s.name)}</h2>
       <p class="hint">Se ve solo cuando estás dentro de esta materia. Los cambios se guardan solos y los ves en vivo.</p>
       <div class="form" style="margin-top:.8rem">
         <div class="field"><strong>Color de la materia</strong>
@@ -3646,14 +3742,14 @@ function tabApariencia(s, box) {
 /* ---------- Horas de estudio ---------- */
 
 const studyFilter = { subject: '' };
-const SOURCE_LABEL = { cronometro: '⏱ Cronómetro', pomodoro: '🍅 Pomodoro', manual: '✍️ Manual', simulacro: '📝 Simulacro' };
+const SOURCE_LABEL = { cronometro: 'Cronómetro', pomodoro: 'Pomodoro', manual: 'Manual', simulacro: 'Simulacro' };
 
 function startStudy(subjectId) {
   if (!subjectId) { toast('Elegí qué materia vas a estudiar.'); return false; }
   Store.data.activeSession = { subjectId, start: Date.now() };
   Store.data.lastStudySubject = subjectId;
   Store.save();
-  toast(`¡A estudiar ${subjectName(subjectId)}! 📚`);
+  toast(`¡A estudiar ${subjectName(subjectId)}! `);
   Sloth.paint();
   return true;
 }
@@ -3711,7 +3807,7 @@ function renderStudy() {
   const subs = Store.data.subjects;
   if (!subs.length) {
     $('#view').innerHTML = `<section class="page"><div class="page-head"><div><h1>Horas de estudio</h1></div></div>
-      <div class="card empty"><span class="empty-sloth big" data-sloth="head"></span>
+      <div class="card empty">
       <h2>Primero creá una materia</h2><p>Así sabemos a qué le estás dedicando tiempo.</p>
       <a class="btn" href="#materias">Ir a Materias</a></div></section>`;
     Sloth.paint($('#view'));
@@ -3736,7 +3832,7 @@ function renderStudy() {
 
       <div class="study-top">
         <div class="card study-timer ${a ? 'running' : ''}">
-          <span class="timer-sloth" data-sloth="head"></span>
+          
           <label class="field">¿Qué vas a estudiar?
             <select id="study-subj" ${a ? 'disabled' : ''}>${subjectOptions(selected)}</select>
           </label>
@@ -3748,7 +3844,7 @@ function renderStudy() {
           <div class="card stat"><span>Hoy</span><strong>${fmtHM(studiedMinutes('', todayStart))}</strong></div>
           <div class="card stat"><span>Esta semana</span><strong>${fmtHM(studiedMinutes('', weekStart))}</strong></div>
           <div class="card stat"><span>Semestre</span><strong>${fmtHM(semesterMinutes())}</strong></div>
-          <div class="card stat"><span>Racha</span><strong>${streak} ${streak === 1 ? 'día' : 'días'} ${streak >= 3 ? '🔥' : ''}</strong></div>
+          <div class="card stat"><span>Racha</span><strong>${streak} ${streak === 1 ? 'día' : 'días'} ${streak >= 3 ? '' : ''}</strong></div>
         </div>
       </div>
 
@@ -3781,7 +3877,7 @@ function renderStudy() {
             const p = subjectPace(s);
             return `<div class="progress-item">
               <div class="pi-head"><a href="#materia/${s.id}"><span class="dot" style="--c:${s.color}"></span>${esc(s.name)}</a>
-                <span class="muted">${p.goal ? (p.left > 0 ? `quedan <strong>${fmtHM(p.left)}</strong>` : '¡meta cumplida! 🎉') : 'sin créditos'}</span></div>
+                <span class="muted">${p.goal ? (p.left > 0 ? `quedan <strong>${fmtHM(p.left)}</strong>` : '¡meta cumplida! ') : 'sin créditos'}</span></div>
               ${hoursBar(s)}
             </div>`;
           }).join('')}
@@ -3812,7 +3908,7 @@ function renderStudy() {
               <button class="icon-btn sm danger" data-rmses="${se.id}" aria-label="Borrar registro">✕</button></span>
             </div>`).join('')}
           </div>`;
-        }).join('') : '<p class="muted">Todavía no hay registros. ¡El primer paso es el más lento! 🦥</p>'}
+        }).join('') : '<p class="muted">Todavía no hay registros. ¡El primer paso es el más lento! </p>'}
       </section>
     </section>`;
 
@@ -3869,7 +3965,7 @@ function openSessionForm(se) {
       if (e0 - s0 > 16 * 36e5) { toast('Eso es más de 16 horas seguidas, revisá las horas.'); return; }
       if (isNew) {
         addSession(el.subjectId.value, s0, e0, 'manual');
-        toast(`Registré ${fmtHM((e0 - s0) / 60000)} 📚`);
+        toast(`Registré ${fmtHM((e0 - s0) / 60000)} `);
       } else {
         Object.assign(se, { subjectId: el.subjectId.value, start: s0, end: e0 });
         Store.save();
@@ -3888,9 +3984,9 @@ function openSessionForm(se) {
 /* ---------- Pomodoro y simulacro de parcial ---------- */
 
 const PHASES = {
-  work: { label: 'Foco', emoji: '🍅' },
-  short: { label: 'Descanso corto', emoji: '☕' },
-  long: { label: 'Descanso largo', emoji: '🌿' },
+  work: { label: 'Foco', emoji: '' },
+  short: { label: 'Descanso corto', emoji: '' },
+  long: { label: 'Descanso largo', emoji: '' },
 };
 let pomoTab = 'pomodoro';
 let simResultId = null;
@@ -3973,8 +4069,8 @@ function renderPomodoro() {
       <div class="page-head">
         <div><h1>Pomodoro</h1><p class="sub">Bloques de foco y descansos. Lento pero constante.</p></div>
         <div class="switch" role="tablist">
-          <button role="tab" data-ptab="pomodoro" class="${pomoTab === 'pomodoro' ? 'on' : ''}">🍅 Pomodoro</button>
-          <button role="tab" data-ptab="simulacro" class="${pomoTab === 'simulacro' ? 'on' : ''}">📝 Simulacro de parcial</button>
+          <button role="tab" data-ptab="pomodoro" class="${pomoTab === 'pomodoro' ? 'on' : ''}">Pomodoro</button>
+          <button role="tab" data-ptab="simulacro" class="${pomoTab === 'simulacro' ? 'on' : ''}">Simulacro de parcial</button>
         </div>
       </div>
       <div id="pomo-content"></div>
@@ -3994,7 +4090,7 @@ function renderPomoTimer(el) {
           <select id="pomo-subj">${subjectOptions(p.subjectId, { allowEmpty: true, emptyLabel: '— No sumar a ninguna materia —' })}</select>
         </label>
         <div class="chip-row" style="justify-content:center">
-          ${Object.keys(PHASES).map((k) => `<button class="chip-opt ${k === Pomo.phase ? 'on' : ''}" data-phase="${k}">${PHASES[k].emoji} ${PHASES[k].label}</button>`).join('')}
+          ${Object.keys(PHASES).map((k) => `<button class="chip-opt ${k === Pomo.phase ? 'on' : ''}" data-phase="${k}">${PHASES[k].label}</button>`).join('')}
         </div>
         <div class="ring">
           <svg viewBox="0 0 240 240" aria-hidden="true">
@@ -4002,9 +4098,9 @@ function renderPomoTimer(el) {
             <circle cx="120" cy="120" r="104" class="ring-fg" id="ring-fg" stroke-dasharray="${RING_C}" stroke-dashoffset="0" transform="rotate(-90 120 120)"/>
           </svg>
           <div class="ring-center">
-            <span class="ring-phase">${ph.emoji} ${ph.label}</span>
+            <span class="ring-phase">${ph.label}</span>
             <span id="pomo-time" class="pomo-time" role="timer">--:--</span>
-            <span class="muted" aria-label="Pomodoros del ciclo">${'🍅'.repeat(Pomo.done % p.cycles)}${'○'.repeat(p.cycles - (Pomo.done % p.cycles))}</span>
+            <span class="muted" aria-label="Pomodoros del ciclo">${''.repeat(Pomo.done % p.cycles)}${'○'.repeat(p.cycles - (Pomo.done % p.cycles))}</span>
           </div>
         </div>
         <div class="pomo-controls">
@@ -4085,7 +4181,7 @@ function renderSimulacro(el) {
         <div class="sim-ex" id="sim-ex"></div>
         <div class="muted">En este ejercicio: <strong class="num" id="sim-cur">00:00</strong> · promedio disponible <strong class="num">${fmtMS((act.totalMin * 60000) / act.count)}</strong></div>
         <div class="btn-row">
-          <button class="btn big" id="sim-next">${act.marks.length + 1 >= act.count ? '🏁 Terminar' : 'Siguiente ejercicio →'}</button>
+          <button class="btn big" id="sim-next">${act.marks.length + 1 >= act.count ? 'Terminar' : 'Siguiente ejercicio →'}</button>
         </div>
         <button class="btn ghost sm danger" id="sim-quit">Abandonar simulacro</button>
       </div>`;
@@ -4108,7 +4204,7 @@ function renderSimulacro(el) {
   el.innerHTML = `
     <div class="grid-2">
       <form class="card form" id="sim-form">
-        <h2>📝 Nuevo simulacro</h2>
+        <h2>Nuevo simulacro</h2>
         <p class="hint">Practicá con tiempo real: elegís cuántos ejercicios y cuánto dura la prueba, y vas tocando “Siguiente” al terminar cada uno. El tiempo cuenta como horas de estudio.</p>
         <label>Materia<select name="subjectId" required>${subjectOptions(Store.data.lastStudySubject)}</select></label>
         <div class="row">
@@ -4149,13 +4245,13 @@ function simResultHTML(sim) {
   const p = prev[0] && simStats(prev[0]);
   const diff = p ? st.avg - p.avg : 0;
   return `<div class="card">
-    <div class="list-head"><h2>🏁 Resultado</h2><button class="btn ghost sm" id="sim-close">Cerrar</button></div>
+    <div class="list-head"><h2>Resultado</h2><button class="btn ghost sm" id="sim-close">Cerrar</button></div>
     <p><strong>${esc(subjectName(sim.subjectId))}</strong> · ${fmtDateShort(new Date(sim.start))}</p>
     <p class="muted">${sim.count} ejercicios en ${fmtHM(st.total / 60)} de ${fmtHM(sim.totalMin)} disponibles. Promedio por ejercicio: <strong>${fmtMS(st.avg * 1000)}</strong> (disponible ${fmtMS(st.avail * 1000)}).</p>
-    ${p ? `<div class="alert ${diff <= 0 ? 'ok' : 'warn'}" style="margin:.6rem 0">${diff <= 0 ? '⚡ Más rápida' : '🐢 Más lenta'} que tu simulacro anterior de esta materia: ${fmtMS(Math.abs(diff) * 1000)} ${diff <= 0 ? 'menos' : 'más'} por ejercicio (antes ${fmtMS(p.avg * 1000)}; ${p.over} pasados de tiempo, ahora ${st.over}).</div>` : '<p class="hint">Es tu primer simulacro de esta materia: el próximo lo vas a poder comparar.</p>'}
+    ${p ? `<div class="alert ${diff <= 0 ? 'ok' : 'warn'}" style="margin:.6rem 0">${diff <= 0 ? 'Más rápida' : 'Más lenta'} que tu simulacro anterior de esta materia: ${fmtMS(Math.abs(diff) * 1000)} ${diff <= 0 ? 'menos' : 'más'} por ejercicio (antes ${fmtMS(p.avg * 1000)}; ${p.over} pasados de tiempo, ahora ${st.over}).</div>` : '<p class="hint">Es tu primer simulacro de esta materia: el próximo lo vas a poder comparar.</p>'}
     <div class="table-scroll"><table class="sim-table">
       <thead><tr><th>Ejercicio</th><th>Tiempo</th><th></th></tr></thead>
-      <tbody>${sim.secsPerExercise.map((x, i) => `<tr class="${x > st.avail ? 'over' : ''}"><td>${i + 1}</td><td>${fmtMS(x * 1000)}</td><td>${x > st.avail ? '⏰ se pasó del promedio' : '✓'}</td></tr>`).join('')}</tbody>
+      <tbody>${sim.secsPerExercise.map((x, i) => `<tr class="${x > st.avail ? 'over' : ''}"><td>${i + 1}</td><td>${fmtMS(x * 1000)}</td><td>${x > st.avail ? 'se pasó del promedio' : '✓'}</td></tr>`).join('')}</tbody>
     </table></div>
   </div>`;
 }
@@ -4214,13 +4310,13 @@ function renderProjects() {
         const next = projectEvents(p).find((e) => eventDate(e) >= new Date());
         const col = p.subjectId ? subjectColor(p.subjectId) : 'var(--accent)';
         return `<a class="card subj-card" href="#proyecto/${p.id}" style="--c:${col}">
-          <div class="subj-card-top"><h3>🤝 ${esc(p.name)}</h3></div>
+          <div class="subj-card-top"><h3>${esc(p.name)}</h3></div>
           <p class="muted">${p.subjectId ? esc(subjectName(p.subjectId)) : 'Sin materia'} · ${p.members.length} integrantes</p>
           <div class="bar" style="--c:${col}"><span style="width:${p.tasks.length ? (done / p.tasks.length) * 100 : 0}%"></span></div>
           <div class="bar-legend">${done}/${p.tasks.length} tareas hechas</div>
-          <p class="next">${next ? `📦 ${esc(next.title || typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin entregas cargadas</span>'}</p>
+          <p class="next">${next ? `${esc(next.title || typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin entregas cargadas</span>'}</p>
         </a>`;
-      }).join('')}</div>` : `<div class="card empty"><span class="empty-sloth big" data-sloth="head"></span><h2>No hay proyectos</h2><p>Creá uno para repartir tareas con tu grupo.</p></div>`}
+      }).join('')}</div>` : `<div class="card empty"><h2>No hay proyectos</h2><p>Creá uno para repartir tareas con tu grupo.</p></div>`}
     </section>`;
   Sloth.paint($('#view'));
   $('#add-proj').onclick = () => openProjectForm();
@@ -4273,16 +4369,16 @@ function renderProject(id) {
       <a href="#proyectos" class="back">← Proyectos</a>
       <header class="card subj-hero" style="--c:${col}">
         <div>
-          <h1>🤝 ${esc(p.name)}</h1>
+          <h1>${esc(p.name)}</h1>
           <p class="muted">${p.subjectId ? `<a href="#materia/${p.subjectId}">${esc(subjectName(p.subjectId))}</a>` : 'Sin materia'} · ${done}/${p.tasks.length} tareas hechas</p>
         </div>
         <div class="hero-actions"><button class="btn ghost" id="p-edit">✎ Editar</button></div>
       </header>
       <div class="grid-2">
         <section class="card">
-          <h2>👥 Integrantes</h2>
+          <h2>Integrantes</h2>
           <div class="members">${p.members.map((m) => `<span class="pill">${esc(m)}</span>`).join('') || '<span class="muted">Sin integrantes</span>'}</div>
-          <h2 style="margin-top:1.2rem">🔗 Links</h2>
+          <h2 style="margin-top:1.2rem">Links</h2>
           <ul class="plain">${p.links.map((l, i) => `<li><a href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener">${esc(l.title || l.url)}</a> <button class="icon-btn sm danger" data-rmlink="${i}" aria-label="Quitar link">✕</button></li>`).join('') || '<li class="muted">Sin links</li>'}</ul>
           <form class="add-row" id="link-form">
             <input name="title" placeholder="Nombre (ej: Repositorio)" aria-label="Nombre del link">
@@ -4291,12 +4387,12 @@ function renderProject(id) {
           </form>
         </section>
         <section class="card">
-          <div class="list-head"><h2>📦 Entregas</h2><button class="btn sm" id="p-add-ev">+ Entrega</button></div>
+          <div class="list-head"><h2>Entregas</h2><button class="btn sm" id="p-add-ev">+ Entrega</button></div>
           <div id="p-events" class="ev-list"></div>
         </section>
       </div>
       <section class="card">
-        <h2>✅ Tareas</h2>
+        <h2>Tareas</h2>
         <ul class="plain task-list" style="margin-top:.6rem">
           ${p.tasks.map((t) => `<li class="${t.done ? 'done' : ''}">
             <input type="checkbox" data-tdone="${t.id}" ${t.done ? 'checked' : ''} aria-label="Hecha">
@@ -4357,19 +4453,19 @@ function renderSlothPage() {
           <div class="unlock-bar">
             <p><strong>${hours.toFixed(1)} h</strong> estudiadas este semestre · ${unlockedCount}/${WARDROBE.length} prendas</p>
             ${next ? `<div class="bar" style="margin:.4rem 0"><span style="width:${((hours - prevStep) / (next.hours - prevStep)) * 100}%"></span></div>
-              <p class="hint">Próximo: <strong>${esc(next.name)}</strong> a las ${next.hours} h (faltan ${fmtHM((next.hours - hours) * 60)})</p>` : '<p class="hint">¡Desbloqueaste todo el ropero! 👑</p>'}
+              <p class="hint">Próximo: <strong>${esc(next.name)}</strong> a las ${next.hours} h (faltan ${fmtHM((next.hours - hours) * 60)})</p>` : '<p class="hint">¡Desbloqueaste todo el ropero! </p>'}
           </div>
         </div>
 
         <div class="page" style="gap:1rem">
           <section class="card">
             <div class="list-head">
-              <h2>👗 Ropero</h2>
+              <h2>Ropero</h2>
               <button class="btn ghost sm" id="undress">Sacarle todo</button>
             </div>
             <div class="chip-row" style="margin-bottom:.8rem">
               <button class="chip-opt ${wardrobeCat === 'todo' ? 'on' : ''}" data-wcat="todo">Todo</button>
-              ${WARDROBE_CATS.map((c) => `<button class="chip-opt ${wardrobeCat === c.id ? 'on' : ''}" data-wcat="${c.id}">${c.icon} ${c.label}</button>`).join('')}
+              ${WARDROBE_CATS.map((c) => `<button class="chip-opt ${wardrobeCat === c.id ? 'on' : ''}" data-wcat="${c.id}">${c.label}</button>`).join('')}
             </div>
             <div class="wardrobe">
               ${items.map((w) => {
@@ -4379,7 +4475,7 @@ function renderSlothPage() {
                 return `<button class="item ${on ? 'on' : ''} ${locked ? 'locked' : ''}" data-item="${w.id}" ${locked ? 'aria-disabled="true"' : ''}
                     aria-pressed="${on}" aria-label="${esc(w.name)}${locked ? `, se desbloquea a las ${w.hours} horas` : ''}">
                   <span class="thumb">${slothSVG({ view, mood: 'feliz', sloth: { ...sl, personality: 'tierno', equipped: { [w.cat]: w.id } } })}</span>
-                  ${locked ? `<span class="lock">🔒 ${w.hours} h</span>` : ''}
+                  ${locked ? `<span class="lock">${w.hours} h</span>` : ''}
                   <span class="i-name">${esc(w.name)}</span>
                   <span class="i-style">${esc(w.style)}${locked ? ` · faltan ${fmtHM((w.hours - hours) * 60)}` : ''}</span>
                 </button>`;
@@ -4388,7 +4484,7 @@ function renderSlothPage() {
           </section>
 
           <section class="card form">
-            <h2>✏️ Cómo es</h2>
+            <h2>Cómo es</h2>
             <label>Nombre<input id="sl-name" value="${esc(sl.name)}" maxlength="24"></label>
             <div class="field"><strong>Color de pelo</strong>
               <div class="swatches" style="margin-top:.4rem">
@@ -4399,15 +4495,15 @@ function renderSlothPage() {
           </section>
 
           <section class="card">
-            <h2>🎭 Personalidad</h2>
-            <p class="hint">Cambia todas sus frases. Ahora: <strong>${pers.icon} ${pers.label}</strong>.</p>
+            <h2>Personalidad</h2>
+            <p class="hint">Cambia todas sus frases. Ahora: <strong>${pers.label}</strong>.</p>
             <div class="pers-grid" style="margin-top:.6rem">
-              ${PERSONALITIES.map((p) => `<button class="pers ${p.id === sl.personality ? 'on' : ''}" data-pers="${p.id}"><strong>${p.icon} ${p.label}</strong><span>${p.desc}</span></button>`).join('')}
+              ${PERSONALITIES.map((p) => `<button class="pers ${p.id === sl.personality ? 'on' : ''}" data-pers="${p.id}"><strong>${p.label}</strong><span>${p.desc}</span></button>`).join('')}
             </div>
           </section>
 
           <section class="card form">
-            <h2>🔔 Apariciones</h2>
+            <h2>Apariciones</h2>
             <div class="chip-row" role="radiogroup" aria-label="Frecuencia">
               ${[['nunca', 'Nunca'], ['a_veces', 'A veces'], ['seguido', 'Seguido']].map(([v, l]) => `<button class="chip-opt ${sl.frequency === v ? 'on' : ''}" data-freq="${v}">${l}</button>`).join('')}
             </div>
@@ -4429,7 +4525,7 @@ function renderSlothPage() {
   $$('[data-wcat]', v).forEach((b) => (b.onclick = () => { wardrobeCat = b.dataset.wcat; renderSlothPage(); }));
   $$('[data-item]', v).forEach((b) => (b.onclick = () => {
     const w = wardrobeItem(b.dataset.item);
-    if (w.hours > hours) { toast(`🔒 Se desbloquea con ${w.hours} h de estudio en el semestre. ¡Te faltan ${fmtHM((w.hours - hours) * 60)}!`); return; }
+    if (w.hours > hours) { toast(`Se desbloquea con ${w.hours} h de estudio en el semestre. ¡Te faltan ${fmtHM((w.hours - hours) * 60)}!`); return; }
     if (sl.equipped[w.cat] === w.id) delete sl.equipped[w.cat];
     else sl.equipped[w.cat] = w.id;
     save();
@@ -4472,14 +4568,14 @@ function homeAlerts() {
   });
   Store.data.subjects.forEach((s) => {
     const p = subjectPace(s);
-    if (p.behind) out.push({ cls: 'warn', icon: '🐢', html: `<a href="#materia/${s.id}">${esc(s.name)}</a> va atrasada: necesitás <strong>${fmtHM(p.perWeek)}</strong> por semana.` });
-    if (s.maxAbsences != null && s.absences >= s.maxAbsences - 1) out.push({ cls: 'warn', icon: '🙋', html: `<a href="#materia/${s.id}">${esc(s.name)}</a>: ${s.absences} de ${s.maxAbsences} faltas.` });
+    if (p.behind) out.push({ cls: 'warn', icon: '', html: `<a href="#materia/${s.id}">${esc(s.name)}</a> va atrasada: necesitás <strong>${fmtHM(p.perWeek)}</strong> por semana.` });
+    if (s.maxAbsences != null && s.absences >= s.maxAbsences - 1) out.push({ cls: 'warn', icon: '', html: `<a href="#materia/${s.id}">${esc(s.name)}</a>: ${s.absences} de ${s.maxAbsences} faltas.` });
     const pend = s.pendingNotes.filter((n) => !n.done).length;
-    if (pend) out.push({ cls: '', icon: '📝', html: `<a href="#materia/${s.id}">${esc(s.name)}</a>: ${pend} ${pend === 1 ? 'apunte pendiente' : 'apuntes pendientes'}.` });
+    if (pend) out.push({ cls: '', icon: '', html: `<a href="#materia/${s.id}">${esc(s.name)}</a>: ${pend} ${pend === 1 ? 'apunte pendiente' : 'apuntes pendientes'}.` });
   });
   const crit = criticalWeeks();
   Object.keys(crit).filter((k) => { const d = parseDate(k); const end = new Date(d); end.setDate(end.getDate() + 7); return end > now && d - now < 28 * DAY_MS; })
-    .forEach((k) => out.push({ cls: 'warn', icon: '🔥', html: `Semana crítica del <strong>${fmtDateShort(parseDate(k))}</strong>: ${crit[k]} pruebas juntas.` }));
+    .forEach((k) => out.push({ cls: 'warn', icon: '', html: `Semana crítica del <strong>${fmtDateShort(parseDate(k))}</strong>: ${crit[k]} pruebas juntas.` }));
   return out;
 }
 
@@ -4495,30 +4591,27 @@ function renderHome() {
 
   $('#view').innerHTML = `
     <section class="page">
-      ${st.seedNotice ? `<div class="card notice"><span>🦥 Precargué tus materias, exámenes y proyectos del 2º semestre 2026. Podés editarlos o borrarlos cuando quieras. Los créditos, profes y horarios quedaron para completar.</span><button class="btn sm" id="seed-ok">Entendido</button></div>` : ''}
+      ${st.seedNotice ? `<div class="card notice"><span>Precargué tus materias, exámenes y proyectos del 2º semestre 2026. Podés editarlos o borrarlos cuando quieras. Los créditos, profes y horarios quedaron para completar.</span><button class="btn sm" id="seed-ok">Entendido</button></div>` : ''}
       ${seedMissing ? `<div class="card notice"><span>¿Cargo tus materias del 2º semestre (Física, Análisis II, Circuitos, Base de Datos, Lab TIC), los exámenes y los proyectos?</span><span class="btn-row"><button class="btn sm" id="seed-yes">Sí, cargarlas</button><button class="btn ghost sm" id="seed-no">No, gracias</button></span></div>` : ''}
 
       <div class="card hero">
-        <button class="hero-sloth" data-sloth="full" id="hero-sloth" aria-label="Tocá al perezoso para que hable"></button>
-        <div>
-          <h1>${greetingWord()}, ${esc(st.userName || '')} 👋</h1>
-          <p class="muted" style="margin-bottom:.8rem">${fmtDateLong(now)}</p>
-          <div class="speech" id="hero-speech">${esc(Sloth.daysSinceStudy() >= 3 ? phrase('dormido', { dias: Sloth.daysSinceStudy() }) : phrase('saludo'))}</div>
-          ${a ? `<p style="margin-top:.8rem"><a class="btn sm" href="#estudio">⏱ Estás estudiando ${esc(subjectName(a.subjectId))}</a></p>` : ''}
-        </div>
+        <h1>${greetingWord()}, ${esc(st.userName || '')}</h1>
+        <p class="muted">${fmtDateLong(now)}</p>
+        <p class="sloth-quote" id="hero-speech">“${esc(Sloth.daysSinceStudy() >= 3 ? phrase('dormido', { dias: Sloth.daysSinceStudy() }) : phrase('saludo'))}”<cite>— ${esc(Store.data.sloth.name)}</cite></p>
+        ${a ? `<p style="margin-top:.6rem"><a class="btn sm" href="#estudio">Estás estudiando ${esc(subjectName(a.subjectId))}</a></p>` : ''}
       </div>
 
-      ${alerts.length ? `<section class="card"><h2>🔔 Para tener en cuenta</h2><div class="alert-list">${alerts.map((x) => `<div class="alert ${x.cls}"><span>${x.icon}</span><span>${x.html}</span></div>`).join('')}</div></section>` : ''}
+      ${alerts.length ? `<section class="card"><h2>Para tener en cuenta</h2><div class="alert-list">${alerts.map((x) => `<div class="alert ${x.cls}"><span>${x.html}</span></div>`).join('')}</div></section>` : ''}
 
       <div class="grid-2">
         <section class="card">
-          <div class="list-head"><h2>📝 Próximas pruebas</h2><a class="btn ghost sm" href="#calendario">Ver calendario</a></div>
+          <div class="list-head"><h2>Próximas pruebas</h2><a class="btn ghost sm" href="#calendario">Ver calendario</a></div>
           <div id="home-events" class="ev-list"></div>
         </section>
         <section class="card">
-          <div class="list-head"><h2>🏫 Clases de hoy</h2></div>
-          ${classes.length ? `<ul class="plain">${classes.map((c) => `<li class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start}–${c.end} · <strong>${esc(subjectName(c.subjectId))}</strong>${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Hoy no tenés clases. 🌿</p>'}
-          <h2 style="margin-top:1.2rem">⏱ Esta semana</h2>
+          <div class="list-head"><h2>Clases de hoy</h2></div>
+          ${classes.length ? `<ul class="plain">${classes.map((c) => `<li class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start}–${c.end} · <strong>${esc(subjectName(c.subjectId))}</strong>${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Hoy no tenés clases. </p>'}
+          <h2 style="margin-top:1.2rem">Esta semana</h2>
           <div class="progress-list" style="margin-top:.6rem">
             ${Store.data.subjects.map((s) => {
               const p = subjectPace(s);
@@ -4535,8 +4628,7 @@ function renderHome() {
 
   const v = $('#view');
   Sloth.paint(v);
-  renderEventList($('#home-events', v), upcoming, 'Nada a la vista. Disfrutá. 🌿');
-  $('#hero-sloth').onclick = () => { $('#hero-speech').textContent = Sloth.contextPhrase(); };
+  renderEventList($('#home-events', v), upcoming, 'Nada a la vista. Disfrutá. ');
   const ok = $('#seed-ok'); if (ok) ok.onclick = () => { st.seedNotice = false; Store.save(); renderHome(); };
   const yes = $('#seed-yes'); if (yes) yes.onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); st.seedDismissed = true; st.seedNotice = true; Store.save(); renderHome(); };
   const no = $('#seed-no'); if (no) no.onclick = () => { st.seedDismissed = true; Store.save(); renderHome(); };
@@ -4562,7 +4654,7 @@ function renderSettings() {
 
       <div class="grid-2">
         <form class="card form" id="me-form">
-          <h2>👤 Vos y tu semestre</h2>
+          <h2>Vos y tu semestre</h2>
           <label>Tu nombre <span class="opt">(para que el perezoso te salude)</span><input name="userName" value="${esc(st.userName)}"></label>
           <div class="row">
             <label>Inicio del semestre<input type="date" name="semesterStart" value="${st.semesterStart}"></label>
@@ -4579,8 +4671,8 @@ function renderSettings() {
       </div>
 
       <section class="card" id="theme-card">
-        <div class="list-head"><h2>🎨 Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
-        <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña 🎨 Apariencia).</p>
+        <div class="list-head"><h2>Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
+        <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña Apariencia).</p>
         <h3 style="margin-top:1rem">Temas listos</h3>
         <div class="presets" style="margin-top:.5rem">
           ${THEME_PRESETS.map((p) => { const x = { ...defaultGlobalTheme(), ...p.t }; return `<button class="preset" data-preset="${p.id}" style="background-color:${x.bg};${x.bgType === 'pattern' ? `background-image:url('${patternUrl(x.pattern, x.patternColor)}');` : ''}color:${x.dark === 'dark' ? '#fff' : x.ink};border-color:${x.accent}"><span style="background:${x.accent};color:#fff;padding:1px 8px;border-radius:999px">${p.label}</span></button>`; }).join('')}
@@ -4595,9 +4687,15 @@ function renderSettings() {
             <label>Tipografía<select id="font">${Object.keys(FONTS).map((k) => `<option value="${k}" ${k === t.font ? 'selected' : ''}>${FONTS[k].label}</option>`).join('')}</select></label>
             <label>Bordes redondeados <input type="range" id="radius" min="4" max="30" value="${t.radius}"></label>
             <div class="field"><strong>Modo</strong>
-              <div class="chip-row" style="margin-top:.4rem">${[['light', '☀️ Claro'], ['dark', '🌙 Oscuro'], ['auto', '🌓 Automático']].map(([v, l]) => `<button type="button" class="chip-opt ${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div>
+              <div class="chip-row" style="margin-top:.4rem">${[['light', 'Claro'], ['dark', 'Oscuro'], ['auto', 'Automático']].map(([v, l]) => `<button type="button" class="chip-opt ${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div>
             </div>
             <label class="check"><input type="checkbox" id="glass" ${t.glass ? 'checked' : ''}> Tarjetas transparentes con desenfoque</label>
+            <div class="field"><strong>Símbolo de las listas</strong>
+              <div class="chip-row" style="margin-top:.4rem">${BULLETS.map((b) => `<button type="button" class="chip-opt ${b === st.bullet ? 'on' : ''}" data-bullet="${esc(b)}" aria-label="Usar ${esc(b)}">${esc(b)}</button>`).join('')}
+                <label class="inline">Otro <input id="bullet-custom" maxlength="3" value="${BULLETS.includes(st.bullet) ? '' : esc(st.bullet)}" placeholder="✎" style="width:70px"></label>
+              </div>
+              <ul class="plain small" style="margin-top:.5rem"><li>Así se ven las listas</li><li>con el símbolo que elijas</li></ul>
+            </div>
           </div>
           <div class="form">
             <h3>Fondo de la página</h3>
@@ -4609,7 +4707,7 @@ function renderSettings() {
 
       <div class="grid-3">
         <div class="card" id="install-card">
-          <h2>📲 En el escritorio</h2>
+          <h2>En el escritorio</h2>
           ${Install.installed()
             ? '<p class="muted">Ya la estás usando como app instalada. ✓</p>'
             : Install.prompt
@@ -4619,12 +4717,12 @@ function renderSettings() {
                 : '<p class="muted">Buscá el ícono de instalar a la derecha de la barra de direcciones, o en el menú del navegador → <strong>Instalar Perezoso</strong>.</p>'}
         </div>
         <div class="card">
-          <h2>🔔 Notificaciones</h2>
+          <h2>Notificaciones</h2>
           <p class="muted">Para avisarte de pruebas y del pomodoro aunque estés en otra pestaña.</p>
           <button class="btn ghost" id="notif" style="margin-top:.6rem">${'Notification' in window && Notification.permission === 'granted' ? 'Activadas ✓' : 'Activar'}</button>
         </div>
         <div class="card">
-          <h2>📦 Respaldo completo</h2>
+          <h2>Respaldo completo</h2>
           <p class="muted">Un archivo con todo: datos, documentos e imágenes. Sirve para pasarlo a otra compu.</p>
           <div class="btn-row" style="margin-top:.6rem">
             <button class="btn ghost" id="export">⬇ Descargar</button>
@@ -4632,12 +4730,12 @@ function renderSettings() {
           </div>
         </div>
         <div class="card">
-          <h2>🌱 Datos iniciales</h2>
+          <h2>Datos iniciales</h2>
           <p class="muted">Vuelve a cargar tus materias, exámenes y proyectos del 2º semestre 2026 (no borra nada, solo agrega lo que falta).</p>
           <button class="btn ghost" id="seed" style="margin-top:.6rem">Cargar</button>
         </div>
         <div class="card">
-          <h2>⚠️ Borrar todo</h2>
+          <h2>Borrar todo</h2>
           <p class="muted">Elimina materias, eventos, horas y documentos de este navegador.</p>
           <button class="btn danger" id="wipe" style="margin-top:.6rem">Borrar todos los datos</button>
         </div>
@@ -4677,6 +4775,9 @@ function renderSettings() {
   rad.onchange = () => setTheme({ radius: +rad.value });
   $$('[data-dark]', v).forEach((b) => (b.onclick = () => setTheme({ dark: b.dataset.dark })));
   $('#glass', v).onchange = (e) => setTheme({ glass: e.target.checked });
+  const setBullet = (b) => { if (!b) return; st.bullet = b; applyBullet(); Store.save(); renderSettings(); };
+  $$('[data-bullet]', v).forEach((b) => (b.onclick = () => setBullet(b.dataset.bullet)));
+  $('#bullet-custom', v).onchange = (e) => setBullet(e.target.value.trim());
   const pc = $('#pattern-color', v);
   pc.oninput = () => setTheme({ patternColor: pc.value }, { live: true });
   pc.onchange = () => setTheme({ patternColor: pc.value });
@@ -4695,12 +4796,12 @@ function renderSettings() {
   $('#notif', v).onclick = async () => {
     if (!('Notification' in window)) { toast('Este navegador no soporta notificaciones.'); return; }
     const r = await Notification.requestPermission();
-    toast(r === 'granted' ? 'Notificaciones activadas 🔔' : 'No se activaron las notificaciones.');
+    toast(r === 'granted' ? 'Notificaciones activadas ' : 'No se activaron las notificaciones.');
     renderSettings();
   };
   $('#export', v).onclick = exportBackup;
   $('#import', v).onchange = (e) => importBackup(e.target.files[0]);
-  $('#seed', v).onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué lo que faltaba 🦥'); };
+  $('#seed', v).onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué lo que faltaba '); };
   $('#wipe', v).onclick = async () => {
     if (!confirm('¿Segura? Se borra TODO y no se puede deshacer.')) return;
     Store.data = Store.defaults();
@@ -4712,7 +4813,7 @@ function renderSettings() {
     Pomo.reset();
     applyTheme(globalTheme());
     Sloth.refresh();
-    toast('Datos borrados. Empezamos de cero 🌱');
+    toast('Datos borrados. Empezamos de cero ');
     location.hash = '#inicio';
   };
 }
@@ -4752,6 +4853,7 @@ async function importBackup(file) {
   Store.data = Store.merge(Store.defaults(), data);
   Store.save();
   applyTheme(globalTheme());
+  applyBullet();
   Sloth.refresh();
   toast('Respaldo restaurado ✓');
   rerender();
@@ -4766,7 +4868,7 @@ function paintAutosaveCard() {
     body = `<p class="muted">Tus datos ya quedan guardados en este navegador. Este navegador no deja además guardarlos solos en un archivo (eso funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Hacé un respaldo de vez en cuando.</p>`;
   } else if (st === 'off') {
     body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se guarda ahí <strong>solo</strong>.</p>
-      <p class="muted" style="margin-top:.4rem">💡 Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
+      <p class="muted" style="margin-top:.4rem">Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
       <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-choose">Elegir dónde guardar</button>
       <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
   } else if (st === 'ok') {
@@ -4778,7 +4880,7 @@ function paintAutosaveCard() {
       <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-reconnect">Permitir</button>
       <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
   }
-  card.innerHTML = `<h2>💾 Guardado automático</h2>${body}`;
+  card.innerHTML = `<h2>Guardado automático</h2>${body}`;
   const on = (id, fn) => { const b = $(id, card); if (b) b.onclick = fn; };
   on('#as-choose', () => AutoSave.choose());
   on('#as-open', () => AutoSave.openExisting());
@@ -4826,7 +4928,7 @@ const AutoSave = {
       const h = await window.showSaveFilePicker({ suggestedName: 'perezoso-datos.json', types: this.fileTypes });
       await this.link(h);
       await this.write();
-      toast('¡Listo! Desde ahora todo se guarda solo en ese archivo 💾');
+      toast('¡Listo! Desde ahora todo se guarda solo en ese archivo ');
     } catch (e) {
       if (e.name !== 'AbortError') toast('No se pudo elegir el archivo.');
     }
@@ -4843,7 +4945,7 @@ const AutoSave = {
       await this.link(h);
       Store.data = Store.merge(Store.defaults(), data);
       Store.save();
-      toast('Datos cargados y guardado automático activado 💾');
+      toast('Datos cargados y guardado automático activado ');
       rerender();
     } catch (e) {
       if (e.name !== 'AbortError') toast('No se pudo abrir el archivo.');
@@ -4856,7 +4958,7 @@ const AutoSave = {
       const p = await this.handle.requestPermission({ mode: 'readwrite' });
       this.status = p === 'granted' ? 'ok' : 'needs-permission';
     } catch (e) { this.status = 'needs-permission'; }
-    if (this.status === 'ok') { await this.write(); toast('Guardado automático reconectado 💾'); }
+    if (this.status === 'ok') { await this.write(); toast('Guardado automático reconectado '); }
     this.paint();
   },
 
@@ -4901,7 +5003,7 @@ const AutoSave = {
     if (!bar) return;
     if (this.status === 'needs-permission' || this.status === 'error') {
       bar.hidden = false;
-      bar.innerHTML = `<span>💾 ${this.status === 'error' ? 'No pude escribir en' : 'Para seguir guardando solo en'} <strong>${esc(this.fileName())}</strong> tocá acá.</span>
+      bar.innerHTML = `<span>${this.status === 'error' ? 'No pude escribir en' : 'Para seguir guardando solo en'} <strong>${esc(this.fileName())}</strong> tocá acá.</span>
         <button class="btn sm" id="save-reconnect">${this.status === 'error' ? 'Reintentar' : 'Permitir'}</button>`;
       $('#save-reconnect').onclick = () => (this.status === 'error' ? this.write() : this.reconnect());
     } else bar.hidden = true;
@@ -4928,7 +5030,7 @@ const Install = {
       this.prompt = e;
       if (location.hash === '#ajustes') renderSettings();
     });
-    window.addEventListener('appinstalled', () => { this.prompt = null; toast('¡Perezoso instalado! Buscalo en tu escritorio 🦥'); });
+    window.addEventListener('appinstalled', () => { this.prompt = null; toast('¡Perezoso instalado! Buscalo en tu escritorio '); });
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
@@ -5000,8 +5102,8 @@ function updateLive() {
 
   let pillHtml = '', href = '#estudio';
   if (a) pillHtml = `<span class="dot" style="--c:${subjectColor(a.subjectId)}"></span>${esc(subjectName(a.subjectId))} · ${fmtClock(now - a.start)}`;
-  else if (Store.data.activeSim) { pillHtml = '📝 Simulacro en curso'; href = '#pomodoro'; }
-  else if (Pomo.running) { pillHtml = `${PHASES[Pomo.phase].emoji} ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)}`; href = '#pomodoro'; }
+  else if (Store.data.activeSim) { pillHtml = 'Simulacro en curso'; href = '#pomodoro'; }
+  else if (Pomo.running) { pillHtml = `${PHASES[Pomo.phase].label} · ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)}`; href = '#pomodoro'; }
   $$('.live-pill').forEach((p) => {
     p.hidden = !pillHtml;
     if (pillHtml && p.innerHTML !== pillHtml) p.innerHTML = pillHtml;
@@ -5009,8 +5111,8 @@ function updateLive() {
   });
 
   document.title = Pomo.running
-    ? `${PHASES[Pomo.phase].emoji} ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)} · Perezoso`
-    : a ? `⏱ ${fmtClock(now - a.start)} · Perezoso` : 'Perezoso · Organizador semestral';
+    ? `${PHASES[Pomo.phase].label} ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)} · Perezoso`
+    : a ? `${fmtClock(now - a.start)} · Perezoso` : 'Perezoso · Organizador semestral';
 
   $$('[data-countdown]').forEach((n) => {
     const cd = countdown(new Date(+n.dataset.countdown));
@@ -5022,6 +5124,7 @@ function updateLive() {
 function init() {
   Store.load();
   applyTheme(globalTheme());
+  applyBullet();
   Sloth.init();
   Install.init();
   AutoSave.init();

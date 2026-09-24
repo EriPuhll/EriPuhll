@@ -51,8 +51,8 @@ function updateLive() {
 
   let pillHtml = '', href = '#estudio';
   if (a) pillHtml = `<span class="dot" style="--c:${subjectColor(a.subjectId)}"></span>${esc(subjectName(a.subjectId))} · ${fmtClock(now - a.start)}`;
-  else if (Store.data.activeSim) { pillHtml = '📝 Simulacro en curso'; href = '#pomodoro'; }
-  else if (Pomo.running) { pillHtml = `${PHASES[Pomo.phase].emoji} ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)}`; href = '#pomodoro'; }
+  else if (Store.data.activeSim) { pillHtml = 'Simulacro en curso'; href = '#pomodoro'; }
+  else if (Pomo.running) { pillHtml = `${PHASES[Pomo.phase].label} · ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)}`; href = '#pomodoro'; }
   $$('.live-pill').forEach((p) => {
     p.hidden = !pillHtml;
     if (pillHtml && p.innerHTML !== pillHtml) p.innerHTML = pillHtml;
@@ -60,8 +60,8 @@ function updateLive() {
   });
 
   document.title = Pomo.running
-    ? `${PHASES[Pomo.phase].emoji} ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)} · Perezoso`
-    : a ? `⏱ ${fmtClock(now - a.start)} · Perezoso` : 'Perezoso · Organizador semestral';
+    ? `${PHASES[Pomo.phase].label} ${fmtMS(Math.ceil(Pomo.left() / 1000) * 1000)} · Perezoso`
+    : a ? `${fmtClock(now - a.start)} · Perezoso` : 'Perezoso · Organizador semestral';
 
   $$('[data-countdown]').forEach((n) => {
     const cd = countdown(new Date(+n.dataset.countdown));
@@ -73,6 +73,7 @@ function updateLive() {
 function init() {
   Store.load();
   applyTheme(globalTheme());
+  applyBullet();
   Sloth.init();
   Install.init();
   AutoSave.init();

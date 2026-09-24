@@ -18,14 +18,14 @@ const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', '
 const DAYS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 const EVENT_TYPES = [
-  { id: 'control', label: 'Control', icon: '✏️' },
-  { id: 'laboratorio', label: 'Entrega de laboratorio', icon: '🧪' },
-  { id: 'entregable', label: 'Entregable', icon: '📦' },
-  { id: 'parcial', label: 'Parcial', icon: '📝' },
-  { id: 'examen', label: 'Examen', icon: '🎓' },
-  { id: 'practico', label: 'Práctico', icon: '📐' },
-  { id: 'charla', label: 'Charla', icon: '🎤' },
-  { id: 'otro', label: 'Otro', icon: '✨' },
+  { id: 'control', label: 'Control', icon: '' },
+  { id: 'laboratorio', label: 'Entrega de laboratorio', icon: '' },
+  { id: 'entregable', label: 'Entregable', icon: '' },
+  { id: 'parcial', label: 'Parcial', icon: '' },
+  { id: 'examen', label: 'Examen', icon: '' },
+  { id: 'practico', label: 'Práctico', icon: '' },
+  { id: 'charla', label: 'Charla', icon: '' },
+  { id: 'otro', label: 'Otro', icon: '' },
 ];
 // Tipos que cuentan como "prueba" para marcar semanas críticas
 const EXAM_TYPES = ['control', 'laboratorio', 'entregable', 'parcial', 'examen', 'practico'];
@@ -197,14 +197,14 @@ function fmtBytes(n) {
 
 function fileIcon(name) {
   const ext = (String(name).split('.').pop() || '').toLowerCase();
-  if (ext === 'pdf') return '📕';
-  if (['doc', 'docx', 'odt', 'txt', 'md'].includes(ext)) return '📄';
-  if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return '📊';
-  if (['ppt', 'pptx', 'odp', 'key'].includes(ext)) return '📽️';
-  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '🖼️';
-  if (['zip', 'rar', '7z'].includes(ext)) return '🗜️';
-  if (['py', 'js', 'c', 'cpp', 'java', 'm', 'r', 'ipynb', 'html', 'sql'].includes(ext)) return '💻';
-  return '📎';
+  if (ext === 'pdf') return '';
+  if (['doc', 'docx', 'odt', 'txt', 'md'].includes(ext)) return '';
+  if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return '';
+  if (['ppt', 'pptx', 'odp', 'key'].includes(ext)) return '';
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '';
+  if (['zip', 'rar', '7z'].includes(ext)) return '';
+  if (['py', 'js', 'c', 'cpp', 'java', 'm', 'r', 'ipynb', 'html', 'sql'].includes(ext)) return '';
+  return '';
 }
 
 function safeUrl(u) {

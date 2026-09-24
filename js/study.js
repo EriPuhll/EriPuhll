@@ -3,14 +3,14 @@
 /* ---------- Horas de estudio ---------- */
 
 const studyFilter = { subject: '' };
-const SOURCE_LABEL = { cronometro: '⏱ Cronómetro', pomodoro: '🍅 Pomodoro', manual: '✍️ Manual', simulacro: '📝 Simulacro' };
+const SOURCE_LABEL = { cronometro: 'Cronómetro', pomodoro: 'Pomodoro', manual: 'Manual', simulacro: 'Simulacro' };
 
 function startStudy(subjectId) {
   if (!subjectId) { toast('Elegí qué materia vas a estudiar.'); return false; }
   Store.data.activeSession = { subjectId, start: Date.now() };
   Store.data.lastStudySubject = subjectId;
   Store.save();
-  toast(`¡A estudiar ${subjectName(subjectId)}! 📚`);
+  toast(`¡A estudiar ${subjectName(subjectId)}! `);
   Sloth.paint();
   return true;
 }
@@ -68,7 +68,7 @@ function renderStudy() {
   const subs = Store.data.subjects;
   if (!subs.length) {
     $('#view').innerHTML = `<section class="page"><div class="page-head"><div><h1>Horas de estudio</h1></div></div>
-      <div class="card empty"><span class="empty-sloth big" data-sloth="head"></span>
+      <div class="card empty">
       <h2>Primero creá una materia</h2><p>Así sabemos a qué le estás dedicando tiempo.</p>
       <a class="btn" href="#materias">Ir a Materias</a></div></section>`;
     Sloth.paint($('#view'));
@@ -93,7 +93,7 @@ function renderStudy() {
 
       <div class="study-top">
         <div class="card study-timer ${a ? 'running' : ''}">
-          <span class="timer-sloth" data-sloth="head"></span>
+          
           <label class="field">¿Qué vas a estudiar?
             <select id="study-subj" ${a ? 'disabled' : ''}>${subjectOptions(selected)}</select>
           </label>
@@ -105,7 +105,7 @@ function renderStudy() {
           <div class="card stat"><span>Hoy</span><strong>${fmtHM(studiedMinutes('', todayStart))}</strong></div>
           <div class="card stat"><span>Esta semana</span><strong>${fmtHM(studiedMinutes('', weekStart))}</strong></div>
           <div class="card stat"><span>Semestre</span><strong>${fmtHM(semesterMinutes())}</strong></div>
-          <div class="card stat"><span>Racha</span><strong>${streak} ${streak === 1 ? 'día' : 'días'} ${streak >= 3 ? '🔥' : ''}</strong></div>
+          <div class="card stat"><span>Racha</span><strong>${streak} ${streak === 1 ? 'día' : 'días'} ${streak >= 3 ? '' : ''}</strong></div>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ function renderStudy() {
             const p = subjectPace(s);
             return `<div class="progress-item">
               <div class="pi-head"><a href="#materia/${s.id}"><span class="dot" style="--c:${s.color}"></span>${esc(s.name)}</a>
-                <span class="muted">${p.goal ? (p.left > 0 ? `quedan <strong>${fmtHM(p.left)}</strong>` : '¡meta cumplida! 🎉') : 'sin créditos'}</span></div>
+                <span class="muted">${p.goal ? (p.left > 0 ? `quedan <strong>${fmtHM(p.left)}</strong>` : '¡meta cumplida! ') : 'sin créditos'}</span></div>
               ${hoursBar(s)}
             </div>`;
           }).join('')}
@@ -169,7 +169,7 @@ function renderStudy() {
               <button class="icon-btn sm danger" data-rmses="${se.id}" aria-label="Borrar registro">✕</button></span>
             </div>`).join('')}
           </div>`;
-        }).join('') : '<p class="muted">Todavía no hay registros. ¡El primer paso es el más lento! 🦥</p>'}
+        }).join('') : '<p class="muted">Todavía no hay registros. ¡El primer paso es el más lento! </p>'}
       </section>
     </section>`;
 
@@ -226,7 +226,7 @@ function openSessionForm(se) {
       if (e0 - s0 > 16 * 36e5) { toast('Eso es más de 16 horas seguidas, revisá las horas.'); return; }
       if (isNew) {
         addSession(el.subjectId.value, s0, e0, 'manual');
-        toast(`Registré ${fmtHM((e0 - s0) / 60000)} 📚`);
+        toast(`Registré ${fmtHM((e0 - s0) / 60000)} `);
       } else {
         Object.assign(se, { subjectId: el.subjectId.value, start: s0, end: e0 });
         Store.save();

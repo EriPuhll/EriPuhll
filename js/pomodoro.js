@@ -3,9 +3,9 @@
 /* ---------- Pomodoro y simulacro de parcial ---------- */
 
 const PHASES = {
-  work: { label: 'Foco', emoji: '🍅' },
-  short: { label: 'Descanso corto', emoji: '☕' },
-  long: { label: 'Descanso largo', emoji: '🌿' },
+  work: { label: 'Foco', emoji: '' },
+  short: { label: 'Descanso corto', emoji: '' },
+  long: { label: 'Descanso largo', emoji: '' },
 };
 let pomoTab = 'pomodoro';
 let simResultId = null;
@@ -88,8 +88,8 @@ function renderPomodoro() {
       <div class="page-head">
         <div><h1>Pomodoro</h1><p class="sub">Bloques de foco y descansos. Lento pero constante.</p></div>
         <div class="switch" role="tablist">
-          <button role="tab" data-ptab="pomodoro" class="${pomoTab === 'pomodoro' ? 'on' : ''}">🍅 Pomodoro</button>
-          <button role="tab" data-ptab="simulacro" class="${pomoTab === 'simulacro' ? 'on' : ''}">📝 Simulacro de parcial</button>
+          <button role="tab" data-ptab="pomodoro" class="${pomoTab === 'pomodoro' ? 'on' : ''}">Pomodoro</button>
+          <button role="tab" data-ptab="simulacro" class="${pomoTab === 'simulacro' ? 'on' : ''}">Simulacro de parcial</button>
         </div>
       </div>
       <div id="pomo-content"></div>
@@ -109,7 +109,7 @@ function renderPomoTimer(el) {
           <select id="pomo-subj">${subjectOptions(p.subjectId, { allowEmpty: true, emptyLabel: '— No sumar a ninguna materia —' })}</select>
         </label>
         <div class="chip-row" style="justify-content:center">
-          ${Object.keys(PHASES).map((k) => `<button class="chip-opt ${k === Pomo.phase ? 'on' : ''}" data-phase="${k}">${PHASES[k].emoji} ${PHASES[k].label}</button>`).join('')}
+          ${Object.keys(PHASES).map((k) => `<button class="chip-opt ${k === Pomo.phase ? 'on' : ''}" data-phase="${k}">${PHASES[k].label}</button>`).join('')}
         </div>
         <div class="ring">
           <svg viewBox="0 0 240 240" aria-hidden="true">
@@ -117,9 +117,9 @@ function renderPomoTimer(el) {
             <circle cx="120" cy="120" r="104" class="ring-fg" id="ring-fg" stroke-dasharray="${RING_C}" stroke-dashoffset="0" transform="rotate(-90 120 120)"/>
           </svg>
           <div class="ring-center">
-            <span class="ring-phase">${ph.emoji} ${ph.label}</span>
+            <span class="ring-phase">${ph.label}</span>
             <span id="pomo-time" class="pomo-time" role="timer">--:--</span>
-            <span class="muted" aria-label="Pomodoros del ciclo">${'🍅'.repeat(Pomo.done % p.cycles)}${'○'.repeat(p.cycles - (Pomo.done % p.cycles))}</span>
+            <span class="muted" aria-label="Pomodoros del ciclo">${''.repeat(Pomo.done % p.cycles)}${'○'.repeat(p.cycles - (Pomo.done % p.cycles))}</span>
           </div>
         </div>
         <div class="pomo-controls">
@@ -200,7 +200,7 @@ function renderSimulacro(el) {
         <div class="sim-ex" id="sim-ex"></div>
         <div class="muted">En este ejercicio: <strong class="num" id="sim-cur">00:00</strong> · promedio disponible <strong class="num">${fmtMS((act.totalMin * 60000) / act.count)}</strong></div>
         <div class="btn-row">
-          <button class="btn big" id="sim-next">${act.marks.length + 1 >= act.count ? '🏁 Terminar' : 'Siguiente ejercicio →'}</button>
+          <button class="btn big" id="sim-next">${act.marks.length + 1 >= act.count ? 'Terminar' : 'Siguiente ejercicio →'}</button>
         </div>
         <button class="btn ghost sm danger" id="sim-quit">Abandonar simulacro</button>
       </div>`;
@@ -223,7 +223,7 @@ function renderSimulacro(el) {
   el.innerHTML = `
     <div class="grid-2">
       <form class="card form" id="sim-form">
-        <h2>📝 Nuevo simulacro</h2>
+        <h2>Nuevo simulacro</h2>
         <p class="hint">Practicá con tiempo real: elegís cuántos ejercicios y cuánto dura la prueba, y vas tocando “Siguiente” al terminar cada uno. El tiempo cuenta como horas de estudio.</p>
         <label>Materia<select name="subjectId" required>${subjectOptions(Store.data.lastStudySubject)}</select></label>
         <div class="row">
@@ -264,13 +264,13 @@ function simResultHTML(sim) {
   const p = prev[0] && simStats(prev[0]);
   const diff = p ? st.avg - p.avg : 0;
   return `<div class="card">
-    <div class="list-head"><h2>🏁 Resultado</h2><button class="btn ghost sm" id="sim-close">Cerrar</button></div>
+    <div class="list-head"><h2>Resultado</h2><button class="btn ghost sm" id="sim-close">Cerrar</button></div>
     <p><strong>${esc(subjectName(sim.subjectId))}</strong> · ${fmtDateShort(new Date(sim.start))}</p>
     <p class="muted">${sim.count} ejercicios en ${fmtHM(st.total / 60)} de ${fmtHM(sim.totalMin)} disponibles. Promedio por ejercicio: <strong>${fmtMS(st.avg * 1000)}</strong> (disponible ${fmtMS(st.avail * 1000)}).</p>
-    ${p ? `<div class="alert ${diff <= 0 ? 'ok' : 'warn'}" style="margin:.6rem 0">${diff <= 0 ? '⚡ Más rápida' : '🐢 Más lenta'} que tu simulacro anterior de esta materia: ${fmtMS(Math.abs(diff) * 1000)} ${diff <= 0 ? 'menos' : 'más'} por ejercicio (antes ${fmtMS(p.avg * 1000)}; ${p.over} pasados de tiempo, ahora ${st.over}).</div>` : '<p class="hint">Es tu primer simulacro de esta materia: el próximo lo vas a poder comparar.</p>'}
+    ${p ? `<div class="alert ${diff <= 0 ? 'ok' : 'warn'}" style="margin:.6rem 0">${diff <= 0 ? 'Más rápida' : 'Más lenta'} que tu simulacro anterior de esta materia: ${fmtMS(Math.abs(diff) * 1000)} ${diff <= 0 ? 'menos' : 'más'} por ejercicio (antes ${fmtMS(p.avg * 1000)}; ${p.over} pasados de tiempo, ahora ${st.over}).</div>` : '<p class="hint">Es tu primer simulacro de esta materia: el próximo lo vas a poder comparar.</p>'}
     <div class="table-scroll"><table class="sim-table">
       <thead><tr><th>Ejercicio</th><th>Tiempo</th><th></th></tr></thead>
-      <tbody>${sim.secsPerExercise.map((x, i) => `<tr class="${x > st.avail ? 'over' : ''}"><td>${i + 1}</td><td>${fmtMS(x * 1000)}</td><td>${x > st.avail ? '⏰ se pasó del promedio' : '✓'}</td></tr>`).join('')}</tbody>
+      <tbody>${sim.secsPerExercise.map((x, i) => `<tr class="${x > st.avail ? 'over' : ''}"><td>${i + 1}</td><td>${fmtMS(x * 1000)}</td><td>${x > st.avail ? 'se pasó del promedio' : '✓'}</td></tr>`).join('')}</tbody>
     </table></div>
   </div>`;
 }

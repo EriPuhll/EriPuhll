@@ -16,7 +16,7 @@ function renderSettings() {
 
       <div class="grid-2">
         <form class="card form" id="me-form">
-          <h2>👤 Vos y tu semestre</h2>
+          <h2>Vos y tu semestre</h2>
           <label>Tu nombre <span class="opt">(para que el perezoso te salude)</span><input name="userName" value="${esc(st.userName)}"></label>
           <div class="row">
             <label>Inicio del semestre<input type="date" name="semesterStart" value="${st.semesterStart}"></label>
@@ -33,8 +33,8 @@ function renderSettings() {
       </div>
 
       <section class="card" id="theme-card">
-        <div class="list-head"><h2>🎨 Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
-        <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña 🎨 Apariencia).</p>
+        <div class="list-head"><h2>Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
+        <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña Apariencia).</p>
         <h3 style="margin-top:1rem">Temas listos</h3>
         <div class="presets" style="margin-top:.5rem">
           ${THEME_PRESETS.map((p) => { const x = { ...defaultGlobalTheme(), ...p.t }; return `<button class="preset" data-preset="${p.id}" style="background-color:${x.bg};${x.bgType === 'pattern' ? `background-image:url('${patternUrl(x.pattern, x.patternColor)}');` : ''}color:${x.dark === 'dark' ? '#fff' : x.ink};border-color:${x.accent}"><span style="background:${x.accent};color:#fff;padding:1px 8px;border-radius:999px">${p.label}</span></button>`; }).join('')}
@@ -49,9 +49,15 @@ function renderSettings() {
             <label>Tipografía<select id="font">${Object.keys(FONTS).map((k) => `<option value="${k}" ${k === t.font ? 'selected' : ''}>${FONTS[k].label}</option>`).join('')}</select></label>
             <label>Bordes redondeados <input type="range" id="radius" min="4" max="30" value="${t.radius}"></label>
             <div class="field"><strong>Modo</strong>
-              <div class="chip-row" style="margin-top:.4rem">${[['light', '☀️ Claro'], ['dark', '🌙 Oscuro'], ['auto', '🌓 Automático']].map(([v, l]) => `<button type="button" class="chip-opt ${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div>
+              <div class="chip-row" style="margin-top:.4rem">${[['light', 'Claro'], ['dark', 'Oscuro'], ['auto', 'Automático']].map(([v, l]) => `<button type="button" class="chip-opt ${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div>
             </div>
             <label class="check"><input type="checkbox" id="glass" ${t.glass ? 'checked' : ''}> Tarjetas transparentes con desenfoque</label>
+            <div class="field"><strong>Símbolo de las listas</strong>
+              <div class="chip-row" style="margin-top:.4rem">${BULLETS.map((b) => `<button type="button" class="chip-opt ${b === st.bullet ? 'on' : ''}" data-bullet="${esc(b)}" aria-label="Usar ${esc(b)}">${esc(b)}</button>`).join('')}
+                <label class="inline">Otro <input id="bullet-custom" maxlength="3" value="${BULLETS.includes(st.bullet) ? '' : esc(st.bullet)}" placeholder="✎" style="width:70px"></label>
+              </div>
+              <ul class="plain small" style="margin-top:.5rem"><li>Así se ven las listas</li><li>con el símbolo que elijas</li></ul>
+            </div>
           </div>
           <div class="form">
             <h3>Fondo de la página</h3>
@@ -63,7 +69,7 @@ function renderSettings() {
 
       <div class="grid-3">
         <div class="card" id="install-card">
-          <h2>📲 En el escritorio</h2>
+          <h2>En el escritorio</h2>
           ${Install.installed()
             ? '<p class="muted">Ya la estás usando como app instalada. ✓</p>'
             : Install.prompt
@@ -73,12 +79,12 @@ function renderSettings() {
                 : '<p class="muted">Buscá el ícono de instalar a la derecha de la barra de direcciones, o en el menú del navegador → <strong>Instalar Perezoso</strong>.</p>'}
         </div>
         <div class="card">
-          <h2>🔔 Notificaciones</h2>
+          <h2>Notificaciones</h2>
           <p class="muted">Para avisarte de pruebas y del pomodoro aunque estés en otra pestaña.</p>
           <button class="btn ghost" id="notif" style="margin-top:.6rem">${'Notification' in window && Notification.permission === 'granted' ? 'Activadas ✓' : 'Activar'}</button>
         </div>
         <div class="card">
-          <h2>📦 Respaldo completo</h2>
+          <h2>Respaldo completo</h2>
           <p class="muted">Un archivo con todo: datos, documentos e imágenes. Sirve para pasarlo a otra compu.</p>
           <div class="btn-row" style="margin-top:.6rem">
             <button class="btn ghost" id="export">⬇ Descargar</button>
@@ -86,12 +92,12 @@ function renderSettings() {
           </div>
         </div>
         <div class="card">
-          <h2>🌱 Datos iniciales</h2>
+          <h2>Datos iniciales</h2>
           <p class="muted">Vuelve a cargar tus materias, exámenes y proyectos del 2º semestre 2026 (no borra nada, solo agrega lo que falta).</p>
           <button class="btn ghost" id="seed" style="margin-top:.6rem">Cargar</button>
         </div>
         <div class="card">
-          <h2>⚠️ Borrar todo</h2>
+          <h2>Borrar todo</h2>
           <p class="muted">Elimina materias, eventos, horas y documentos de este navegador.</p>
           <button class="btn danger" id="wipe" style="margin-top:.6rem">Borrar todos los datos</button>
         </div>
@@ -131,6 +137,9 @@ function renderSettings() {
   rad.onchange = () => setTheme({ radius: +rad.value });
   $$('[data-dark]', v).forEach((b) => (b.onclick = () => setTheme({ dark: b.dataset.dark })));
   $('#glass', v).onchange = (e) => setTheme({ glass: e.target.checked });
+  const setBullet = (b) => { if (!b) return; st.bullet = b; applyBullet(); Store.save(); renderSettings(); };
+  $$('[data-bullet]', v).forEach((b) => (b.onclick = () => setBullet(b.dataset.bullet)));
+  $('#bullet-custom', v).onchange = (e) => setBullet(e.target.value.trim());
   const pc = $('#pattern-color', v);
   pc.oninput = () => setTheme({ patternColor: pc.value }, { live: true });
   pc.onchange = () => setTheme({ patternColor: pc.value });
@@ -149,12 +158,12 @@ function renderSettings() {
   $('#notif', v).onclick = async () => {
     if (!('Notification' in window)) { toast('Este navegador no soporta notificaciones.'); return; }
     const r = await Notification.requestPermission();
-    toast(r === 'granted' ? 'Notificaciones activadas 🔔' : 'No se activaron las notificaciones.');
+    toast(r === 'granted' ? 'Notificaciones activadas ' : 'No se activaron las notificaciones.');
     renderSettings();
   };
   $('#export', v).onclick = exportBackup;
   $('#import', v).onchange = (e) => importBackup(e.target.files[0]);
-  $('#seed', v).onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué lo que faltaba 🦥'); };
+  $('#seed', v).onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué lo que faltaba '); };
   $('#wipe', v).onclick = async () => {
     if (!confirm('¿Segura? Se borra TODO y no se puede deshacer.')) return;
     Store.data = Store.defaults();
@@ -166,7 +175,7 @@ function renderSettings() {
     Pomo.reset();
     applyTheme(globalTheme());
     Sloth.refresh();
-    toast('Datos borrados. Empezamos de cero 🌱');
+    toast('Datos borrados. Empezamos de cero ');
     location.hash = '#inicio';
   };
 }
@@ -206,6 +215,7 @@ async function importBackup(file) {
   Store.data = Store.merge(Store.defaults(), data);
   Store.save();
   applyTheme(globalTheme());
+  applyBullet();
   Sloth.refresh();
   toast('Respaldo restaurado ✓');
   rerender();
@@ -220,7 +230,7 @@ function paintAutosaveCard() {
     body = `<p class="muted">Tus datos ya quedan guardados en este navegador. Este navegador no deja además guardarlos solos en un archivo (eso funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Hacé un respaldo de vez en cuando.</p>`;
   } else if (st === 'off') {
     body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se guarda ahí <strong>solo</strong>.</p>
-      <p class="muted" style="margin-top:.4rem">💡 Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
+      <p class="muted" style="margin-top:.4rem">Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
       <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-choose">Elegir dónde guardar</button>
       <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
   } else if (st === 'ok') {
@@ -232,7 +242,7 @@ function paintAutosaveCard() {
       <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-reconnect">Permitir</button>
       <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
   }
-  card.innerHTML = `<h2>💾 Guardado automático</h2>${body}`;
+  card.innerHTML = `<h2>Guardado automático</h2>${body}`;
   const on = (id, fn) => { const b = $(id, card); if (b) b.onclick = fn; };
   on('#as-choose', () => AutoSave.choose());
   on('#as-open', () => AutoSave.openExisting());

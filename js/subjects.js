@@ -3,11 +3,11 @@
 /* ---------- Materias ---------- */
 
 const SUBJECT_TABS = [
-  { id: 'resumen', label: '📋 Resumen' },
-  { id: 'documentos', label: '📂 Documentos' },
-  { id: 'practicos', label: '✅ Prácticos' },
-  { id: 'notas', label: '🎯 Notas' },
-  { id: 'apariencia', label: '🎨 Apariencia' },
+  { id: 'resumen', label: 'Resumen' },
+  { id: 'documentos', label: 'Documentos' },
+  { id: 'practicos', label: 'Prácticos' },
+  { id: 'notas', label: 'Notas' },
+  { id: 'apariencia', label: 'Apariencia' },
 ];
 const practicoUI = { onlyPrio: false, mode: 'estado' };
 
@@ -41,14 +41,14 @@ function renderSubjects() {
             return `<a class="card subj-card" href="#materia/${s.id}" style="--c:${s.color}">
               <div class="subj-card-top"><h3>${esc(s.name)}</h3><span class="badge">${Number(s.credits) || 0} cr.</span></div>
               <div class="chip-row">${s.tag ? `<span class="badge tag">${esc(s.tag)}</span>` : ''}${p.behind ? '<span class="badge warn">Atrasada</span>' : ''}</div>
-              <p class="muted">${s.professors.length ? '🧑‍🏫 ' + esc(s.professors.map((x) => x.name).filter(Boolean).join(', ')) : 'Sin docente cargado'}</p>
+              <p class="muted">${s.professors.length ? '' + esc(s.professors.map((x) => x.name).filter(Boolean).join(', ')) : 'Sin docente cargado'}</p>
               ${hoursBar(s)}
-              <p class="next">${next ? `${eventType(next).icon} ${esc(typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin pruebas próximas</span>'}</p>
+              <p class="next">${next ? `${esc(typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin pruebas próximas</span>'}</p>
             </a>`;
           }).join('')}</div>`;
       }).join('') : `
         <div class="card empty">
-          <span class="empty-sloth big" data-sloth="head"></span>
+          
           <h2>Todavía no hay materias</h2>
           <p>Creá tu primera materia, o cargá las del semestre.</p>
           <div class="btn-row"><button class="btn" id="add-subj-2">+ Crear materia</button>
@@ -58,7 +58,7 @@ function renderSubjects() {
   Sloth.paint($('#view'));
   $('#add-subj').onclick = () => openSubjectForm();
   const b2 = $('#add-subj-2'); if (b2) b2.onclick = () => openSubjectForm();
-  const seed = $('#seed'); if (seed) seed.onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué tus materias 🦥'); rerender(); };
+  const seed = $('#seed'); if (seed) seed.onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué tus materias '); rerender(); };
 }
 
 function professorRow(p = { name: '', emails: [] }) {
@@ -120,7 +120,7 @@ function openSubjectForm(s) {
       else Object.assign(s, data);
       Store.save();
       Modal.close();
-      if (isNew) { toast('¡Materia creada! 🦥'); location.hash = `#materia/${data.id}`; }
+      if (isNew) { toast('¡Materia creada! '); location.hash = `#materia/${data.id}`; }
       else { toast('Materia actualizada'); rerender(); }
     };
   });
@@ -163,7 +163,7 @@ function renderSubject(id, tab = 'resumen') {
         </div>
         <div class="hero-actions">
           <button class="btn ghost" id="s-edit">✎ Editar</button>
-          <button class="icon-btn danger" id="s-del" title="Eliminar materia" aria-label="Eliminar materia">🗑</button>
+          <button class="icon-btn danger" id="s-del" title="Eliminar materia" aria-label="Eliminar materia"></button>
         </div>
       </header>
       <div class="tabs-scroll"><nav class="tabs-row" aria-label="Secciones de la materia">
@@ -191,63 +191,63 @@ function tabResumen(s, box) {
   box.innerHTML = `
     <div class="grid-2">
       <div class="card">
-        <h2>📌 Info</h2>
+        <h2>Info</h2>
         <dl class="info-list">
           <div><dt>Profesores</dt><dd>${s.professors.length ? s.professors.map((pr) => `<div><strong>${esc(pr.name || 'Sin nombre')}</strong>
-            <div class="mails">${pr.emails.map((m) => `<a class="pill" href="mailto:${esc(m)}">✉️ ${esc(m)}</a><button class="icon-btn sm" data-copy="${esc(m)}" title="Copiar mail" aria-label="Copiar ${esc(m)}">⧉</button>`).join('')}</div></div>`).join('') : '<span class="muted">Sin cargar (✎ Editar)</span>'}</dd></div>
+            <div class="mails">${pr.emails.map((m) => `<a class="pill" href="mailto:${esc(m)}">${esc(m)}</a><button class="icon-btn sm" data-copy="${esc(m)}" title="Copiar mail" aria-label="Copiar ${esc(m)}">⧉</button>`).join('')}</div></div>`).join('') : '<span class="muted">Sin cargar (✎ Editar)</span>'}</dd></div>
           <div><dt>Bibliografía</dt><dd>${s.bibliography ? esc(s.bibliography) : '<span class="muted">Sin cargar</span>'}</dd></div>
-          <div><dt>Regla de aprobación</dt><dd>${s.rule ? `<div class="rule-box">${esc(s.rule)}</div>` : '<span class="muted">Se carga en la pestaña 🎯 Notas</span>'}</dd></div>
+          <div><dt>Regla de aprobación</dt><dd>${s.rule ? `<div class="rule-box">${esc(s.rule)}</div>` : '<span class="muted">Se carga en la pestaña Notas</span>'}</dd></div>
         </dl>
       </div>
 
       <div class="card credits-card">
-        <h2>⏳ Créditos y horas</h2>
+        <h2>Créditos y horas</h2>
         ${p.goal ? `
           <div class="credits-math"><span><strong>${s.credits}</strong> créditos</span><span>×</span><span>${hoursPerCredit()} h</span><span>=</span><span><strong>${fmtHM(p.goal)}</strong> totales</span></div>
           <div class="counter">
             <span class="counter-label">${p.left > 0 ? 'Te quedan' : '¡Meta cumplida!'}</span>
-            <span class="counter-num">${p.left > 0 ? fmtHM(p.left) : '🎉'}</span>
+            <span class="counter-num">${p.left > 0 ? fmtHM(p.left) : ''}</span>
             ${p.over > 0 ? `<span class="counter-label">Superaste la meta por ${fmtHM(p.over)}</span>` : ''}
           </div>
           <div class="bar big" style="--c:${s.color}"><span style="width:${pct}%"></span></div>
           <div class="bar-legend">${fmtHM(p.done)} dedicadas · ${pct.toFixed(0)}% · esta semana ${fmtHM(p.weekDone)}</div>
-          ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? '⚠️ Vas atrasada. ' : '🌿 '}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
+          ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? 'Vas atrasada. ' : ''}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
         : '<p class="muted">Cargá los créditos (✎ Editar) para calcular las horas de esfuerzo.</p>'}
         <button class="btn ${studying ? 'danger' : ''}" id="s-study">${studying ? '■ Terminar sesión' : '▶ Estudiar ahora'}</button>
       </div>
 
       <div class="card">
-        <h2>🙋 Faltas</h2>
+        <h2>Faltas</h2>
         <div class="absences">
           <button class="icon-btn" id="abs-minus" aria-label="Restar falta">−</button>
           <span class="big-num" aria-live="polite">${s.absences}</span>
           <button class="icon-btn" id="abs-plus" aria-label="Sumar falta">+</button>
           <label class="inline">Máximo permitido <input type="number" min="0" id="abs-max" value="${s.maxAbsences ?? ''}" placeholder="—" style="width:80px"></label>
         </div>
-        ${absWarn ? `<div class="alert warn" style="margin-top:.6rem">⚠️ ${s.absences >= s.maxAbsences ? 'Llegaste al máximo de faltas.' : 'Te queda 1 falta antes del máximo.'}</div>` : ''}
+        ${absWarn ? `<div class="alert warn" style="margin-top:.6rem">${s.absences >= s.maxAbsences ? 'Llegaste al máximo de faltas.' : 'Te queda 1 falta antes del máximo.'}</div>` : ''}
       </div>
 
       <div class="card">
-        <h2>📝 Apuntes pendientes</h2>
+        <h2>Apuntes pendientes</h2>
         <p class="hint">Clases que faltaste o apuntes que tenés que conseguir o completar.</p>
         <ul class="plain check-list" style="margin-top:.5rem">
-          ${s.pendingNotes.map((n) => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" data-note="${n.id}" ${n.done ? 'checked' : ''} aria-label="Marcar como hecho"><span>${esc(n.text)}</span><button class="icon-btn sm danger" data-rmnote="${n.id}" aria-label="Borrar">✕</button></li>`).join('') || '<li class="muted">Nada pendiente 🌿</li>'}
+          ${s.pendingNotes.map((n) => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" data-note="${n.id}" ${n.done ? 'checked' : ''} aria-label="Marcar como hecho"><span>${esc(n.text)}</span><button class="icon-btn sm danger" data-rmnote="${n.id}" aria-label="Borrar">✕</button></li>`).join('') || '<li class="muted">Nada pendiente </li>'}
         </ul>
         <form class="add-row" id="note-form"><input name="t" placeholder="Ej: Clase del lunes 14/9" required><button class="btn sm">Agregar</button></form>
       </div>
 
       <div class="card">
-        <div class="list-head"><h2>📝 Próximas pruebas</h2><button class="btn sm" id="s-add-ev">+ Evento</button></div>
+        <div class="list-head"><h2>Próximas pruebas</h2><button class="btn sm" id="s-add-ev">+ Evento</button></div>
         <div id="s-events" class="ev-list"></div>
       </div>
 
       <div class="card">
-        <div class="list-head"><h2>🏫 Horario</h2><button class="btn sm" id="s-add-cl">+ Clase</button></div>
+        <div class="list-head"><h2>Horario</h2><button class="btn sm" id="s-add-cl">+ Clase</button></div>
         ${classes.length ? `<ul class="plain">${classes.map((c) => `<li><button class="link" data-cl="${c.id}">${DAYS[c.day - 1]} ${c.start}–${c.end}</button> · ${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Sin clases cargadas.</p>'}
       </div>
     </div>`;
 
-  renderEventList($('#s-events', box), upcoming.slice(0, 5), 'Nada a la vista. 🌿');
+  renderEventList($('#s-events', box), upcoming.slice(0, 5), 'Nada a la vista. ');
   $('#s-study', box).onclick = () => {
     if (studying) { stopStudy(); rerender(); } else if (startStudy(s.id)) location.hash = '#estudio';
   };
@@ -272,7 +272,7 @@ function sortedDocs(s, sectionId) {
 function tabDocumentos(s, box) {
   box.innerHTML = `
     <section class="card">
-      <div class="list-head"><h2>📂 Documentos</h2><button class="btn sm" id="add-sec">+ Nueva sección</button></div>
+      <div class="list-head"><h2>Documentos</h2><button class="btn sm" id="add-sec">+ Nueva sección</button></div>
       <p class="hint">Creá las secciones que quieras (Prácticos, Teórico, Hoja de fórmulas…). Subí archivos, arrastralos, o guardá links de Drive o de la plataforma de la facultad.</p>
       <div class="sections" style="margin-top:.8rem">
         ${s.sections.map((sec, i) => sectionHtml(s, sec, i)).join('') || '<p class="muted">No hay secciones.</p>'}
@@ -294,22 +294,22 @@ function sectionHtml(s, sec, i) {
   return `
     <div class="section" data-sec="${sec.id}">
       <div class="sec-head">
-        <h3>📁 ${esc(sec.name)} <span class="count">${docs.length}</span></h3>
+        <h3>${esc(sec.name)} <span class="count">${docs.length}</span></h3>
         <div>
           <button class="icon-btn sm" data-secmove="${sec.id}|-1" ${i === 0 ? 'disabled' : ''} title="Mover antes" aria-label="Mover sección antes">↑</button>
           <button class="icon-btn sm" data-secmove="${sec.id}|1" ${i === last ? 'disabled' : ''} title="Mover después" aria-label="Mover sección después">↓</button>
           <button class="icon-btn sm" data-rename="${sec.id}" title="Renombrar" aria-label="Renombrar sección">✎</button>
-          <button class="icon-btn sm danger" data-rmsec="${sec.id}" title="Eliminar sección" aria-label="Eliminar sección">🗑</button>
+          <button class="icon-btn sm danger" data-rmsec="${sec.id}" title="Eliminar sección" aria-label="Eliminar sección"></button>
         </div>
       </div>
       <div class="dropzone">
         <label class="btn ghost sm">⬆ Subir archivos<input type="file" multiple data-upload="${sec.id}" hidden></label>
-        <button class="btn ghost sm" data-addlink="${sec.id}">🔗 Guardar link</button>
+        <button class="btn ghost sm" data-addlink="${sec.id}">Guardar link</button>
         <span class="muted small">o arrastralos acá</span>
       </div>
       ${docs.length ? `<ul class="files">${docs.map((d, k) => `
         <li>
-          <span class="f-ic">${d.kind === 'link' ? '🔗' : fileIcon(d.name)}</span>
+          <span class="f-ic">${d.kind === 'link' ? '' : fileIcon(d.name)}</span>
           <span class="f-main">
             ${d.kind === 'link' ? `<a class="f-name" href="${esc(safeUrl(d.url))}" target="_blank" rel="noopener">${esc(d.title)}</a>` : `<button class="link f-name" data-open="${d.id}" title="Abrir">${esc(d.title || d.name)}</button>`}
             <span class="f-meta">${d.kind === 'link' ? esc(d.url) : `${fmtBytes(d.size)} · ${fmtDateShort(new Date(d.added))}`}</span>
@@ -341,7 +341,7 @@ async function addFiles(s, sectionId, fileList) {
     }
   }
   Store.save();
-  if (ok) toast(ok === 1 ? 'Archivo guardado 📎' : `${ok} archivos guardados 📎`);
+  if (ok) toast(ok === 1 ? 'Archivo guardado ' : `${ok} archivos guardados `);
   rerender();
 }
 
@@ -442,7 +442,7 @@ function tabPracticos(s, box) {
   box.innerHTML = `
     <section class="card">
       <div class="list-head">
-        <h2>✅ Prácticos</h2>
+        <h2>Prácticos</h2>
         <button class="btn sm" id="add-prac">+ Nuevo práctico</button>
       </div>
       ${s.practicos.length ? `
@@ -468,13 +468,13 @@ function tabPracticos(s, box) {
               <div class="sec-head"><h3>${esc(p.name)}</h3>
                 <div><button class="icon-btn sm" data-pren="${p.id}" aria-label="Renombrar">✎</button>
                 <button class="icon-btn sm" data-pcount="${p.id}" aria-label="Cambiar cantidad de ejercicios">#</button>
-                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico">🗑</button></div></div>
+                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico"></button></div></div>
               <div class="muted small">${ps.done}/${ps.total} resueltos · ★ ${ps.prioDone}/${ps.prio} prioritarios</div>
               <div class="bar" style="--c:var(--moss)"><span style="width:${ps.total ? (ps.done / ps.total) * 100 : 0}%"></span></div>
               <div class="ex-grid">${exs.map((e) => `<button class="ex ${e.priority ? 'prio' : ''}" data-ex="${p.id}|${e.n}" data-state="${e.state}" title="Ejercicio ${e.n}: ${EX_LABEL[e.state]}${e.priority ? ' · prioritario' : ''}" aria-label="Ejercicio ${e.n}, ${EX_LABEL[e.state]}${e.priority ? ', prioritario' : ''}">${e.n}</button>`).join('') || '<span class="muted small">No hay prioritarios acá.</span>'}</div>
             </div>`;
           }).join('')}
-        </div>` : `<div class="empty small"><span class="empty-sloth" data-sloth="head"></span><p>Agregá un práctico con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
+        </div>` : `<div class="empty small"><p>Agregá un práctico con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
     </section>`;
   Sloth.paint(box);
 
@@ -551,7 +551,7 @@ function tabNotas(s, box) {
   box.innerHTML = `
     <div class="grid-2">
       <section class="card">
-        <div class="list-head"><h2>🎯 Evaluaciones</h2><button class="btn sm" id="add-eval">+ Evaluación</button></div>
+        <div class="list-head"><h2>Evaluaciones</h2><button class="btn sm" id="add-eval">+ Evaluación</button></div>
         ${s.evaluations.length ? `<div class="table-scroll"><table class="eval-table">
           <thead><tr><th>Nombre</th><th>Nota</th><th>Máx.</th><th>Peso %</th><th></th></tr></thead>
           <tbody>${s.evaluations.map((e) => `<tr data-eval="${e.id}">
@@ -566,7 +566,7 @@ function tabNotas(s, box) {
       </section>
 
       <section class="card">
-        <h2>📊 Cómo vas</h2>
+        <h2>Cómo vas</h2>
         ${g.avg == null ? '<p class="muted">Cuando cargues una nota, acá vas a ver tu promedio ponderado.</p>' : `
           <div class="big-stat">${g.avg.toFixed(1)}%</div>
           <p class="muted">Promedio ponderado sobre lo rendido (${g.gradedW}% del total). Acumulado: <strong>${g.earned.toFixed(1)}</strong> de ${g.totalW} puntos posibles.</p>`}
@@ -599,14 +599,14 @@ function tabNotas(s, box) {
     if (!g.totalW) { out.innerHTML = '<p class="muted">Primero cargá las evaluaciones con su peso.</p>'; return; }
     const needPts = (target / 100) * g.totalW - g.earned;
     if (g.remainingW <= 0) {
-      out.innerHTML = `<div class="alert ${needPts <= 0 ? 'ok' : 'warn'}">${needPts <= 0 ? '🎉 Ya llegaste a ese objetivo.' : 'No quedan evaluaciones por rendir para llegar a ese objetivo.'}</div>`;
+      out.innerHTML = `<div class="alert ${needPts <= 0 ? 'ok' : 'warn'}">${needPts <= 0 ? 'Ya llegaste a ese objetivo.' : 'No quedan evaluaciones por rendir para llegar a ese objetivo.'}</div>`;
       return;
     }
     const need = (needPts / g.remainingW) * 100;
     out.innerHTML = need <= 0
-      ? '<div class="alert ok">🎉 Ya lo tenés asegurado con lo que rendiste.</div>'
+      ? '<div class="alert ok">Ya lo tenés asegurado con lo que rendiste.</div>'
       : need > 100
-        ? `<div class="alert warn">😬 Necesitarías ${need.toFixed(0)}% en lo que queda (${g.remainingW}% del total): no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</div>`
+        ? `<div class="alert warn">Necesitarías ${need.toFixed(0)}% en lo que queda (${g.remainingW}% del total): no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</div>`
         : `<div class="alert">Necesitás un promedio de <strong>${need.toFixed(1)}%</strong> en lo que te queda por rendir (${g.remainingW}% del total).</div>`;
   };
   $('#need-form', box).onsubmit = (e) => { e.preventDefault(); calc(); };
@@ -619,7 +619,7 @@ function tabApariencia(s, box) {
   const t = s.theme;
   box.innerHTML = `
     <section class="card">
-      <h2>🎨 Apariencia de ${esc(s.name)}</h2>
+      <h2>Apariencia de ${esc(s.name)}</h2>
       <p class="hint">Se ve solo cuando estás dentro de esta materia. Los cambios se guardan solos y los ves en vivo.</p>
       <div class="form" style="margin-top:.8rem">
         <div class="field"><strong>Color de la materia</strong>

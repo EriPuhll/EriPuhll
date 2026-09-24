@@ -36,7 +36,7 @@ const AutoSave = {
       const h = await window.showSaveFilePicker({ suggestedName: 'perezoso-datos.json', types: this.fileTypes });
       await this.link(h);
       await this.write();
-      toast('¡Listo! Desde ahora todo se guarda solo en ese archivo 💾');
+      toast('¡Listo! Desde ahora todo se guarda solo en ese archivo ');
     } catch (e) {
       if (e.name !== 'AbortError') toast('No se pudo elegir el archivo.');
     }
@@ -53,7 +53,7 @@ const AutoSave = {
       await this.link(h);
       Store.data = Store.merge(Store.defaults(), data);
       Store.save();
-      toast('Datos cargados y guardado automático activado 💾');
+      toast('Datos cargados y guardado automático activado ');
       rerender();
     } catch (e) {
       if (e.name !== 'AbortError') toast('No se pudo abrir el archivo.');
@@ -66,7 +66,7 @@ const AutoSave = {
       const p = await this.handle.requestPermission({ mode: 'readwrite' });
       this.status = p === 'granted' ? 'ok' : 'needs-permission';
     } catch (e) { this.status = 'needs-permission'; }
-    if (this.status === 'ok') { await this.write(); toast('Guardado automático reconectado 💾'); }
+    if (this.status === 'ok') { await this.write(); toast('Guardado automático reconectado '); }
     this.paint();
   },
 
@@ -111,7 +111,7 @@ const AutoSave = {
     if (!bar) return;
     if (this.status === 'needs-permission' || this.status === 'error') {
       bar.hidden = false;
-      bar.innerHTML = `<span>💾 ${this.status === 'error' ? 'No pude escribir en' : 'Para seguir guardando solo en'} <strong>${esc(this.fileName())}</strong> tocá acá.</span>
+      bar.innerHTML = `<span>${this.status === 'error' ? 'No pude escribir en' : 'Para seguir guardando solo en'} <strong>${esc(this.fileName())}</strong> tocá acá.</span>
         <button class="btn sm" id="save-reconnect">${this.status === 'error' ? 'Reintentar' : 'Permitir'}</button>`;
       $('#save-reconnect').onclick = () => (this.status === 'error' ? this.write() : this.reconnect());
     } else bar.hidden = true;
@@ -138,7 +138,7 @@ const Install = {
       this.prompt = e;
       if (location.hash === '#ajustes') renderSettings();
     });
-    window.addEventListener('appinstalled', () => { this.prompt = null; toast('¡Perezoso instalado! Buscalo en tu escritorio 🦥'); });
+    window.addEventListener('appinstalled', () => { this.prompt = null; toast('¡Perezoso instalado! Buscalo en tu escritorio '); });
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }

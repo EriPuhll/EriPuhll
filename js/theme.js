@@ -90,6 +90,14 @@ async function applyTheme(t) {
   document.body.classList.toggle('glass', (t.bgType && t.bgType !== 'none') || !!t.glass);
 }
 
+const BULLETS = ['•', '◆', '★', '♥', '✿', '✦', '➜', '○', '☾', '♪', '~', '—'];
+
+// Viñeta de las listas (Ajustes → Apariencia)
+function applyBullet() {
+  const b = String(Store.data.settings.bullet || '•').slice(0, 3);
+  document.documentElement.style.setProperty('--bullet', JSON.stringify(b));
+}
+
 function globalTheme() { return { ...Store.data.settings.theme }; }
 
 function subjectTheme(s) {
@@ -113,7 +121,7 @@ function bgEditorHTML(t, patternColor) {
       <div class="presets">${PATTERNS.map((p) => `<button type="button" class="preset ${t.pattern === p.id ? 'on' : ''}" data-pattern="${p.id}" style="background-image:url('${patternUrl(p.id, patternColor)}')">${p.label}</button>`).join('')}</div>
     </div>
     <div class="bg-opts" data-show="image" ${t.bgType === 'image' ? '' : 'hidden'}>
-      <label class="btn ghost sm">🖼️ Elegir imagen<input type="file" accept="image/*" data-bgfile hidden></label>
+      <label class="btn ghost sm">Elegir imagen<input type="file" accept="image/*" data-bgfile hidden></label>
       <span class="muted small">${t.bgImageId ? 'Imagen cargada ✓' : 'Todavía no elegiste ninguna.'}</span>
     </div>`;
 }

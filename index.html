@@ -14,52 +14,44 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="dock">
-        <button class="dock-sloth" data-sloth="full" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
-        <div class="dock-bubble" id="dock-bubble" role="status"></div>
-      </div>
-      <a class="brand" href="#inicio"><strong>Perezoso</strong><small>despacito, pero al día</small></a>
-      <nav class="side-nav" aria-label="Secciones">
-        <a href="#inicio" data-tab="inicio"><span class="ic">🏡</span>Inicio</a>
-        <a href="#calendario" data-tab="calendario"><span class="ic">📅</span>Calendario</a>
-        <a href="#materias" data-tab="materias"><span class="ic">📚</span>Materias</a>
-        <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span>Horas de estudio</a>
-        <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span>Pomodoro</a>
-        <a href="#proyectos" data-tab="proyectos"><span class="ic">🤝</span>Proyectos</a>
-        <a href="#perezoso" data-tab="perezoso"><span class="ic">🦥</span>Perezoso</a>
-        <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span>Ajustes</a>
-      </nav>
-      <a class="live-pill" href="#estudio" hidden></a>
-    </aside>
-
-    <div class="main-col">
-      <header class="mobile-top">
-        <button class="mobile-sloth" data-sloth="head" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
-        <a class="brand" href="#inicio"><strong>Perezoso</strong></a>
-        <a class="live-pill" href="#estudio" hidden></a>
-      </header>
-      <div id="save-banner" class="save-banner" hidden></div>
-      <main id="view" tabindex="-1"></main>
-    </div>
-  </div>
+  <header class="topbar">
+    <a class="brand" href="#inicio">
+      <span class="brand-logo" data-sloth="head"></span>
+      <span class="brand-text"><strong>Perezoso</strong><small>despacito, pero al día</small></span>
+    </a>
+    <nav class="tabs" aria-label="Secciones">
+        <a href="#inicio" data-tab="inicio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Inicio</span></a>
+        <a href="#calendario" data-tab="calendario"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></a>
+        <a href="#materias" data-tab="materias"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h12"/></svg><span>Materias</span></a>
+        <a href="#estudio" data-tab="estudio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span>Estudio</span></a>
+        <a href="#pomodoro" data-tab="pomodoro"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 5c0-2 2-3 4-3M8.5 5.8c2 1.2 5 1.2 7 0"/></svg><span>Pomodoro</span></a>
+        <a href="#proyectos" data-tab="proyectos"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15.5 14.5c3 0 5.5 2 5.5 5"/></svg><span>Proyectos</span></a>
+        <a href="#perezoso" data-tab="perezoso"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.5 11.5c1.5-1.4 3.2-1.4 4.2 0M13.3 11.5c1-1.4 2.7-1.4 4.2 0M10 16c1.3 1 2.7 1 4 0"/></svg><span>Perezoso</span></a>
+        <a href="#ajustes" data-tab="ajustes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Ajustes</span></a>
+    </nav>
+    <a class="live-pill" href="#estudio" hidden></a>
+  </header>
+  <div id="save-banner" class="save-banner" hidden></div>
+  <main id="view" tabindex="-1"></main>
 
   <nav class="bottom-nav" aria-label="Secciones">
-    <a href="#inicio" data-tab="inicio"><span class="ic">🏡</span><span>Inicio</span></a>
-    <a href="#calendario" data-tab="calendario"><span class="ic">📅</span><span>Calendario</span></a>
-    <a href="#materias" data-tab="materias"><span class="ic">📚</span><span>Materias</span></a>
-    <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span><span>Estudio</span></a>
-    <button type="button" id="more-btn" aria-expanded="false" aria-controls="more-sheet"><span class="ic">☰</span><span>Más</span></button>
+    <a href="#inicio" data-tab="inicio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Inicio</span></a>
+    <a href="#calendario" data-tab="calendario"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></a>
+    <a href="#materias" data-tab="materias"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h12"/></svg><span>Materias</span></a>
+    <a href="#estudio" data-tab="estudio"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span>Estudio</span></a>
+    <button type="button" id="more-btn" aria-expanded="false" aria-controls="more-sheet"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Más</span></button>
   </nav>
   <div id="more-sheet" class="more-sheet" hidden>
-    <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span>Pomodoro</a>
-    <a href="#proyectos" data-tab="proyectos"><span class="ic">🤝</span>Proyectos</a>
-    <a href="#perezoso" data-tab="perezoso"><span class="ic">🦥</span>Perezoso</a>
-    <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span>Ajustes</a>
+    <a href="#pomodoro" data-tab="pomodoro"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 5c0-2 2-3 4-3M8.5 5.8c2 1.2 5 1.2 7 0"/></svg>Pomodoro</a>
+    <a href="#proyectos" data-tab="proyectos"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15.5 14.5c3 0 5.5 2 5.5 5"/></svg>Proyectos</a>
+    <a href="#perezoso" data-tab="perezoso"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.5 11.5c1.5-1.4 3.2-1.4 4.2 0M13.3 11.5c1-1.4 2.7-1.4 4.2 0M10 16c1.3 1 2.7 1 4 0"/></svg>Perezoso</a>
+    <a href="#ajustes" data-tab="ajustes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Ajustes</a>
   </div>
 
-  <!-- El perezoso que baja por la liana de vez en cuando -->
+  <!-- Botoncito discreto para llamar al perezoso -->
+  <button class="sloth-fab" id="sloth-fab" data-sloth="head" data-sloth-talk title="Llamar al perezoso" aria-label="Llamar al perezoso"></button>
+
+  <!-- El perezoso que baja colgado de su rama de vez en cuando -->
   <div id="sloth-peek" class="sloth-peek" aria-live="polite">
     <div class="sloth-bubble" id="sloth-bubble"></div>
     <button class="sloth-body" id="sloth-body" data-sloth="vine" aria-label="Perezoso (tocá para despedirlo)"></button>
