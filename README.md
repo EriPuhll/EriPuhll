@@ -6,7 +6,9 @@ Una app web para organizar el semestre de facultad: calendario de pruebas, horar
 
 ## Cómo usarla
 
-No hace falta instalar nada: abrí `index.html` en el navegador (Chrome, Firefox, Edge o Safari).
+**La forma más fácil:** descargá **`Perezoso.html`** y abrilo con doble clic. Es la app entera en un solo archivo, funciona sin internet y sin instalar nada.
+
+También podés abrir `index.html`, pero solo si está junto a las carpetas `css`, `js` e `img` (si lo abrís desde adentro del ZIP sin descomprimir, se ve sin estilos).
 
 Si preferís servirla localmente:
 
@@ -62,6 +64,10 @@ js/pomodoro.js            pomodoro
 js/settings.js            ajustes, respaldo y datos de ejemplo
 js/app.js                 navegación y reloj
 js/vendor/jspdf.umd.min.js  generador de PDF (jsPDF, licencia MIT)
+Perezoso.html             versión en un solo archivo (se genera)
+tools/build-standalone.py genera Perezoso.html
 ```
+
+Después de cambiar el código, regenerá la versión de un solo archivo con `python3 tools/build-standalone.py`.
 
 ¿Querés probarla rápido? En **Materias** o **Ajustes** tocá **“Datos de ejemplo”**.
