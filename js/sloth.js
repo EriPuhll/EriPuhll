@@ -304,8 +304,10 @@ function slothSVG({ view = 'full', mood, sloth } = {}) {
   const vb = vine ? '-12 -90 344 330' : '-12 10 344 240';
   return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sloth-svg mood-${m}">
     ${vines}
-    <path d="M250 126 C 258 160, 262 186, 258 206" stroke="${c.furDark}" stroke-width="22" fill="none" stroke-linecap="round"/>
-    ${claws(258, 208)}
+    <path d="M264 122 C 272 156, 274 184, 270 204" stroke="${c.furDark}" stroke-width="22" fill="none" stroke-linecap="round"/>
+    ${claws(270, 206)}
+    <path d="M226 128 C 232 160, 234 186, 230 208" stroke="${c.furDark}" stroke-width="22" fill="none" stroke-linecap="round"/>
+    ${claws(230, 210)}
     ${branch}
     <g transform="${BACK_TF}">${at('back')}</g>
     ${outfit.back}
