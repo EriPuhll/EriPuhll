@@ -32,6 +32,15 @@ function renderSettings() {
         <div class="card" id="autosave-card"></div>
       </div>
 
+      <section class="card form">
+        <h2>Qué querés ver</h2>
+        <p class="hint">Cualquier bloque se puede minimizar (–) u ocultar (✕) desde su esquina. Acá elegís además qué pestañas tienen las materias.</p>
+        <div class="chip-row">
+          ${SUBJECT_TABS.filter((t) => t.id !== 'resumen').map((t) => `<label class="check chip-check"><input type="checkbox" data-subtab="${t.id}" ${(st.subjectTabsHidden || []).includes(t.id) ? '' : 'checked'}> ${esc(t.label)}</label>`).join('')}
+        </div>
+        <div class="btn-row"><button type="button" class="btn ghost sm" id="show-all">Volver a mostrar todo lo que oculté (${Object.keys(layoutState().hidden).length})</button></div>
+      </section>
+
       <section class="card" id="theme-card">
         <div class="list-head"><h2>Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
         <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña Apariencia).</p>
@@ -153,6 +162,13 @@ function renderSettings() {
   }));
   $('#theme-reset', v).onclick = () => { st.theme = { ...defaultGlobalTheme(), bgImageId: st.theme.bgImageId }; applyTheme(globalTheme()); Store.save(); renderSettings(); };
 
+  $$('[data-subtab]', v).forEach((c) => (c.onchange = () => {
+    const set = new Set(st.subjectTabsHidden || []);
+    if (c.checked) set.delete(c.dataset.subtab); else set.add(c.dataset.subtab);
+    st.subjectTabsHidden = [...set];
+    Store.save();
+  }));
+  $('#show-all', v).onclick = () => { st.layout = { hidden: {}, collapsed: {} }; Store.save(); toast('Listo, se ve todo de nuevo'); renderSettings(); };
   paintAutosaveCard();
   const inst = $('#install', v); if (inst) inst.onclick = () => Install.run();
   $('#notif', v).onclick = async () => {

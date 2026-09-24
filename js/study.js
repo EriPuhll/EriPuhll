@@ -110,13 +110,8 @@ function renderStudy() {
       </div>
 
       <div class="grid-2">
-        <section class="card">
-          <h2>Últimos 14 días</h2>
-          ${last14Chart()}
-        </section>
-        <section class="card">
-          <h2>Esta semana por materia</h2>
-          <div class="progress-list">
+        ${block('estudio.14dias', 'Últimos 14 días', last14Chart())}
+        ${block('estudio.semana', 'Esta semana por materia', `<div class="progress-list">
             ${subs.map((s) => {
               const p = subjectPace(s);
               const goal = p.perWeek;
@@ -127,13 +122,10 @@ function renderStudy() {
                 <div class="bar" style="--c:${s.color}"><span style="width:${goal ? pct : 0}%"></span></div>
               </div>`;
             }).join('')}
-          </div>
-        </section>
+          </div>`)}
       </div>
 
-      <section class="card">
-        <h2>Horas del semestre por materia</h2>
-        <div class="progress-list">
+      ${block('estudio.semestre', 'Horas del semestre por materia', `<div class="progress-list">
           ${subs.map((s) => {
             const p = subjectPace(s);
             return `<div class="progress-item">
@@ -142,18 +134,9 @@ function renderStudy() {
               ${hoursBar(s)}
             </div>`;
           }).join('')}
-        </div>
-      </section>
+        </div>`)}
 
-      <section class="card">
-        <div class="list-head">
-          <h2>Registro</h2>
-          <div class="filters">
-            <select id="log-subj" aria-label="Filtrar por materia"><option value="">Todas las materias</option>${subjectOptions(studyFilter.subject)}</select>
-            <button class="btn sm ghost" id="add-manual">+ Cargar a mano</button>
-          </div>
-        </div>
-        ${sessions.length ? Object.keys(byDay).map((k) => {
+      ${block('estudio.registro', 'Registro', `${sessions.length ? Object.keys(byDay).map((k) => {
           const list = byDay[k];
           const total = list.reduce((acc, se) => acc + sessionMinutes(se), 0);
           const d = parseDate(k);
@@ -169,12 +152,14 @@ function renderStudy() {
               <button class="icon-btn sm danger" data-rmses="${se.id}" aria-label="Borrar registro">✕</button></span>
             </div>`).join('')}
           </div>`;
-        }).join('') : '<p class="muted">Todavía no hay registros. ¡El primer paso es el más lento! </p>'}
-      </section>
+        }).join('') : '<p class="muted">Todavía no hay registros. ¡El primer paso es el más lento!</p>'}`, { actions: `<select id="log-subj" aria-label="Filtrar por materia"><option value="">Todas las materias</option>${subjectOptions(studyFilter.subject)}</select>
+            <button class="btn sm ghost" id="add-manual">+ Cargar a mano</button>` })}
+      ${hiddenBar([['estudio.14dias', 'Últimos 14 días'], ['estudio.semana', 'Esta semana por materia'], ['estudio.semestre', 'Horas del semestre'], ['estudio.registro', 'Registro']])}
     </section>`;
 
   const v = $('#view');
   Sloth.paint(v);
+  bindBlocks(v);
   const tip = $('.chart-tip', v);
   $$('.bar-g', v).forEach((g) => {
     const show = () => { tip.textContent = g.dataset.tip; tip.classList.remove('muted'); };
@@ -186,8 +171,8 @@ function renderStudy() {
     else startStudy($('#study-subj').value);
     renderStudy();
   };
-  $('#log-subj').onchange = (e) => { studyFilter.subject = e.target.value; renderStudy(); };
-  $('#add-manual').onclick = () => openSessionForm();
+  on(v, '#log-subj', 'onchange', (e) => { studyFilter.subject = e.target.value; renderStudy(); });
+  on(v, '#add-manual', 'onclick', () => openSessionForm());
   $$('[data-edses]', v).forEach((b) => (b.onclick = () => openSessionForm(Store.data.sessions.find((se) => se.id === b.dataset.edses))));
   $$('[data-rmses]', v).forEach((b) => (b.onclick = () => {
     if (!confirm('¿Borrar este registro? Las horas vuelven a sumarse a lo que falta.')) return;

@@ -64,7 +64,7 @@ function renderSubjects() {
 function professorRow(p = { name: '', emails: [] }) {
   return `<div class="row prof-row">
     <label>Nombre<input data-pname value="${esc(p.name)}" placeholder="Ej: Dra. Ana Pérez"></label>
-    <label>Mails <span class="opt">(separados por coma)</span><input data-pmails value="${esc((p.emails || []).join(', '))}" placeholder="ana@um.edu.uy"></label>
+    <label>Mails<input data-pmails value="${esc((p.emails || []).join(', '))}" placeholder="ana@um.edu.uy, otro@gmail.com"></label>
   </div>`;
 }
 
@@ -85,6 +85,7 @@ function openSubjectForm(s) {
         <label>Etiqueta <span class="opt">(opcional)</span><input name="tag" value="${esc(data.tag)}" placeholder="Ej: Recursando"></label>
       </div>
       <fieldset><legend>Profesores</legend>
+        <p class="hint">Si tiene más de un mail, separalos con coma.</p>
         <div id="profs">${(data.professors.length ? data.professors : [{ name: '', emails: [] }]).map(professorRow).join('')}</div>
         <button type="button" class="btn ghost sm" id="add-prof">+ Otro profesor</button>
       </fieldset>
@@ -149,7 +150,8 @@ async function deleteSubject(s) {
 function renderSubject(id, tab = 'resumen') {
   const s = subjectById(id);
   if (!s) { location.hash = '#materias'; return; }
-  if (!SUBJECT_TABS.some((t) => t.id === tab)) tab = 'resumen';
+  const tabs = SUBJECT_TABS.filter((t) => t.id === 'resumen' || !(Store.data.settings.subjectTabsHidden || []).includes(t.id));
+  if (!tabs.some((t) => t.id === tab)) tab = 'resumen';
   applyTheme(subjectTheme(s));
 
   $('#view').innerHTML = `
@@ -163,11 +165,11 @@ function renderSubject(id, tab = 'resumen') {
         </div>
         <div class="hero-actions">
           <button class="btn ghost" id="s-edit">✎ Editar</button>
-          <button class="icon-btn danger" id="s-del" title="Eliminar materia" aria-label="Eliminar materia"></button>
+          <button class="icon-btn danger" id="s-del" title="Eliminar materia" aria-label="Eliminar materia"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>
         </div>
       </header>
       <div class="tabs-scroll"><nav class="tabs-row" aria-label="Secciones de la materia">
-        ${SUBJECT_TABS.map((t) => `<a href="#materia/${s.id}/${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</a>`).join('')}
+        ${tabs.map((t) => `<a href="#materia/${s.id}/${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</a>`).join('')}
       </nav></div>
       <div id="subj-tab"></div>
     </section>`;
@@ -179,6 +181,11 @@ function renderSubject(id, tab = 'resumen') {
 
 /* --- Resumen --- */
 
+const RESUMEN_BLOCKS = [
+  ['materia.info', 'Info de la materia'], ['materia.creditos', 'Créditos y horas'], ['materia.pruebas', 'Próximas pruebas'],
+  ['materia.apuntes', 'Apuntes pendientes'], ['materia.horario', 'Horario'], ['materia.faltas', 'Faltas'],
+];
+
 function tabResumen(s, box) {
   const p = subjectPace(s);
   const pct = p.goal ? Math.min(100, (p.done / p.goal) * 100) : 0;
@@ -188,79 +195,71 @@ function tabResumen(s, box) {
   const studying = Store.data.activeSession && Store.data.activeSession.subjectId === s.id;
   const absWarn = s.maxAbsences != null && s.absences >= s.maxAbsences - 1;
 
+  const info = `<dl class="info-list">
+      <div><dt>Profesores</dt><dd>${s.professors.length ? s.professors.map((pr) => `<div><strong>${esc(pr.name || 'Sin nombre')}</strong>
+        <div class="mails">${pr.emails.map((m) => `<a class="pill" href="mailto:${esc(m)}">${esc(m)}</a><button class="icon-btn sm" data-copy="${esc(m)}" title="Copiar mail" aria-label="Copiar ${esc(m)}">⧉</button>`).join('')}</div></div>`).join('') : '<span class="muted">Sin cargar (✎ Editar)</span>'}</dd></div>
+      <div><dt>Bibliografía</dt><dd>${s.bibliography ? esc(s.bibliography) : '<span class="muted">Sin cargar</span>'}</dd></div>
+      <div><dt>Regla de aprobación</dt><dd>${s.rule ? `<div class="rule-box">${esc(s.rule)}</div>` : '<span class="muted">Se carga en la pestaña Notas</span>'}</dd></div>
+    </dl>`;
+
+  const creditos = `<div class="credits-card">${p.goal ? `
+      <div class="credits-math"><span><strong>${s.credits}</strong> créditos</span><span>×</span><span>${hoursPerCredit()} h</span><span>=</span><span><strong>${fmtHM(p.goal)}</strong> totales</span></div>
+      <div class="counter">
+        <span class="counter-label">${p.left > 0 ? 'Te quedan' : '¡Meta cumplida!'}</span>
+        ${p.left > 0 ? `<span class="counter-num">${fmtHM(p.left)}</span>` : ''}
+        ${p.over > 0 ? `<span class="counter-label">Superaste la meta por ${fmtHM(p.over)}</span>` : ''}
+      </div>
+      <div class="bar big" style="--c:${s.color}"><span style="width:${pct}%"></span></div>
+      <div class="bar-legend">${fmtHM(p.done)} dedicadas · ${pct.toFixed(0)}% · esta semana ${fmtHM(p.weekDone)}</div>
+      ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? 'Vas atrasada. ' : ''}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
+    : '<p class="muted">Cargá los créditos (✎ Editar) para calcular las horas de esfuerzo.</p>'}
+      <button class="btn ${studying ? 'danger' : ''}" id="s-study">${studying ? '■ Terminar sesión' : '▶ Estudiar ahora'}</button></div>`;
+
+  const faltas = `<div class="absences">
+      <button class="icon-btn sm" id="abs-minus" aria-label="Restar falta">−</button>
+      <span class="abs-num" aria-live="polite">${s.absences}</span>
+      <button class="icon-btn sm" id="abs-plus" aria-label="Sumar falta">+</button>
+      <label class="inline small">de máximo <input type="number" min="0" id="abs-max" value="${s.maxAbsences ?? ''}" placeholder="—" style="width:64px;padding:.3rem .4rem"></label>
+    </div>
+    ${absWarn ? `<p class="small" style="color:var(--danger);font-weight:700;margin-top:.4rem">${s.absences >= s.maxAbsences ? 'Llegaste al máximo de faltas.' : 'Te queda 1 falta antes del máximo.'}</p>` : ''}`;
+
+  const apuntes = `<p class="hint">Clases que faltaste o apuntes que tenés que conseguir o completar.</p>
+    <ul class="plain check-list" style="margin-top:.5rem">
+      ${s.pendingNotes.map((n) => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" data-note="${n.id}" ${n.done ? 'checked' : ''} aria-label="Marcar como hecho"><span>${esc(n.text)}</span><button class="icon-btn sm danger" data-rmnote="${n.id}" aria-label="Borrar">✕</button></li>`).join('') || '<li class="muted">Nada pendiente.</li>'}
+    </ul>
+    <form class="add-row" id="note-form"><input name="t" placeholder="Ej: Clase del lunes 14/9" required aria-label="Nuevo apunte pendiente"><button class="btn sm">Agregar</button></form>`;
+
+  const horario = classes.length
+    ? `<ul class="plain">${classes.map((c) => `<li><span><button class="link" data-cl="${c.id}">${DAYS[c.day - 1]} ${c.start}–${c.end}</button> · ${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</span></li>`).join('')}</ul>`
+    : '<p class="muted">Sin clases cargadas.</p>';
+
   box.innerHTML = `
     <div class="grid-2">
-      <div class="card">
-        <h2>Info</h2>
-        <dl class="info-list">
-          <div><dt>Profesores</dt><dd>${s.professors.length ? s.professors.map((pr) => `<div><strong>${esc(pr.name || 'Sin nombre')}</strong>
-            <div class="mails">${pr.emails.map((m) => `<a class="pill" href="mailto:${esc(m)}">${esc(m)}</a><button class="icon-btn sm" data-copy="${esc(m)}" title="Copiar mail" aria-label="Copiar ${esc(m)}">⧉</button>`).join('')}</div></div>`).join('') : '<span class="muted">Sin cargar (✎ Editar)</span>'}</dd></div>
-          <div><dt>Bibliografía</dt><dd>${s.bibliography ? esc(s.bibliography) : '<span class="muted">Sin cargar</span>'}</dd></div>
-          <div><dt>Regla de aprobación</dt><dd>${s.rule ? `<div class="rule-box">${esc(s.rule)}</div>` : '<span class="muted">Se carga en la pestaña Notas</span>'}</dd></div>
-        </dl>
-      </div>
+      ${block('materia.info', 'Info de la materia', info)}
+      ${block('materia.creditos', 'Créditos y horas', creditos)}
+      ${block('materia.pruebas', 'Próximas pruebas', '<div id="s-events" class="ev-list"></div>', { actions: '<button class="btn sm" id="s-add-ev">+ Evento</button>' })}
+      ${block('materia.apuntes', 'Apuntes pendientes', apuntes)}
+      ${block('materia.horario', 'Horario', horario, { actions: '<button class="btn sm" id="s-add-cl">+ Clase</button>' })}
+      ${block('materia.faltas', 'Faltas', faltas, { cls: 'compact' })}
+    </div>
+    ${hiddenBar(RESUMEN_BLOCKS)}`;
 
-      <div class="card credits-card">
-        <h2>Créditos y horas</h2>
-        ${p.goal ? `
-          <div class="credits-math"><span><strong>${s.credits}</strong> créditos</span><span>×</span><span>${hoursPerCredit()} h</span><span>=</span><span><strong>${fmtHM(p.goal)}</strong> totales</span></div>
-          <div class="counter">
-            <span class="counter-label">${p.left > 0 ? 'Te quedan' : '¡Meta cumplida!'}</span>
-            <span class="counter-num">${p.left > 0 ? fmtHM(p.left) : ''}</span>
-            ${p.over > 0 ? `<span class="counter-label">Superaste la meta por ${fmtHM(p.over)}</span>` : ''}
-          </div>
-          <div class="bar big" style="--c:${s.color}"><span style="width:${pct}%"></span></div>
-          <div class="bar-legend">${fmtHM(p.done)} dedicadas · ${pct.toFixed(0)}% · esta semana ${fmtHM(p.weekDone)}</div>
-          ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? 'Vas atrasada. ' : ''}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
-        : '<p class="muted">Cargá los créditos (✎ Editar) para calcular las horas de esfuerzo.</p>'}
-        <button class="btn ${studying ? 'danger' : ''}" id="s-study">${studying ? '■ Terminar sesión' : '▶ Estudiar ahora'}</button>
-      </div>
-
-      <div class="card">
-        <h2>Faltas</h2>
-        <div class="absences">
-          <button class="icon-btn" id="abs-minus" aria-label="Restar falta">−</button>
-          <span class="big-num" aria-live="polite">${s.absences}</span>
-          <button class="icon-btn" id="abs-plus" aria-label="Sumar falta">+</button>
-          <label class="inline">Máximo permitido <input type="number" min="0" id="abs-max" value="${s.maxAbsences ?? ''}" placeholder="—" style="width:80px"></label>
-        </div>
-        ${absWarn ? `<div class="alert warn" style="margin-top:.6rem">${s.absences >= s.maxAbsences ? 'Llegaste al máximo de faltas.' : 'Te queda 1 falta antes del máximo.'}</div>` : ''}
-      </div>
-
-      <div class="card">
-        <h2>Apuntes pendientes</h2>
-        <p class="hint">Clases que faltaste o apuntes que tenés que conseguir o completar.</p>
-        <ul class="plain check-list" style="margin-top:.5rem">
-          ${s.pendingNotes.map((n) => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" data-note="${n.id}" ${n.done ? 'checked' : ''} aria-label="Marcar como hecho"><span>${esc(n.text)}</span><button class="icon-btn sm danger" data-rmnote="${n.id}" aria-label="Borrar">✕</button></li>`).join('') || '<li class="muted">Nada pendiente </li>'}
-        </ul>
-        <form class="add-row" id="note-form"><input name="t" placeholder="Ej: Clase del lunes 14/9" required><button class="btn sm">Agregar</button></form>
-      </div>
-
-      <div class="card">
-        <div class="list-head"><h2>Próximas pruebas</h2><button class="btn sm" id="s-add-ev">+ Evento</button></div>
-        <div id="s-events" class="ev-list"></div>
-      </div>
-
-      <div class="card">
-        <div class="list-head"><h2>Horario</h2><button class="btn sm" id="s-add-cl">+ Clase</button></div>
-        ${classes.length ? `<ul class="plain">${classes.map((c) => `<li><button class="link" data-cl="${c.id}">${DAYS[c.day - 1]} ${c.start}–${c.end}</button> · ${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Sin clases cargadas.</p>'}
-      </div>
-    </div>`;
-
-  renderEventList($('#s-events', box), upcoming.slice(0, 5), 'Nada a la vista. ');
-  $('#s-study', box).onclick = () => {
+  bindBlocks(box);
+  const evBox = $('#s-events', box);
+  if (evBox) renderEventList(evBox, upcoming.slice(0, 5), 'Nada a la vista.');
+  on(box, '#s-study', 'onclick', () => {
     if (studying) { stopStudy(); rerender(); } else if (startStudy(s.id)) location.hash = '#estudio';
-  };
-  $('#s-add-ev', box).onclick = () => openEventForm(null, { subjectId: s.id });
-  $('#s-add-cl', box).onclick = () => openClassForm(null, { subjectId: s.id });
+  });
+  on(box, '#s-add-ev', 'onclick', () => openEventForm(null, { subjectId: s.id }));
+  on(box, '#s-add-cl', 'onclick', () => openClassForm(null, { subjectId: s.id }));
   $$('[data-cl]', box).forEach((b) => (b.onclick = () => openClassForm(Store.data.classes.find((c) => c.id === b.dataset.cl))));
   $$('[data-copy]', box).forEach((b) => (b.onclick = () => navigator.clipboard.writeText(b.dataset.copy).then(() => toast('Mail copiado'), () => toast(b.dataset.copy))));
-  $('#abs-minus', box).onclick = () => { s.absences = Math.max(0, s.absences - 1); Store.save(); rerender(); };
-  $('#abs-plus', box).onclick = () => { s.absences++; Store.save(); rerender(); };
-  $('#abs-max', box).onchange = (e) => { s.maxAbsences = e.target.value === '' ? null : Math.max(0, +e.target.value); Store.save(); rerender(); };
+  on(box, '#abs-minus', 'onclick', () => { s.absences = Math.max(0, s.absences - 1); Store.save(); rerender(); });
+  on(box, '#abs-plus', 'onclick', () => { s.absences++; Store.save(); rerender(); });
+  on(box, '#abs-max', 'onchange', (e) => { s.maxAbsences = e.target.value === '' ? null : Math.max(0, +e.target.value); Store.save(); rerender(); });
   $$('[data-note]', box).forEach((c) => (c.onchange = () => { const n = s.pendingNotes.find((x) => x.id === c.dataset.note); n.done = c.checked; Store.save(); rerender(); }));
   $$('[data-rmnote]', box).forEach((b) => (b.onclick = () => { s.pendingNotes = s.pendingNotes.filter((x) => x.id !== b.dataset.rmnote); Store.save(); rerender(); }));
-  $('#note-form', box).onsubmit = (e) => { e.preventDefault(); const t = e.target.elements.t.value.trim(); if (!t) return; s.pendingNotes.push({ id: uid(), text: t, done: false }); Store.save(); rerender(); };
+  on(box, '#note-form', 'onsubmit', (e) => { e.preventDefault(); const t = e.target.elements.t.value.trim(); if (!t) return; s.pendingNotes.push({ id: uid(), text: t, done: false }); Store.save(); rerender(); });
 }
 
 /* --- Documentos --- */
@@ -299,7 +298,7 @@ function sectionHtml(s, sec, i) {
           <button class="icon-btn sm" data-secmove="${sec.id}|-1" ${i === 0 ? 'disabled' : ''} title="Mover antes" aria-label="Mover sección antes">↑</button>
           <button class="icon-btn sm" data-secmove="${sec.id}|1" ${i === last ? 'disabled' : ''} title="Mover después" aria-label="Mover sección después">↓</button>
           <button class="icon-btn sm" data-rename="${sec.id}" title="Renombrar" aria-label="Renombrar sección">✎</button>
-          <button class="icon-btn sm danger" data-rmsec="${sec.id}" title="Eliminar sección" aria-label="Eliminar sección"></button>
+          <button class="icon-btn sm danger" data-rmsec="${sec.id}" title="Eliminar sección" aria-label="Eliminar sección"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>
         </div>
       </div>
       <div class="dropzone">
@@ -468,7 +467,7 @@ function tabPracticos(s, box) {
               <div class="sec-head"><h3>${esc(p.name)}</h3>
                 <div><button class="icon-btn sm" data-pren="${p.id}" aria-label="Renombrar">✎</button>
                 <button class="icon-btn sm" data-pcount="${p.id}" aria-label="Cambiar cantidad de ejercicios">#</button>
-                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico"></button></div></div>
+                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div></div>
               <div class="muted small">${ps.done}/${ps.total} resueltos · ★ ${ps.prioDone}/${ps.prio} prioritarios</div>
               <div class="bar" style="--c:var(--moss)"><span style="width:${ps.total ? (ps.done / ps.total) * 100 : 0}%"></span></div>
               <div class="ex-grid">${exs.map((e) => `<button class="ex ${e.priority ? 'prio' : ''}" data-ex="${p.id}|${e.n}" data-state="${e.state}" title="Ejercicio ${e.n}: ${EX_LABEL[e.state]}${e.priority ? ' · prioritario' : ''}" aria-label="Ejercicio ${e.n}, ${EX_LABEL[e.state]}${e.priority ? ', prioritario' : ''}">${e.n}</button>`).join('') || '<span class="muted small">No hay prioritarios acá.</span>'}</div>
@@ -535,82 +534,174 @@ function openPracticoForm(s) {
   });
 }
 
-/* --- Notas y aprobación --- */
+/* --- Notas y aprobación ---
+ * Pensado para notas sobre 12: cada componente tiene un peso (%), una nota
+ * máxima y puede ser una sola nota (un parcial) o un grupo del que cuentan
+ * las mejores N en promedio (por ejemplo, los 3 controles más altos).
+ */
 
-function gradeSummary(s) {
-  const evs = s.evaluations;
-  const totalW = evs.reduce((a, e) => a + (Number(e.weight) || 0), 0);
-  const graded = evs.filter((e) => e.grade !== '' && e.grade != null && Number(e.max) > 0);
-  const gradedW = graded.reduce((a, e) => a + (Number(e.weight) || 0), 0);
-  const earned = graded.reduce((a, e) => a + (Number(e.grade) / Number(e.max)) * (Number(e.weight) || 0), 0);
-  return { totalW, gradedW, earned, avg: gradedW ? (earned / gradedW) * 100 : null, remainingW: totalW - gradedW };
+const GRADE_PRESETS = [
+  { id: 'p40', label: '+ Parcial 40%', make: (n) => ({ name: `Parcial ${n}`, weight: 40, kind: 'single', count: 1, best: 1 }) },
+  { id: 'p20', label: '+ Parcial 20%', make: (n) => ({ name: `Parcial ${n}`, weight: 20, kind: 'single', count: 1, best: 1 }) },
+  { id: 'ctrl', label: '+ Controles (mejores 3 de 4, 20%)', make: () => ({ name: 'Controles', weight: 20, kind: 'group', count: 4, best: 3 }) },
+  { id: 'otra', label: '+ Otra', make: () => ({ name: 'Evaluación', weight: 10, kind: 'single', count: 1, best: 1 }) },
+];
+
+function grading(s) {
+  if (!s.grading) s.grading = { scale: 12, pass: 6, target: null, components: [] };
+  return s.grading;
 }
 
-function tabNotas(s, box) {
-  const g = gradeSummary(s);
-  box.innerHTML = `
-    <div class="grid-2">
-      <section class="card">
-        <div class="list-head"><h2>Evaluaciones</h2><button class="btn sm" id="add-eval">+ Evaluación</button></div>
-        ${s.evaluations.length ? `<div class="table-scroll"><table class="eval-table">
-          <thead><tr><th>Nombre</th><th>Nota</th><th>Máx.</th><th>Peso %</th><th></th></tr></thead>
-          <tbody>${s.evaluations.map((e) => `<tr data-eval="${e.id}">
-            <td><input data-f="name" value="${esc(e.name)}" aria-label="Nombre"></td>
-            <td class="num-col"><input data-f="grade" type="number" step="any" min="0" value="${e.grade ?? ''}" placeholder="—" aria-label="Nota obtenida"></td>
-            <td class="num-col"><input data-f="max" type="number" step="any" min="0" value="${e.max}" aria-label="Nota máxima"></td>
-            <td class="num-col"><input data-f="weight" type="number" step="any" min="0" value="${e.weight}" aria-label="Peso en porcentaje"></td>
-            <td><button class="icon-btn sm danger" data-rmeval="${e.id}" aria-label="Eliminar">✕</button></td></tr>`).join('')}</tbody>
-        </table></div>
-        ${g.totalW !== 100 ? `<p class="hint" style="margin-top:.5rem">Los pesos suman ${g.totalW}%${g.totalW < 100 ? ' (falta cargar alguna evaluación)' : ''}.</p>` : ''}`
-        : '<p class="muted">Agregá parciales, entregas o lo que se evalúe, con su nota máxima y peso.</p>'}
-      </section>
+const isNum = (g) => g !== '' && g != null && !Number.isNaN(Number(g));
 
-      <section class="card">
-        <h2>Cómo vas</h2>
-        ${g.avg == null ? '<p class="muted">Cuando cargues una nota, acá vas a ver tu promedio ponderado.</p>' : `
-          <div class="big-stat">${g.avg.toFixed(1)}%</div>
-          <p class="muted">Promedio ponderado sobre lo rendido (${g.gradedW}% del total). Acumulado: <strong>${g.earned.toFixed(1)}</strong> de ${g.totalW} puntos posibles.</p>`}
-        <h3 style="margin-top:1rem">¿Cuánto necesito?</h3>
-        <form class="add-row" id="need-form">
-          <label class="inline">Quiero terminar con <input type="number" name="target" min="0" max="100" step="any" value="${s.targetGrade ?? 60}" style="width:90px">%</label>
-          <button class="btn sm">Calcular</button>
-        </form>
-        <div id="need-out" style="margin-top:.6rem"></div>
+function componentStatus(c) {
+  const filled = c.grades.filter(isNum).map(Number);
+  const counts = c.kind === 'group' ? clamp(c.best || c.count, 1, c.count) : 1;
+  const used = filled.slice().sort((a, b) => b - a).slice(0, counts);
+  const avg = used.length ? used.reduce((a, b) => a + b, 0) / used.length : null;
+  const done = filled.length >= (c.kind === 'group' ? c.count : 1);
+  return { avg, done, filled: filled.length, counts, frac: avg == null ? null : avg / (Number(c.max) || 12) };
+}
 
-        <h3 style="margin-top:1rem">Regla de aprobación</h3>
-        <textarea id="rule" rows="3" placeholder="Ej: Examen de 16 ejercicios, cada uno bien vale 1…">${esc(s.rule)}</textarea>
-        <p class="hint">Se muestra también en el Resumen.</p>
-      </section>
-    </div>`;
-
-  $('#add-eval', box).onclick = () => { s.evaluations.push({ id: uid(), name: `Evaluación ${s.evaluations.length + 1}`, grade: '', max: 100, weight: 0 }); Store.save(); rerender(); };
-  $$('[data-eval] input', box).forEach((inp) => (inp.onchange = () => {
-    const e = s.evaluations.find((x) => x.id === inp.closest('tr').dataset.eval);
-    const f = inp.dataset.f;
-    e[f] = f === 'name' ? inp.value : inp.value === '' ? '' : Number(inp.value);
-    Store.save(); rerender();
-  }));
-  $$('[data-rmeval]', box).forEach((b) => (b.onclick = () => { s.evaluations = s.evaluations.filter((x) => x.id !== b.dataset.rmeval); Store.save(); rerender(); }));
-  $('#rule', box).onchange = (e) => { s.rule = e.target.value.trim(); Store.save(); toast('Regla guardada'); };
-  const calc = () => {
-    const target = Number($('#need-form', box).elements.target.value);
-    s.targetGrade = target; Store.save();
-    const out = $('#need-out', box);
-    if (!g.totalW) { out.innerHTML = '<p class="muted">Primero cargá las evaluaciones con su peso.</p>'; return; }
-    const needPts = (target / 100) * g.totalW - g.earned;
-    if (g.remainingW <= 0) {
-      out.innerHTML = `<div class="alert ${needPts <= 0 ? 'ok' : 'warn'}">${needPts <= 0 ? 'Ya llegaste a ese objetivo.' : 'No quedan evaluaciones por rendir para llegar a ese objetivo.'}</div>`;
-      return;
-    }
-    const need = (needPts / g.remainingW) * 100;
-    out.innerHTML = need <= 0
-      ? '<div class="alert ok">Ya lo tenés asegurado con lo que rendiste.</div>'
-      : need > 100
-        ? `<div class="alert warn">Necesitarías ${need.toFixed(0)}% en lo que queda (${g.remainingW}% del total): no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</div>`
-        : `<div class="alert">Necesitás un promedio de <strong>${need.toFixed(1)}%</strong> en lo que te queda por rendir (${g.remainingW}% del total).</div>`;
+function gradeSummary(s) {
+  const g = grading(s);
+  const scale = Number(g.scale) || 12;
+  let totalW = 0, doneW = 0, doneEarned = 0, anyW = 0, anyEarned = 0;
+  for (const c of g.components) {
+    const w = Number(c.weight) || 0;
+    const st = componentStatus(c);
+    totalW += w;
+    if (st.frac != null) { anyW += w; anyEarned += w * st.frac; }
+    if (st.done && st.frac != null) { doneW += w; doneEarned += w * st.frac; }
+  }
+  return {
+    scale, totalW, doneW, remainingW: totalW - doneW,
+    current: anyW ? (anyEarned / anyW) * scale : null,          // promedio sobre lo rendido
+    secured: totalW ? (doneEarned / totalW) * scale : 0,          // puntos asegurados sobre la nota final
+    need: (target) => {
+      const rem = totalW - doneW;
+      if (!totalW) return null;
+      const req = ((target / scale) * totalW - doneEarned) / (rem || 1);
+      return { rem, value: req * scale, done: rem <= 0 };
+    },
   };
-  $('#need-form', box).onsubmit = (e) => { e.preventDefault(); calc(); };
-  if (s.evaluations.length) calc();
+}
+
+const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-UY', { maximumFractionDigits: 2 });
+
+function tabNotas(s, box) {
+  const g = grading(s);
+  const sum = gradeSummary(s);
+  const target = g.target ?? g.pass ?? 6;
+  const needed = sum.need(Number(target));
+
+  const comps = g.components.map((c) => {
+    const st = componentStatus(c);
+    const pts = ((Number(c.weight) || 0) / 100) * sum.scale;
+    const gradeInputs = c.grades.map((v, i) => `<input type="number" step="any" min="0" max="${c.max}" data-grade="${c.id}|${i}" value="${isNum(v) ? v : ''}" placeholder="—" aria-label="${esc(c.name)} nota ${i + 1}">`).join('');
+    return `<div class="comp" data-comp="${c.id}">
+      <div class="comp-top">
+        <input class="comp-name" data-f="name" value="${esc(c.name)}" aria-label="Nombre">
+        <label class="inline small">vale <input type="number" data-f="weight" min="0" max="100" step="any" value="${c.weight}" class="w-num" aria-label="Peso"> %</label>
+        <label class="inline small">sobre <input type="number" data-f="max" min="1" step="any" value="${c.max}" class="w-num" aria-label="Nota máxima"></label>
+        <button type="button" class="icon-btn sm danger" data-rmcomp="${c.id}" aria-label="Eliminar ${esc(c.name)}">✕</button>
+      </div>
+      <div class="comp-kind">
+        <div class="switch sm">
+          <button type="button" data-kind="${c.id}|single" class="${c.kind === 'single' ? 'on' : ''}">Una nota</button>
+          <button type="button" data-kind="${c.id}|group" class="${c.kind === 'group' ? 'on' : ''}">Varias notas</button>
+        </div>
+        ${c.kind === 'group' ? `<span class="small">cuentan las mejores <input type="number" data-f="best" min="1" max="${c.count}" value="${c.best}" class="w-num" aria-label="Cuántas cuentan"> de <input type="number" data-f="count" min="1" max="20" value="${c.count}" class="w-num" aria-label="Cantidad de notas"> en promedio</span>` : ''}
+      </div>
+      <div class="grade-row">${gradeInputs}</div>
+      <p class="small muted">${st.avg == null ? `Aporta hasta ${fmtN(pts)} puntos de ${sum.scale}.` : `${c.kind === 'group' ? `Promedio de las mejores ${Math.min(st.counts, st.filled)}: ` : 'Nota: '}<strong>${fmtN(st.avg)}/${c.max}</strong> · aporta <strong>${fmtN((st.frac || 0) * pts)}</strong> de ${fmtN(pts)} puntos${st.done ? '' : ' (faltan notas)'}`}</p>
+    </div>`;
+  }).join('');
+
+  const evalBody = `
+    <div class="filters" style="margin-bottom:.8rem">
+      <label class="inline small">Notas sobre <input type="number" id="g-scale" min="1" value="${sum.scale}" class="w-num"></label>
+      <label class="inline small">Se aprueba con <input type="number" id="g-pass" min="0" step="any" value="${g.pass ?? ''}" class="w-num"></label>
+    </div>
+    ${comps || '<p class="muted">Agregá cómo se evalúa la materia. Por ejemplo: dos parciales de 40% y los controles (los 3 mejores) 20%.</p>'}
+    <div class="btn-row" style="margin-top:.8rem">${GRADE_PRESETS.map((p) => `<button type="button" class="btn ghost sm" data-preset-comp="${p.id}">${p.label}</button>`).join('')}</div>
+    ${g.components.length && Math.round(sum.totalW) !== 100 ? `<p class="small" style="color:var(--warn);font-weight:700;margin-top:.6rem">Los pesos suman ${fmtN(sum.totalW)}%, deberían sumar 100%.</p>` : ''}`;
+
+  let needHtml = '';
+  if (needed) {
+    if (needed.done) needHtml = needed.value <= 0 ? '<p class="ok-line">Ya llegaste a esa nota con lo que rendiste.</p>' : '<p class="warn-line">Ya no quedan evaluaciones para llegar a esa nota.</p>';
+    else if (needed.value <= 0) needHtml = '<p class="ok-line">Ya la tenés asegurada con lo que rendiste.</p>';
+    else if (needed.value > sum.scale) needHtml = `<p class="warn-line">Necesitarías ${fmtN(needed.value)} sobre ${sum.scale} en lo que falta: no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</p>`;
+    else needHtml = `<p>Necesitás un promedio de <strong class="big-inline">${fmtN(needed.value)}/${sum.scale}</strong> en lo que te falta rendir (${fmtN(needed.rem)}% de la nota).</p>`;
+  }
+
+  const resumenBody = `
+    ${sum.current == null ? '<p class="muted">Cuando cargues una nota, acá vas a ver tu promedio.</p>' : `
+      <div class="big-stat">${fmtN(sum.current)}<span class="muted" style="font-size:1rem"> / ${sum.scale}</span></div>
+      <p class="muted small">Promedio ponderado de lo que ya rendiste. Asegurado en la nota final: <strong>${fmtN(sum.secured)}</strong> de ${sum.scale}.</p>`}
+    <h3 style="margin-top:1rem">¿Cuánto necesito?</h3>
+    <label class="inline small" style="margin:.4rem 0">Quiero terminar con <input type="number" id="g-target" min="0" step="any" value="${target}" class="w-num"> / ${sum.scale}</label>
+    ${needHtml}`;
+
+  const reglaBody = `<textarea id="rule" rows="3" placeholder="Ej: Examen de 16 ejercicios, cada uno bien vale 1…">${esc(s.rule)}</textarea><p class="hint">Se muestra también en el Resumen.</p>`;
+
+  box.innerHTML = `
+    <div class="grid-notas">
+      ${block('notas.eval', 'Cómo se evalúa', evalBody)}
+      <div class="page" style="gap:1rem">
+        ${block('notas.resumen', 'Cómo vas', resumenBody)}
+        ${block('notas.regla', 'Regla de aprobación', reglaBody)}
+      </div>
+    </div>
+    ${hiddenBar([['notas.eval', 'Cómo se evalúa'], ['notas.resumen', 'Cómo vas'], ['notas.regla', 'Regla de aprobación']])}`;
+
+  bindBlocks(box);
+  const save = () => { Store.save(); rerender(); };
+  const comp = (id) => g.components.find((c) => c.id === id);
+  $$('[data-preset-comp]', box).forEach((b) => (b.onclick = () => {
+    const p = GRADE_PRESETS.find((x) => x.id === b.dataset.presetComp);
+    const n = g.components.filter((c) => /^Parcial/.test(c.name)).length + 1;
+    const c = { id: uid(), max: sum.scale, ...p.make(n) };
+    c.grades = Array(c.count).fill('');
+    g.components.push(c);
+    save();
+  }));
+  $$('[data-comp] [data-f]', box).forEach((inp) => (inp.onchange = () => {
+    const c = comp(inp.closest('[data-comp]').dataset.comp);
+    const f = inp.dataset.f;
+    if (f === 'name') c.name = inp.value.trim() || c.name;
+    else {
+      const v = Number(inp.value);
+      if (f === 'weight') c.weight = clamp(v || 0, 0, 100);
+      if (f === 'max') c.max = Math.max(1, v || 12);
+      if (f === 'count') { c.count = clamp(Math.round(v) || 1, 1, 20); c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); c.best = Math.min(c.best, c.count); }
+      if (f === 'best') c.best = clamp(Math.round(v) || 1, 1, c.count);
+    }
+    save();
+  }));
+  $$('[data-kind]', box).forEach((b) => (b.onclick = () => {
+    const [id, kind] = b.dataset.kind.split('|');
+    const c = comp(id);
+    c.kind = kind;
+    if (kind === 'single') { c.count = 1; c.best = 1; c.grades = [c.grades[0] ?? '']; }
+    else if (c.count < 2) { c.count = 4; c.best = 3; c.grades = Array.from({ length: 4 }, (_, i) => c.grades[i] ?? ''); }
+    save();
+  }));
+  $$('[data-grade]', box).forEach((inp) => (inp.onchange = () => {
+    const [id, i] = inp.dataset.grade.split('|');
+    comp(id).grades[+i] = inp.value === '' ? '' : Number(inp.value);
+    save();
+  }));
+  $$('[data-rmcomp]', box).forEach((b) => (b.onclick = () => {
+    const c = comp(b.dataset.rmcomp);
+    if (!confirm(`¿Eliminar “${c.name}”?`)) return;
+    g.components = g.components.filter((x) => x !== c);
+    save();
+  }));
+  on(box, '#g-scale', 'onchange', (e) => { g.scale = Math.max(1, Number(e.target.value) || 12); save(); });
+  on(box, '#g-pass', 'onchange', (e) => { g.pass = e.target.value === '' ? null : Number(e.target.value); save(); });
+  on(box, '#g-target', 'onchange', (e) => { g.target = e.target.value === '' ? null : Number(e.target.value); save(); });
+  on(box, '#rule', 'onchange', (e) => { s.rule = e.target.value.trim(); Store.save(); toast('Regla guardada'); });
 }
 
 /* --- Apariencia (estilo Tumblr) --- */

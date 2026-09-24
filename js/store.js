@@ -41,6 +41,8 @@ const Store = {
         calMode: 'pruebas',
         showFreeTime: true,
         bullet: '•',
+        layout: { hidden: { 'materia.faltas': true }, collapsed: {} },
+        subjectTabsHidden: [],
         seedDismissed: false,
         theme: defaultGlobalTheme(),
       },
@@ -121,7 +123,16 @@ function migrateSubject(s) {
   s.maxAbsences = s.maxAbsences === '' || s.maxAbsences == null ? null : Number(s.maxAbsences);
   s.pendingNotes = s.pendingNotes || [];
   s.practicos = s.practicos || [];
-  s.evaluations = s.evaluations || [];
+  if (!s.grading) {
+    s.grading = {
+      scale: 12, pass: 6, target: null,
+      components: (s.evaluations || []).map((e) => ({
+        id: e.id || uid(), name: e.name || 'Evaluación', weight: Number(e.weight) || 0, max: Number(e.max) || 12,
+        kind: 'single', count: 1, best: 1, grades: [e.grade === '' || e.grade == null ? '' : Number(e.grade)],
+      })),
+    };
+  }
+  delete s.evaluations; delete s.targetGrade;
   s.sections = s.sections || [];
   s.docs = (s.docs || []).map((d, i) => ({ kind: 'file', title: d.name, order: i, ...d }));
   const t = s.theme || {};
@@ -142,7 +153,7 @@ function newSubject(fields = {}) {
     color: SUBJECT_COLORS[n % SUBJECT_COLORS.length],
     theme: { bgType: 'none', bgColor: '#efe7fb', pattern: 'dots', bgImageId: '' },
     sections: ['Prácticos', 'Teórico', 'Exámenes anteriores'].map((name) => ({ id: uid(), name })),
-    docs: [], practicos: [], evaluations: [],
+    docs: [], practicos: [], grading: { scale: 12, pass: 6, target: null, components: [] },
   };
   if (fields.sections) fields.sections = fields.sections.map((name) => ({ id: uid(), name }));
   return Object.assign(s, fields);

@@ -214,3 +214,48 @@ function safeUrl(u) {
 }
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Bloques que se pueden minimizar u ocultar ----------
+ * Lo que la usuaria oculta o minimiza queda guardado en Ajustes (settings.layout)
+ * y vale para todas las materias.
+ */
+
+function layoutState() {
+  const st = Store.data.settings;
+  st.layout = st.layout || {};
+  st.layout.hidden = st.layout.hidden || {};
+  st.layout.collapsed = st.layout.collapsed || {};
+  return st.layout;
+}
+function isHidden(key) { return !!layoutState().hidden[key]; }
+
+function block(key, title, body, { actions = '', cls = '' } = {}) {
+  const L = layoutState();
+  if (L.hidden[key]) return '';
+  const col = !!L.collapsed[key];
+  return `<section class="card blk ${cls} ${col ? 'collapsed' : ''}" data-block="${key}">
+    <div class="block-head"><h2>${esc(title)}</h2>
+      <div class="block-tools">${col ? '' : actions}
+        <button type="button" class="icon-btn sm ghosty" data-collapse="${key}" aria-expanded="${!col}" title="${col ? 'Mostrar' : 'Minimizar'}" aria-label="${col ? 'Mostrar' : 'Minimizar'} ${esc(title)}">${col ? '+' : '–'}</button>
+        <button type="button" class="icon-btn sm ghosty" data-hideblock="${key}" title="Ocultar" aria-label="Ocultar ${esc(title)}">✕</button>
+      </div></div>
+    ${col ? '' : `<div class="block-body">${body}</div>`}
+  </section>`;
+}
+
+// Barrita para volver a mostrar lo oculto. blocks: [[key, título], ...]
+function hiddenBar(blocks) {
+  const hidden = blocks.filter(([k]) => isHidden(k));
+  if (!hidden.length) return '';
+  return `<div class="hidden-bar"><span class="muted small">Ocultos:</span>${hidden.map(([k, t]) => `<button type="button" class="chip-opt" data-showblock="${k}">+ ${esc(t)}</button>`).join('')}</div>`;
+}
+
+function bindBlocks(root) {
+  const L = layoutState();
+  $$('[data-collapse]', root).forEach((b) => (b.onclick = () => { const k = b.dataset.collapse; if (L.collapsed[k]) delete L.collapsed[k]; else L.collapsed[k] = true; Store.save(); rerender(); }));
+  $$('[data-hideblock]', root).forEach((b) => (b.onclick = () => { L.hidden[b.dataset.hideblock] = true; Store.save(); toast('Listo, lo oculté. Lo volvés a mostrar desde abajo de la página.'); rerender(); }));
+  $$('[data-showblock]', root).forEach((b) => (b.onclick = () => { delete L.hidden[b.dataset.showblock]; Store.save(); rerender(); }));
+}
+
+// Asigna un evento solo si el elemento existe (puede estar oculto o minimizado)
+function on(root, sel, ev, fn) { const el = $(sel, root); if (el) el[ev] = fn; return el; }
