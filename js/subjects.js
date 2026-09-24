@@ -5,7 +5,7 @@
 const SUBJECT_TABS = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'documentos', label: 'Documentos' },
-  { id: 'practicos', label: 'Prácticos' },
+  { id: 'practicos', label: 'Tareas a realizar' },
   { id: 'notas', label: 'Notas' },
   { id: 'apariencia', label: 'Apariencia' },
 ];
@@ -41,7 +41,6 @@ function renderSubjects() {
             return `<a class="card subj-card" href="#materia/${s.id}" style="--c:${s.color}">
               <div class="subj-card-top"><h3>${esc(s.name)}</h3><span class="badge">${Number(s.credits) || 0} cr.</span></div>
               <div class="chip-row">${s.tag ? `<span class="badge tag">${esc(s.tag)}</span>` : ''}${p.behind ? '<span class="badge warn">Atrasada</span>' : ''}</div>
-              <p class="muted">${s.professors.length ? '' + esc(s.professors.map((x) => x.name).filter(Boolean).join(', ')) : 'Sin docente cargado'}</p>
               ${hoursBar(s)}
               <p class="next">${next ? `${esc(typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin pruebas próximas</span>'}</p>
             </a>`;
@@ -89,6 +88,10 @@ function openSubjectForm(s) {
         <div id="profs">${(data.professors.length ? data.professors : [{ name: '', emails: [] }]).map(professorRow).join('')}</div>
         <button type="button" class="btn ghost sm" id="add-prof">+ Otro profesor</button>
       </fieldset>
+      <div class="row">
+        <label>Inicio de clases<input type="date" name="courseStart" value="${data.courseStart || Store.data.settings.semesterStart}"></label>
+        <label>Fin de clases<input type="date" name="courseEnd" value="${data.courseEnd || Store.data.settings.semesterEnd}"></label>
+      </div>
       <label>Bibliografía principal <span class="opt">(opcional)</span><input name="bibliography" value="${esc(data.bibliography)}" placeholder="Ej: Serway, vol. 2"></label>
       <div class="row">
         <label>Créditos<input type="number" name="credits" min="0" step="0.5" value="${data.credits || 0}"></label>
@@ -115,7 +118,7 @@ function openSubjectForm(s) {
       }
       Object.assign(data, {
         name: el.name.value.trim(), semester: el.semester.value, year: +el.year.value, tag: el.tag.value.trim(),
-        professors, bibliography: el.bibliography.value.trim(), credits: Number(el.credits.value) || 0, color: el.color.value,
+        professors, bibliography: el.bibliography.value.trim(), courseStart: el.courseStart.value, courseEnd: el.courseEnd.value, credits: Number(el.credits.value) || 0, color: el.color.value,
       });
       if (isNew) Store.data.subjects.push(data);
       else Object.assign(s, data);
@@ -128,7 +131,7 @@ function openSubjectForm(s) {
 }
 
 async function deleteSubject(s) {
-  if (!confirm(`¿Eliminar “${s.name}”? Se borran también sus eventos, clases, horas registradas, prácticos, notas y documentos.`)) return;
+  if (!confirm(`¿Eliminar “${s.name}”? Se borran también sus eventos, clases, horas registradas, tareas, notas y documentos.`)) return;
   const d = Store.data;
   d.subjects = d.subjects.filter((x) => x.id !== s.id);
   d.events = d.events.filter((x) => x.subjectId !== s.id);
@@ -211,7 +214,7 @@ function tabResumen(s, box) {
       </div>
       <div class="bar big" style="--c:${s.color}"><span style="width:${pct}%"></span></div>
       <div class="bar-legend">${fmtHM(p.done)} dedicadas · ${pct.toFixed(0)}% · esta semana ${fmtHM(p.weekDone)}</div>
-      ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? 'Vas atrasada. ' : ''}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
+      ${paceHTML(p)}`
     : '<p class="muted">Cargá los créditos (✎ Editar) para calcular las horas de esfuerzo.</p>'}
       <button class="btn ${studying ? 'danger' : ''}" id="s-study">${studying ? '■ Terminar sesión' : '▶ Estudiar ahora'}</button></div>`;
 
@@ -260,6 +263,16 @@ function tabResumen(s, box) {
   $$('[data-note]', box).forEach((c) => (c.onchange = () => { const n = s.pendingNotes.find((x) => x.id === c.dataset.note); n.done = c.checked; Store.save(); rerender(); }));
   $$('[data-rmnote]', box).forEach((b) => (b.onclick = () => { s.pendingNotes = s.pendingNotes.filter((x) => x.id !== b.dataset.rmnote); Store.save(); rerender(); }));
   on(box, '#note-form', 'onsubmit', (e) => { e.preventDefault(); const t = e.target.elements.t.value.trim(); if (!t) return; s.pendingNotes.push({ id: uid(), text: t, done: false }); Store.save(); rerender(); });
+}
+
+function paceHTML(p) {
+  if (!p.goal) return '';
+  if (p.finished) return `<div class="pace">Terminó el cursado (${fmtDateShort(p.end)}).</div>`;
+  if (!p.started) return `<div class="pace">Empieza el ${fmtDateShort(p.start)}. Vas a necesitar unas <strong>${fmtHM(p.base)} por semana</strong>.</div>`;
+  if (p.left <= 0) return '';
+  return `<div class="pace ${p.behind ? 'behind' : ''}">Meta de esta semana: <strong>${fmtHM(p.perWeek)}</strong>
+    ${p.debt >= 1 ? `<span class="small">(${fmtHM(p.base)} de la semana + ${fmtHM(p.debt)} que quedaron de semanas anteriores)</span>` : `<span class="small">(${p.weeksLeft} semanas de cursado por delante)</span>`}
+    <div class="small" style="margin-top:.2rem">Llevás ${fmtHM(p.weekDone)} esta semana.</div></div>`;
 }
 
 /* --- Documentos --- */
@@ -441,8 +454,8 @@ function tabPracticos(s, box) {
   box.innerHTML = `
     <section class="card">
       <div class="list-head">
-        <h2>Prácticos</h2>
-        <button class="btn sm" id="add-prac">+ Nuevo práctico</button>
+        <h2>Tareas a realizar</h2>
+        <button class="btn sm" id="add-prac">+ Nueva tarea</button>
       </div>
       ${s.practicos.length ? `
         <div class="grid-2" style="margin-bottom:.8rem">
@@ -467,13 +480,13 @@ function tabPracticos(s, box) {
               <div class="sec-head"><h3>${esc(p.name)}</h3>
                 <div><button class="icon-btn sm" data-pren="${p.id}" aria-label="Renombrar">✎</button>
                 <button class="icon-btn sm" data-pcount="${p.id}" aria-label="Cambiar cantidad de ejercicios">#</button>
-                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div></div>
+                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar tarea"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div></div>
               <div class="muted small">${ps.done}/${ps.total} resueltos · ★ ${ps.prioDone}/${ps.prio} prioritarios</div>
               <div class="bar" style="--c:var(--moss)"><span style="width:${ps.total ? (ps.done / ps.total) * 100 : 0}%"></span></div>
               <div class="ex-grid">${exs.map((e) => `<button class="ex ${e.priority ? 'prio' : ''}" data-ex="${p.id}|${e.n}" data-state="${e.state}" title="Ejercicio ${e.n}: ${EX_LABEL[e.state]}${e.priority ? ' · prioritario' : ''}" aria-label="Ejercicio ${e.n}, ${EX_LABEL[e.state]}${e.priority ? ', prioritario' : ''}">${e.n}</button>`).join('') || '<span class="muted small">No hay prioritarios acá.</span>'}</div>
             </div>`;
           }).join('')}
-        </div>` : `<div class="empty small"><p>Agregá un práctico con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
+        </div>` : `<div class="empty small"><p>Agregá una tarea (por ejemplo, un práctico) con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
     </section>`;
   Sloth.paint(box);
 
@@ -493,7 +506,7 @@ function tabPracticos(s, box) {
   }));
   $$('[data-pren]', box).forEach((b) => (b.onclick = async () => {
     const p = s.practicos.find((x) => x.id === b.dataset.pren);
-    const t = await askText('Renombrar práctico', 'Nombre', p.name);
+    const t = await askText('Renombrar tarea', 'Nombre', p.name);
     if (t) { p.name = t; Store.save(); rerender(); }
   }));
   $$('[data-pcount]', box).forEach((b) => (b.onclick = async () => {
@@ -514,7 +527,7 @@ function tabPracticos(s, box) {
 }
 
 function openPracticoForm(s) {
-  Modal.open('Nuevo práctico', `
+  Modal.open('Nueva tarea', `
     <form class="form" id="prac-form">
       <label>Nombre<input name="name" required placeholder="Ej: Práctico 4" value="Práctico ${s.practicos.length + 1}"></label>
       <label>Cantidad de ejercicios<input type="number" name="count" min="1" max="300" value="10" required></label>
@@ -535,16 +548,18 @@ function openPracticoForm(s) {
 }
 
 /* --- Notas y aprobación ---
- * Pensado para notas sobre 12: cada componente tiene un peso (%), una nota
- * máxima y puede ser una sola nota (un parcial) o un grupo del que cuentan
- * las mejores N en promedio (por ejemplo, los 3 controles más altos).
+ * Cada evaluación vale un porcentaje de la nota final (sobre 12). A medida que
+ * cargás notas, se va sumando la nota acumulada: un 9 en un parcial que vale
+ * 40% suma 9 × 0,40 = 3,6 puntos. Una evaluación puede ser una sola nota o
+ * varias, de las que cuentan las mejores N en promedio (por ejemplo, los 3
+ * controles más altos).
  */
 
 const GRADE_PRESETS = [
-  { id: 'p40', label: '+ Parcial 40%', make: (n) => ({ name: `Parcial ${n}`, weight: 40, kind: 'single', count: 1, best: 1 }) },
-  { id: 'p20', label: '+ Parcial 20%', make: (n) => ({ name: `Parcial ${n}`, weight: 20, kind: 'single', count: 1, best: 1 }) },
-  { id: 'ctrl', label: '+ Controles (mejores 3 de 4, 20%)', make: () => ({ name: 'Controles', weight: 20, kind: 'group', count: 4, best: 3 }) },
-  { id: 'otra', label: '+ Otra', make: () => ({ name: 'Evaluación', weight: 10, kind: 'single', count: 1, best: 1 }) },
+  { id: 'p40', label: 'Parcial 40%', make: (n) => ({ name: `Parcial ${n}`, weight: 40, kind: 'single', count: 1, best: 1 }) },
+  { id: 'p20', label: 'Parcial 20%', make: (n) => ({ name: `Parcial ${n}`, weight: 20, kind: 'single', count: 1, best: 1 }) },
+  { id: 'ctrl', label: 'Controles (3 mejores de 4) 20%', make: () => ({ name: 'Controles', weight: 20, kind: 'group', count: 4, best: 3 }) },
+  { id: 'otra', label: 'Otra', make: () => ({ name: 'Evaluación', weight: 10, kind: 'single', count: 1, best: 1 }) },
 ];
 
 function grading(s) {
@@ -553,107 +568,102 @@ function grading(s) {
 }
 
 const isNum = (g) => g !== '' && g != null && !Number.isNaN(Number(g));
+const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-UY', { maximumFractionDigits: 2 });
 
-function componentStatus(c) {
+function componentStatus(c, scale) {
   const filled = c.grades.filter(isNum).map(Number);
   const counts = c.kind === 'group' ? clamp(c.best || c.count, 1, c.count) : 1;
   const used = filled.slice().sort((a, b) => b - a).slice(0, counts);
   const avg = used.length ? used.reduce((a, b) => a + b, 0) / used.length : null;
   const done = filled.length >= (c.kind === 'group' ? c.count : 1);
-  return { avg, done, filled: filled.length, counts, frac: avg == null ? null : avg / (Number(c.max) || 12) };
+  const w = (Number(c.weight) || 0) / 100;
+  return { avg, done, filled: filled.length, counts, w, points: avg == null ? 0 : avg * w, maxPoints: w * scale };
 }
 
 function gradeSummary(s) {
   const g = grading(s);
   const scale = Number(g.scale) || 12;
-  let totalW = 0, doneW = 0, doneEarned = 0, anyW = 0, anyEarned = 0;
+  let totalW = 0, gradedW = 0, accumulated = 0, pendingW = 0;
   for (const c of g.components) {
-    const w = Number(c.weight) || 0;
-    const st = componentStatus(c);
-    totalW += w;
-    if (st.frac != null) { anyW += w; anyEarned += w * st.frac; }
-    if (st.done && st.frac != null) { doneW += w; doneEarned += w * st.frac; }
+    const st = componentStatus(c, scale);
+    totalW += st.w;
+    if (st.avg != null) { gradedW += st.w; accumulated += st.points; }
+    if (!st.done) pendingW += st.w;
   }
+  const doneAccum = g.components.reduce((a, c) => { const st = componentStatus(c, scale); return a + (st.done ? st.points : 0); }, 0);
   return {
-    scale, totalW, doneW, remainingW: totalW - doneW,
-    current: anyW ? (anyEarned / anyW) * scale : null,          // promedio sobre lo rendido
-    secured: totalW ? (doneEarned / totalW) * scale : 0,          // puntos asegurados sobre la nota final
-    need: (target) => {
-      const rem = totalW - doneW;
-      if (!totalW) return null;
-      const req = ((target / scale) * totalW - doneEarned) / (rem || 1);
-      return { rem, value: req * scale, done: rem <= 0 };
-    },
+    scale, totalPct: totalW * 100, gradedPct: gradedW * 100, pendingPct: pendingW * 100,
+    accumulated,                                   // nota acumulada hasta ahora (sobre la escala)
+    average: gradedW ? accumulated / gradedW : null, // promedio en lo rendido
+    maxPossible: doneAccum + pendingW * scale,     // si te va perfecto en lo que falta
+    need: (target) => (pendingW > 0 ? (target - doneAccum) / pendingW : null),
   };
 }
-
-const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-UY', { maximumFractionDigits: 2 });
 
 function tabNotas(s, box) {
   const g = grading(s);
   const sum = gradeSummary(s);
-  const target = g.target ?? g.pass ?? 6;
-  const needed = sum.need(Number(target));
+  const target = Number(g.target ?? g.pass ?? 6);
+  const need = sum.need(target);
 
-  const comps = g.components.map((c) => {
-    const st = componentStatus(c);
-    const pts = ((Number(c.weight) || 0) / 100) * sum.scale;
-    const gradeInputs = c.grades.map((v, i) => `<input type="number" step="any" min="0" max="${c.max}" data-grade="${c.id}|${i}" value="${isNum(v) ? v : ''}" placeholder="—" aria-label="${esc(c.name)} nota ${i + 1}">`).join('');
-    return `<div class="comp" data-comp="${c.id}">
-      <div class="comp-top">
-        <input class="comp-name" data-f="name" value="${esc(c.name)}" aria-label="Nombre">
-        <label class="inline small">vale <input type="number" data-f="weight" min="0" max="100" step="any" value="${c.weight}" class="w-num" aria-label="Peso"> %</label>
-        <label class="inline small">sobre <input type="number" data-f="max" min="1" step="any" value="${c.max}" class="w-num" aria-label="Nota máxima"></label>
-        <button type="button" class="icon-btn sm danger" data-rmcomp="${c.id}" aria-label="Eliminar ${esc(c.name)}">✕</button>
+  const segments = g.components.map((c) => {
+    const st = componentStatus(c, sum.scale);
+    return `<span class="seg" style="width:${st.w * 100}%" title="${esc(c.name)}: ${fmtN(st.points)} de ${fmtN(st.maxPoints)}"><i style="width:${st.maxPoints ? (st.points / st.maxPoints) * 100 : 0}%"></i></span>`;
+  }).join('');
+
+  let needLine = '';
+  if (g.components.length) {
+    if (sum.accumulated >= target) needLine = `<p class="ok-line">Ya llegaste a ${fmtN(target)} con lo que llevás acumulado.</p>`;
+    else if (need == null) needLine = `<p class="warn-line">No quedan evaluaciones para llegar a ${fmtN(target)}.</p>`;
+    else if (need > sum.scale) needLine = `<p class="warn-line">Para llegar a ${fmtN(target)} necesitarías más de ${sum.scale} en lo que falta. Mirá la regla de aprobación por si hay recuperatorio.</p>`;
+    else needLine = `<p>Para llegar a <strong>${fmtN(target)}</strong> necesitás un promedio de <strong class="big-inline">${fmtN(Math.max(0, need))}</strong> en lo que te falta (${fmtN(sum.pendingPct)}% de la nota).</p>`;
+  }
+
+  const summary = `
+    <div class="accum">
+      <div><span class="muted small">Nota acumulada</span><div class="big-stat">${fmtN(sum.accumulated)}<span class="muted" style="font-size:1rem"> / ${sum.scale}</span></div></div>
+      <div class="accum-facts small">
+        <span>Rendiste el <strong>${fmtN(sum.gradedPct)}%</strong> de la nota</span>
+        ${sum.average != null ? `<span>Promedio en lo rendido: <strong>${fmtN(sum.average)}</strong></span>` : ''}
+        <span>Máximo que todavía podés sacar: <strong>${fmtN(Math.min(sum.scale, sum.maxPossible))}</strong></span>
       </div>
-      <div class="comp-kind">
-        <div class="switch sm">
-          <button type="button" data-kind="${c.id}|single" class="${c.kind === 'single' ? 'on' : ''}">Una nota</button>
-          <button type="button" data-kind="${c.id}|group" class="${c.kind === 'group' ? 'on' : ''}">Varias notas</button>
-        </div>
-        ${c.kind === 'group' ? `<span class="small">cuentan las mejores <input type="number" data-f="best" min="1" max="${c.count}" value="${c.best}" class="w-num" aria-label="Cuántas cuentan"> de <input type="number" data-f="count" min="1" max="20" value="${c.count}" class="w-num" aria-label="Cantidad de notas"> en promedio</span>` : ''}
+    </div>
+    <div class="seg-bar" aria-hidden="true">${segments}</div>
+    <div class="filters" style="margin-top:.8rem">
+      <label class="inline small">Notas sobre <input type="number" id="g-scale" min="1" value="${sum.scale}" class="w-num"></label>
+      <label class="inline small">Quiero llegar a <input type="number" id="g-target" min="0" step="any" value="${target}" class="w-num"></label>
+    </div>
+    ${needLine}`;
+
+  const rows = g.components.map((c) => {
+    const st = componentStatus(c, sum.scale);
+    const inputs = c.grades.map((v, i) => `<input type="number" step="any" min="0" max="${sum.scale}" data-grade="${c.id}|${i}" value="${isNum(v) ? v : ''}" placeholder="—" aria-label="${esc(c.name)}, nota ${i + 1}">`).join('');
+    return `<div class="ev-grade" data-comp="${c.id}">
+      <div class="eg-name">
+        <input data-f="name" value="${esc(c.name)}" aria-label="Nombre de la evaluación">
+        <span class="small muted">${c.kind === 'group' ? `cuentan las <input type="number" data-f="best" min="1" max="${c.count}" value="${c.best}" class="w-num xs" aria-label="Cuántas cuentan"> mejores de <input type="number" data-f="count" min="2" max="20" value="${c.count}" class="w-num xs" aria-label="Cuántas notas"> · <button type="button" class="link small" data-kind="${c.id}|single">una sola nota</button>` : `<button type="button" class="link small" data-kind="${c.id}|group">son varias notas</button>`}</span>
       </div>
-      <div class="grade-row">${gradeInputs}</div>
-      <p class="small muted">${st.avg == null ? `Aporta hasta ${fmtN(pts)} puntos de ${sum.scale}.` : `${c.kind === 'group' ? `Promedio de las mejores ${Math.min(st.counts, st.filled)}: ` : 'Nota: '}<strong>${fmtN(st.avg)}/${c.max}</strong> · aporta <strong>${fmtN((st.frac || 0) * pts)}</strong> de ${fmtN(pts)} puntos${st.done ? '' : ' (faltan notas)'}`}</p>
+      <label class="eg-pct"><input type="number" data-f="weight" min="0" max="100" step="any" value="${c.weight}" class="w-num" aria-label="Porcentaje"> %</label>
+      <div class="eg-grades">${inputs}</div>
+      <div class="eg-sum"><strong>${st.avg == null ? '—' : `+${fmtN(st.points)}`}</strong><span class="muted small">de ${fmtN(st.maxPoints)}</span></div>
+      <button type="button" class="icon-btn sm ghosty" data-rmcomp="${c.id}" aria-label="Eliminar ${esc(c.name)}">✕</button>
     </div>`;
   }).join('');
 
   const evalBody = `
-    <div class="filters" style="margin-bottom:.8rem">
-      <label class="inline small">Notas sobre <input type="number" id="g-scale" min="1" value="${sum.scale}" class="w-num"></label>
-      <label class="inline small">Se aprueba con <input type="number" id="g-pass" min="0" step="any" value="${g.pass ?? ''}" class="w-num"></label>
-    </div>
-    ${comps || '<p class="muted">Agregá cómo se evalúa la materia. Por ejemplo: dos parciales de 40% y los controles (los 3 mejores) 20%.</p>'}
-    <div class="btn-row" style="margin-top:.8rem">${GRADE_PRESETS.map((p) => `<button type="button" class="btn ghost sm" data-preset-comp="${p.id}">${p.label}</button>`).join('')}</div>
-    ${g.components.length && Math.round(sum.totalW) !== 100 ? `<p class="small" style="color:var(--warn);font-weight:700;margin-top:.6rem">Los pesos suman ${fmtN(sum.totalW)}%, deberían sumar 100%.</p>` : ''}`;
-
-  let needHtml = '';
-  if (needed) {
-    if (needed.done) needHtml = needed.value <= 0 ? '<p class="ok-line">Ya llegaste a esa nota con lo que rendiste.</p>' : '<p class="warn-line">Ya no quedan evaluaciones para llegar a esa nota.</p>';
-    else if (needed.value <= 0) needHtml = '<p class="ok-line">Ya la tenés asegurada con lo que rendiste.</p>';
-    else if (needed.value > sum.scale) needHtml = `<p class="warn-line">Necesitarías ${fmtN(needed.value)} sobre ${sum.scale} en lo que falta: no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</p>`;
-    else needHtml = `<p>Necesitás un promedio de <strong class="big-inline">${fmtN(needed.value)}/${sum.scale}</strong> en lo que te falta rendir (${fmtN(needed.rem)}% de la nota).</p>`;
-  }
-
-  const resumenBody = `
-    ${sum.current == null ? '<p class="muted">Cuando cargues una nota, acá vas a ver tu promedio.</p>' : `
-      <div class="big-stat">${fmtN(sum.current)}<span class="muted" style="font-size:1rem"> / ${sum.scale}</span></div>
-      <p class="muted small">Promedio ponderado de lo que ya rendiste. Asegurado en la nota final: <strong>${fmtN(sum.secured)}</strong> de ${sum.scale}.</p>`}
-    <h3 style="margin-top:1rem">¿Cuánto necesito?</h3>
-    <label class="inline small" style="margin:.4rem 0">Quiero terminar con <input type="number" id="g-target" min="0" step="any" value="${target}" class="w-num"> / ${sum.scale}</label>
-    ${needHtml}`;
+    ${g.components.length ? `<div class="eg-head small muted"><span>Evaluación</span><span>Vale</span><span>Nota</span><span>Suma</span><span></span></div>${rows}` : '<p class="muted">Agregá cómo se evalúa la materia: cada evaluación con el porcentaje que vale.</p>'}
+    <div class="add-evals"><span class="small muted">Agregar:</span>${GRADE_PRESETS.map((p) => `<button type="button" class="chip-opt" data-preset-comp="${p.id}">+ ${p.label}</button>`).join('')}</div>
+    ${g.components.length && Math.round(sum.totalPct) !== 100 ? `<p class="small" style="color:var(--warn);font-weight:700;margin-top:.6rem">Los porcentajes suman ${fmtN(sum.totalPct)}%. Para que la cuenta dé bien, tienen que sumar 100%.</p>` : ''}`;
 
   const reglaBody = `<textarea id="rule" rows="3" placeholder="Ej: Examen de 16 ejercicios, cada uno bien vale 1…">${esc(s.rule)}</textarea><p class="hint">Se muestra también en el Resumen.</p>`;
 
   box.innerHTML = `
-    <div class="grid-notas">
-      ${block('notas.eval', 'Cómo se evalúa', evalBody)}
-      <div class="page" style="gap:1rem">
-        ${block('notas.resumen', 'Cómo vas', resumenBody)}
-        ${block('notas.regla', 'Regla de aprobación', reglaBody)}
-      </div>
-    </div>
-    ${hiddenBar([['notas.eval', 'Cómo se evalúa'], ['notas.resumen', 'Cómo vas'], ['notas.regla', 'Regla de aprobación']])}`;
+    <div class="page" style="gap:1rem">
+      ${block('notas.resumen', 'Cómo vas', summary)}
+      ${block('notas.eval', 'Evaluaciones', evalBody)}
+      ${block('notas.regla', 'Regla de aprobación', reglaBody)}
+      ${hiddenBar([['notas.resumen', 'Cómo vas'], ['notas.eval', 'Evaluaciones'], ['notas.regla', 'Regla de aprobación']])}
+    </div>`;
 
   bindBlocks(box);
   const save = () => { Store.save(); rerender(); };
@@ -673,8 +683,7 @@ function tabNotas(s, box) {
     else {
       const v = Number(inp.value);
       if (f === 'weight') c.weight = clamp(v || 0, 0, 100);
-      if (f === 'max') c.max = Math.max(1, v || 12);
-      if (f === 'count') { c.count = clamp(Math.round(v) || 1, 1, 20); c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); c.best = Math.min(c.best, c.count); }
+      if (f === 'count') { c.count = clamp(Math.round(v) || 2, 2, 20); c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); c.best = Math.min(c.best, c.count); }
       if (f === 'best') c.best = clamp(Math.round(v) || 1, 1, c.count);
     }
     save();
@@ -683,8 +692,8 @@ function tabNotas(s, box) {
     const [id, kind] = b.dataset.kind.split('|');
     const c = comp(id);
     c.kind = kind;
-    if (kind === 'single') { c.count = 1; c.best = 1; c.grades = [c.grades[0] ?? '']; }
-    else if (c.count < 2) { c.count = 4; c.best = 3; c.grades = Array.from({ length: 4 }, (_, i) => c.grades[i] ?? ''); }
+    if (kind === 'single') { c.count = 1; c.best = 1; c.grades = [c.grades.find(isNum) ?? '']; }
+    else { c.count = Math.max(c.count, 4); c.best = 3; c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); }
     save();
   }));
   $$('[data-grade]', box).forEach((inp) => (inp.onchange = () => {
@@ -698,10 +707,9 @@ function tabNotas(s, box) {
     g.components = g.components.filter((x) => x !== c);
     save();
   }));
-  on(box, '#g-scale', 'onchange', (e) => { g.scale = Math.max(1, Number(e.target.value) || 12); save(); });
-  on(box, '#g-pass', 'onchange', (e) => { g.pass = e.target.value === '' ? null : Number(e.target.value); save(); });
+  on(box, '#g-scale', 'onchange', (e) => { g.scale = Math.max(1, Number(e.target.value) || 12); g.components.forEach((c) => { c.max = g.scale; }); save(); });
   on(box, '#g-target', 'onchange', (e) => { g.target = e.target.value === '' ? null : Number(e.target.value); save(); });
-  on(box, '#rule', 'onchange', (e) => { s.rule = e.target.value.trim(); Store.save(); toast('Regla guardada'); });
+  on(box, '#rule', 'onchange', (e) => { s.rule = e.target.value.trim(); Store.save(); });
 }
 
 /* --- Apariencia (estilo Tumblr) --- */

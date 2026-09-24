@@ -14,7 +14,7 @@ function renderSettings() {
     <section class="page">
       <div class="page-head"><div><h1>Ajustes</h1><p class="sub">Hacé la app tuya.</p></div></div>
 
-      <div class="grid-2">
+      <div>
         <form class="card form" id="me-form">
           <h2>Vos y tu semestre</h2>
           <label>Tu nombre <span class="opt">(para que el perezoso te salude)</span><input name="userName" value="${esc(st.userName)}"></label>
@@ -29,7 +29,6 @@ function renderSettings() {
           <p class="hint">Las fechas del semestre se usan para calcular el ritmo (horas por semana) de cada materia.</p>
         </form>
 
-        <div class="card" id="autosave-card"></div>
       </div>
 
       <section class="card form">
@@ -44,6 +43,7 @@ function renderSettings() {
       ${appearanceHTML(st)}
 
       <div class="grid-3">
+        <div class="card" id="autosave-card"></div>
         <div class="card" id="install-card">
           <h2>En el escritorio</h2>
           ${Install.installed()
@@ -92,7 +92,6 @@ function renderSettings() {
     if (x.semesterEnd.value) st.semesterEnd = x.semesterEnd.value;
     st.reminderDays = [...new Set(x.reminderDays.value.split(/[,;\s]+/).map((n) => parseInt(n, 10)).filter((n) => n >= 0 && n <= 60))].sort((a, b) => b - a);
     Store.save();
-    toast('Guardado ✓');
     Sloth.refresh();
   };
   me.onsubmit = (e) => e.preventDefault();
@@ -308,20 +307,16 @@ function paintAutosaveCard() {
   const st = AutoSave.status;
   let body;
   if (st === 'unsupported') {
-    body = `<p class="muted">Tus datos ya quedan guardados en este navegador. Este navegador no deja además guardarlos solos en un archivo (eso funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Hacé un respaldo de vez en cuando.</p>`;
+    body = '<p class="muted small">Tus datos ya se guardan en este navegador. Guardar además en un archivo funciona en Chrome, Edge u Opera de compu.</p>';
   } else if (st === 'off') {
-    body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se guarda ahí <strong>solo</strong>.</p>
-      <p class="muted" style="margin-top:.4rem">Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
-      <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-choose">Elegir dónde guardar</button>
-      <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
+    body = `<p class="muted small">Tus datos ya se guardan en el navegador. Si querés, se copian solos a un archivo de tu compu (por ejemplo, en tu carpeta de Google Drive).</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn sm" id="as-choose">Elegir archivo</button><button class="btn ghost sm" id="as-open">Usar uno que ya tengo</button></div>`;
   } else if (st === 'ok') {
-    body = `<p style="color:var(--moss);font-weight:700">✓ Guardando solo en <strong>${esc(AutoSave.fileName())}</strong>${AutoSave.lastSaved ? ` · último guardado ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
-      <div class="btn-row" style="margin-top:.6rem"><button class="btn ghost sm" id="as-choose">Cambiar archivo</button>
-      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+    body = `<p class="small ok-line">Guardando en ${esc(AutoSave.fileName())}${AutoSave.lastSaved ? ` · ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn ghost sm" id="as-choose">Cambiar</button><button class="btn ghost sm" id="as-off">Desactivar</button></div>`;
   } else {
-    body = `<p class="muted">El navegador pide permiso otra vez para escribir en <strong>${esc(AutoSave.fileName())}</strong>.</p>
-      <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-reconnect">Permitir</button>
-      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+    body = `<p class="muted small">Falta darle permiso otra vez al navegador para escribir en ${esc(AutoSave.fileName())}.</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn sm" id="as-reconnect">Permitir</button><button class="btn ghost sm" id="as-off">Desactivar</button></div>`;
   }
   card.innerHTML = `<h2>Guardado automático</h2>${body}`;
   const on = (id, fn) => { const b = $(id, card); if (b) b.onclick = fn; };

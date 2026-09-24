@@ -243,17 +243,20 @@ function block(key, title, body, { actions = '', cls = '' } = {}) {
   </section>`;
 }
 
-// Barrita para volver a mostrar lo oculto. blocks: [[key, título], ...]
+// Menú discreto para volver a mostrar lo oculto. blocks: [[key, título], ...]
 function hiddenBar(blocks) {
   const hidden = blocks.filter(([k]) => isHidden(k));
   if (!hidden.length) return '';
-  return `<div class="hidden-bar"><span class="muted small">Ocultos:</span>${hidden.map(([k, t]) => `<button type="button" class="chip-opt" data-showblock="${k}">+ ${esc(t)}</button>`).join('')}</div>`;
+  return `<details class="hidden-menu">
+    <summary>${hidden.length === 1 ? '1 sección oculta' : `${hidden.length} secciones ocultas`}</summary>
+    <div class="hidden-list">${hidden.map(([k, t]) => `<button type="button" data-showblock="${k}"><span>${esc(t)}</span><span class="muted small">Mostrar</span></button>`).join('')}</div>
+  </details>`;
 }
 
 function bindBlocks(root) {
   const L = layoutState();
   $$('[data-collapse]', root).forEach((b) => (b.onclick = () => { const k = b.dataset.collapse; if (L.collapsed[k]) delete L.collapsed[k]; else L.collapsed[k] = true; Store.save(); rerender(); }));
-  $$('[data-hideblock]', root).forEach((b) => (b.onclick = () => { L.hidden[b.dataset.hideblock] = true; Store.save(); toast('Listo, lo oculté. Lo volvés a mostrar desde abajo de la página.'); rerender(); }));
+  $$('[data-hideblock]', root).forEach((b) => (b.onclick = () => { L.hidden[b.dataset.hideblock] = true; Store.save(); toast('Sección oculta'); rerender(); }));
   $$('[data-showblock]', root).forEach((b) => (b.onclick = () => { delete L.hidden[b.dataset.showblock]; Store.save(); rerender(); }));
 }
 

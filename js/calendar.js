@@ -88,7 +88,6 @@ function renderExams(el) {
       <div class="dow">${DAYS_SHORT.map((d) => `<span>${d}</span>`).join('')}</div>
       <div class="grid">${cells}</div>
     </div>
-    <p class="hint">Tocá un día para agregar un evento ese día.</p>
     <section class="card">
       <div class="list-head">
         <h2>Lo que se viene</h2>
@@ -420,7 +419,7 @@ function downloadTimetablePDF() {
     if (h < maxH) { doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(140, 130, 150); doc.text(`${pad(h)}:00`, M + hourW - 1.5, yy + 2.5, { align: 'right' }); }
   }
   for (let i = 0; i <= 6; i++) doc.line(M + hourW + i * cw, top + headH, M + hourW + i * cw, top + headH + (maxH - minH) * hh);
-  Store.data.classes.filter((c) => +c.day <= 6).forEach((c) => {
+  activeClasses().filter((c) => +c.day <= 6).forEach((c) => {
     const x = M + hourW + (c.day - 1) * cw + 0.8;
     const y0 = top + headH + ((toMin(c.start) / 60) - minH) * hh;
     const h = ((toMin(c.end) - toMin(c.start)) / 60) * hh;
@@ -442,13 +441,13 @@ function downloadTimetablePDF() {
 
 function timetableRange() {
   let minH = 7, maxH = 23;
-  Store.data.classes.forEach((c) => { minH = Math.min(minH, Math.floor(toMin(c.start) / 60)); maxH = Math.max(maxH, Math.ceil(toMin(c.end) / 60)); });
+  activeClasses().forEach((c) => { minH = Math.min(minH, Math.floor(toMin(c.start) / 60)); maxH = Math.max(maxH, Math.ceil(toMin(c.end) / 60)); });
   return { minH, maxH };
 }
 
 // Huecos de al menos 45 min entre clases del mismo día
 function freeGaps(day) {
-  const cls = Store.data.classes.filter((c) => +c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
+  const cls = activeClasses().filter((c) => +c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
   const gaps = [];
   for (let i = 1; i < cls.length; i++) {
     const prevEnd = Math.max(...cls.slice(0, i).map((c) => toMin(c.end)));
@@ -459,7 +458,7 @@ function freeGaps(day) {
 }
 
 function renderTimetable(el) {
-  const classes = Store.data.classes;
+  const classes = activeClasses();
   if (!Store.data.subjects.length) {
     el.innerHTML = `<div class="card empty">
       <h2>Primero creá una materia</h2><p>Después vas a poder cargar tus horarios de clase acá.</p>
@@ -538,6 +537,11 @@ function openClassForm(cl, preset = {}) {
         <label>Hasta<input type="time" name="end" required value="${data.end}"></label>
       </div>
       <div class="row">
+        <label>Clases desde<input type="date" name="courseStart" value="${(subjectById(data.subjectId) || {}).courseStart || Store.data.settings.semesterStart}"></label>
+        <label>Hasta<input type="date" name="courseEnd" value="${(subjectById(data.subjectId) || {}).courseEnd || Store.data.settings.semesterEnd}"></label>
+      </div>
+      <p class="hint">Las fechas son de la materia: cuando termina el cursado, su horario deja de aparecer (la materia sigue en Materias).</p>
+      <div class="row">
         <label>Tipo de clase<select name="kind">${CLASS_KINDS.map((k) => `<option ${k === data.kind ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
         <label>Salón <span class="opt">(opcional)</span><input name="room" value="${esc(data.room)}" placeholder="Ej: 501, Anfiteatro"></label>
       </div>
@@ -550,10 +554,18 @@ function openClassForm(cl, preset = {}) {
     </form>`, (body) => {
     const f = $('#cl-form', body);
     const el = f.elements;
+    el.subjectId.onchange = () => {
+      const subj = subjectById(el.subjectId.value) || {};
+      el.courseStart.value = subj.courseStart || Store.data.settings.semesterStart;
+      el.courseEnd.value = subj.courseEnd || Store.data.settings.semesterEnd;
+    };
     f.onsubmit = (e) => {
       e.preventDefault();
       if (toMin(el.end.value) <= toMin(el.start.value)) { toast('La hora de fin tiene que ser después del inicio.'); return; }
+      if (el.courseStart.value && el.courseEnd.value && el.courseEnd.value < el.courseStart.value) { toast('La fecha de fin tiene que ser después del inicio.'); return; }
       Object.assign(data, { subjectId: el.subjectId.value, day: +el.day.value, start: el.start.value, end: el.end.value, kind: el.kind.value, room: el.room.value.trim() });
+      const subj = subjectById(data.subjectId);
+      if (subj) { subj.courseStart = el.courseStart.value; subj.courseEnd = el.courseEnd.value; }
       if (isNew) Store.data.classes.push(data);
       else Object.assign(cl, data);
       Store.save();

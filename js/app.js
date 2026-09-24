@@ -33,6 +33,7 @@ function rerender() {
 }
 
 function route() {
+  if (checkImportLink()) return;
   Modal.close();
   $('#more-sheet').hidden = true;
   $('#more-btn').setAttribute('aria-expanded', 'false');

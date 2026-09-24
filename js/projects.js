@@ -12,7 +12,7 @@ function renderProjects() {
     <section class="page">
       <div class="page-head">
         <div><h1>Proyectos grupales</h1><p class="sub">Integrantes, tareas, links y entregas en un solo lugar.</p></div>
-        <button class="btn" id="add-proj">+ Nuevo proyecto</button>
+        <div class="btn-row"><label class="btn ghost">Importar proyecto<input type="file" id="imp-proj" accept="application/json,.json" hidden></label><button class="btn" id="add-proj">+ Nuevo proyecto</button></div>
       </div>
       ${list.length ? `<div class="grid-3">${list.map((p) => {
         const done = p.tasks.filter((t) => t.done).length;
@@ -29,6 +29,11 @@ function renderProjects() {
     </section>`;
   Sloth.paint($('#view'));
   $('#add-proj').onclick = () => openProjectForm();
+  $('#imp-proj').onchange = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try { importProjectPayload(JSON.parse(await f.text())); } catch (err) { toast('Ese archivo no parece un proyecto de Perezoso.'); }
+  };
 }
 
 function openProjectForm(p) {
@@ -81,7 +86,7 @@ function renderProject(id) {
           <h1>${esc(p.name)}</h1>
           <p class="muted">${p.subjectId ? `<a href="#materia/${p.subjectId}">${esc(subjectName(p.subjectId))}</a>` : 'Sin materia'} · ${done}/${p.tasks.length} tareas hechas</p>
         </div>
-        <div class="hero-actions"><button class="btn ghost" id="p-edit">✎ Editar</button></div>
+        <div class="hero-actions"><button class="btn" id="p-share">Compartir</button><button class="btn ghost" id="p-edit">✎ Editar</button></div>
       </header>
       <div class="grid-2">
         <section class="card">
@@ -121,6 +126,7 @@ function renderProject(id) {
   const v = $('#view');
   renderEventList($('#p-events', v), projectEvents(p), 'Sin entregas. Cargalas y aparecen también en el calendario.');
   $('#p-edit').onclick = () => openProjectForm(p);
+  $('#p-share').onclick = () => openShareProject(p);
   $('#p-add-ev').onclick = () => openEventForm(null, { projectId: p.id, subjectId: p.subjectId, type: 'entregable' });
   $('#link-form').onsubmit = (e) => { e.preventDefault(); const x = e.target.elements; p.links.push({ title: x.title.value.trim(), url: safeUrl(x.url.value) }); Store.save(); rerender(); };
   $$('[data-rmlink]', v).forEach((b) => (b.onclick = () => { p.links.splice(+b.dataset.rmlink, 1); Store.save(); rerender(); }));
@@ -128,4 +134,86 @@ function renderProject(id) {
   $$('[data-tdone]', v).forEach((c) => (c.onchange = () => { p.tasks.find((t) => t.id === c.dataset.tdone).done = c.checked; Store.save(); rerender(); }));
   $$('[data-towner]', v).forEach((s) => (s.onchange = () => { p.tasks.find((t) => t.id === s.dataset.towner).owner = s.value; Store.save(); }));
   $$('[data-trm]', v).forEach((b) => (b.onclick = () => { p.tasks = p.tasks.filter((t) => t.id !== b.dataset.trm); Store.save(); rerender(); }));
+}
+
+/* ---------- Compartir e importar proyectos ----------
+ * No hay servidor: se comparte una copia (integrantes, tareas, links y entregas)
+ * por link, WhatsApp, mail o archivo, y cada persona la importa en su Perezoso.
+ */
+
+function projectPayload(p) {
+  return {
+    v: 1, type: 'perezoso-proyecto', from: Store.data.settings.userName || '',
+    project: { name: p.name, members: p.members, links: p.links, tasks: p.tasks.map((t) => ({ text: t.text, owner: t.owner, done: t.done })) },
+    subjectName: p.subjectId ? subjectName(p.subjectId) : '',
+    events: projectEvents(p).map((e) => ({ type: e.type, customType: e.customType, title: e.title, date: e.date, time: e.time, notes: e.notes })),
+  };
+}
+const toB64 = (str) => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const fromB64 = (b64) => decodeURIComponent(escape(atob(b64.replace(/-/g, '+').replace(/_/g, '/'))));
+
+function projectSummary(p) {
+  const evs = projectEvents(p);
+  return [
+    `Proyecto: ${p.name}`,
+    p.members.length ? `Integrantes: ${p.members.join(', ')}` : '',
+    p.tasks.length ? `Tareas:\n${p.tasks.map((t) => `${t.done ? '[x]' : '[ ]'} ${t.text}${t.owner ? ` (${t.owner})` : ''}`).join('\n')}` : '',
+    evs.length ? `Entregas:\n${evs.map((e) => `${fmtDateShort(eventDate(e))}${e.time ? ' ' + e.time : ''} - ${e.title || typeLabel(e)}`).join('\n')}` : '',
+    p.links.length ? `Links:\n${p.links.map((l) => `${l.title || ''} ${l.url}`.trim()).join('\n')}` : '',
+  ].filter(Boolean).join('\n\n');
+}
+
+function openShareProject(p) {
+  const web = location.protocol.startsWith('http');
+  const link = `${location.origin}${location.pathname}#importar=${toB64(JSON.stringify(projectPayload(p)))}`;
+  const text = projectSummary(p);
+  Modal.open(`Compartir “${p.name}”`, `
+    <div class="form">
+      <p class="muted">Mandales una copia del proyecto con integrantes, tareas, links y entregas. Cada persona la guarda en su Perezoso. Ojo: es una copia, los cambios no se sincronizan solos.</p>
+      <div class="share-grid">
+        ${web ? '<button type="button" class="btn" id="sh-link">Copiar link para importar</button>' : ''}
+        ${navigator.share ? '<button type="button" class="btn ghost" id="sh-native">Compartir…</button>' : ''}
+        <a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text + (web ? `\n\nPara importarlo en Perezoso: ${link}` : ''))}">WhatsApp</a>
+        <a class="btn ghost" href="mailto:?subject=${encodeURIComponent('Proyecto ' + p.name)}&body=${encodeURIComponent(text + (web ? `\n\nPara importarlo en Perezoso: ${link}` : ''))}">Mail</a>
+        <button type="button" class="btn ghost" id="sh-file">Descargar archivo</button>
+      </div>
+      ${web ? '' : '<p class="hint">El link para importar funciona cuando usás Perezoso desde su página web (GitHub Pages). Mientras tanto, podés mandar el archivo: la otra persona lo carga con “Importar proyecto”.</p>'}
+    </div>`, (body) => {
+    on(body, '#sh-link', 'onclick', () => navigator.clipboard.writeText(link).then(() => toast('Link copiado'), () => toast('No pude copiar el link')));
+    on(body, '#sh-native', 'onclick', () => navigator.share({ title: `Proyecto ${p.name}`, text, url: web ? link : undefined }).catch(() => {}));
+    on(body, '#sh-file', 'onclick', () => downloadBlob(new Blob([JSON.stringify(projectPayload(p), null, 1)], { type: 'application/json' }), `proyecto-${p.name.replace(/[^\w-]+/g, '-').toLowerCase()}.json`));
+  });
+}
+
+function importProjectPayload(data) {
+  if (!data || data.type !== 'perezoso-proyecto' || !data.project) { toast('Eso no parece un proyecto de Perezoso.'); return; }
+  const pr = data.project;
+  Modal.open('Importar proyecto', `
+    <div class="form">
+      <p>${data.from ? `<strong>${esc(data.from)}</strong> te compartió` : 'Te compartieron'} el proyecto <strong>${esc(pr.name)}</strong>: ${(pr.members || []).length} integrantes, ${(pr.tasks || []).length} tareas y ${(data.events || []).length} entregas.</p>
+      <div class="form-actions"><span class="grow"></span><button type="button" class="btn ghost" data-close>Cancelar</button><button type="button" class="btn" id="imp-ok">Importar</button></div>
+    </div>`, (body) => {
+    $('#imp-ok', body).onclick = () => {
+      const subj = data.subjectName && Store.data.subjects.find((s) => s.name.toLowerCase() === data.subjectName.toLowerCase());
+      const np = {
+        id: uid(), name: pr.name, subjectId: subj ? subj.id : '', members: pr.members || [], links: pr.links || [],
+        tasks: (pr.tasks || []).map((t) => ({ id: uid(), text: t.text, owner: t.owner || '', done: !!t.done })),
+      };
+      Store.data.projects.push(np);
+      (data.events || []).forEach((e) => Store.data.events.push({ id: uid(), type: e.type || 'entregable', customType: e.customType || '', subjectId: np.subjectId, projectId: np.id, title: e.title || '', date: e.date, time: e.time || '', notes: e.notes || '' }));
+      Store.save();
+      Modal.close();
+      location.hash = `#proyecto/${np.id}`;
+    };
+  });
+}
+
+function checkImportLink() {
+  if (!location.hash.startsWith('#importar=')) return false;
+  let data = null;
+  try { data = JSON.parse(fromB64(location.hash.slice('#importar='.length))); } catch (e) { data = null; }
+  history.replaceState(null, '', `${location.pathname}#proyectos`);
+  rerender();
+  if (data) importProjectPayload(data); else toast('El link del proyecto está incompleto.');
+  return true;
 }

@@ -281,20 +281,60 @@ function semesterBounds() {
   return { start, end };
 }
 
-/** Ritmo de una materia: cuánto falta, cuánto por semana y si va atrasada. */
+// Período de cursado de una materia (fechas propias o, si no tiene, el semestre)
+function subjectPeriod(s) {
+  const sem = semesterBounds();
+  const start = s.courseStart ? parseDate(s.courseStart) : sem.start;
+  const end = s.courseEnd ? parseDate(s.courseEnd) : new Date(sem.end);
+  end.setHours(23, 59, 59);
+  return { start, end };
+}
+
+// ¿La materia se está cursando en esta fecha? (para mostrar su horario)
+function subjectActive(s, date = new Date()) {
+  const { start, end } = subjectPeriod(s);
+  return date >= startOfDay(start) && date <= end;
+}
+
+/**
+ * Ritmo de una materia. Las horas totales (créditos × horas por crédito) se
+ * reparten en partes iguales entre las semanas de cursado. Lo que no se llegó
+ * a hacer en semanas anteriores se suma a la meta de esta semana.
+ */
 function subjectPace(s, now = Date.now()) {
+  const W = 7 * DAY_MS;
   const goal = goalMinutes(s);
   const done = studiedMinutes(s.id);
   const left = Math.max(0, goal - done);
-  const { start, end } = semesterBounds();
-  const span = Math.max(1, end - start);
-  const elapsed = clamp((now - start) / span, 0, 1);
-  const weeksLeft = now < end ? Math.max(1, Math.ceil((end - now) / (7 * DAY_MS))) : 0;
-  const perWeek = weeksLeft ? left / weeksLeft : left;
-  const expected = goal * elapsed;
-  const behind = goal > 0 && elapsed > 0.04 && done < expected * 0.85;
-  const weekDone = studiedMinutes(s.id, startOfWeek(new Date(now)).getTime());
-  return { goal, done, left, weeksLeft, perWeek, expected, behind, weekDone, over: done - goal };
+  const { start, end } = subjectPeriod(s);
+  const firstWeek = startOfWeek(start).getTime();
+  const totalWeeks = Math.max(1, Math.ceil((end.getTime() - firstWeek) / W));
+  const base = goal / totalWeeks;
+  const thisWeek = startOfWeek(new Date(now)).getTime();
+  const started = now >= start.getTime();
+  const finished = now > end.getTime();
+  const weekIdx = clamp(Math.floor((thisWeek - firstWeek) / W), 0, totalWeeks);
+  const doneBefore = studiedMinutes(s.id, 0, thisWeek);
+  const debt = started && !finished ? Math.max(0, Math.min(goal, base * weekIdx) - doneBefore) : 0;
+  const weekDone = studiedMinutes(s.id, thisWeek);
+  const perWeek = started && !finished ? Math.min(Math.max(0, goal - doneBefore), base + debt) : 0;
+  const weeksLeft = finished ? 0 : Math.max(1, Math.ceil((end.getTime() - Math.max(now, firstWeek)) / W));
+  const expected = goal * clamp((now - start.getTime()) / Math.max(1, end.getTime() - start.getTime()), 0, 1);
+  const behind = goal > 0 && debt >= 30;
+  return { goal, done, left, base, debt, perWeek, weeksLeft, totalWeeks, expected, behind, weekDone, over: done - goal, started, finished, start, end };
+}
+
+// Clases de materias que se están cursando
+function activeClasses(date = new Date()) {
+  return Store.data.classes.filter((c) => { const s = subjectById(c.subjectId); return s && subjectActive(s, date); });
+}
+
+// Total de la semana, sumando todas las materias
+function weekSummary(now = Date.now()) {
+  const subs = Store.data.subjects.map((s) => subjectPace(s, now));
+  const target = subs.reduce((a, p) => a + p.perWeek, 0);
+  const done = studiedMinutes('', startOfWeek(new Date(now)).getTime());
+  return { target, done, pct: target ? Math.round((done / target) * 100) : null };
 }
 
 function lastStudyTime() {

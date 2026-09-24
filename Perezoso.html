@@ -242,8 +242,8 @@ dialog::backdrop { background: rgba(30, 22, 45, .4); backdrop-filter: blur(3px);
 .toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 80;
   transform: translate(-50%, 160%);
-  background: var(--ink); color: var(--surface); font-weight: 700;
-  padding: .75rem 1.1rem; border-radius: 14px; max-width: calc(100vw - 32px);
+  background: var(--ink); color: var(--surface); font-weight: 600; font-size: .88rem;
+  padding: .5rem .9rem; border-radius: 12px; max-width: min(360px, calc(100vw - 32px)); text-align: center;
   box-shadow: var(--shadow); transition: transform .3s cubic-bezier(.2, .9, .3, 1.3);
 }
 .toast.show { transform: translate(-50%, 0); }
@@ -447,6 +447,31 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; vertical-align: -1px; margin-right: 4px; border: 1.5px solid var(--line); }
 
 /* Notas */
+.accum { display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: flex-end; }
+.accum .big-stat { line-height: 1.05; }
+.accum-facts { display: flex; flex-direction: column; gap: .15rem; color: var(--muted); }
+.accum-facts strong { color: var(--ink); }
+.seg-bar { display: flex; gap: 3px; height: 14px; margin-top: .8rem; }
+.seg { position: relative; height: 100%; border-radius: 4px; background: color-mix(in srgb, var(--accent) 16%, var(--line)); overflow: hidden; }
+.seg i { display: block; height: 100%; background: var(--accent); }
+.eg-head, .ev-grade { display: grid; grid-template-columns: minmax(150px, 1.4fr) 86px minmax(120px, 1.6fr) 74px 34px; gap: .6rem; align-items: center; }
+.eg-head { padding: 0 .2rem .3rem; border-bottom: 1px solid var(--line); }
+.ev-grade { padding: .55rem .2rem; border-bottom: 1px solid var(--line); }
+.eg-name { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.eg-name > input { font-weight: 700; padding: .35rem .5rem; }
+.eg-pct { display: flex; align-items: center; gap: .25rem; font-weight: 700; }
+.eg-grades { display: flex; flex-wrap: wrap; gap: .3rem; }
+.eg-grades input { width: 54px; padding: .35rem .3rem; text-align: center; font-weight: 700; }
+.eg-sum { display: flex; flex-direction: column; line-height: 1.1; text-align: right; }
+.eg-sum strong { color: var(--accent-ink); font-size: 1.05rem; }
+.w-num.xs { width: 44px !important; padding: .15rem .2rem !important; }
+.add-evals { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-top: .9rem; }
+.add-evals .chip-opt { font-size: .82rem; padding: .3rem .75rem; }
+@media (max-width: 760px) {
+  .eg-head { display: none; }
+  .ev-grade { grid-template-columns: 1fr auto auto; grid-template-areas: "name pct rm" "grades grades sum"; }
+  .eg-name { grid-area: name; } .eg-pct { grid-area: pct; } .eg-grades { grid-area: grades; } .eg-sum { grid-area: sum; } .ev-grade > .icon-btn { grid-area: rm; }
+}
 .eval-table { width: 100%; border-collapse: collapse; }
 .eval-table th { text-align: left; font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: .3rem .3rem; }
 .eval-table td { padding: .25rem .3rem; }
@@ -516,9 +541,14 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .task-list li.done .t-text { text-decoration: line-through; color: var(--muted); }
 .task-list select { width: auto; max-width: 160px; padding: .3rem .4rem; font-size: .85rem; }
 
+.share-grid { display: flex; flex-wrap: wrap; gap: .5rem; }
+
 /* ---------- Inicio ---------- */
 
 .hero { display: flex; flex-direction: column; gap: .4rem; }
+.day-fact { display: flex; flex-direction: column; gap: .15rem; margin-top: .5rem; max-width: 70ch; font-size: 1.02rem; line-height: 1.45; }
+.week-total { display: flex; align-items: center; gap: .9rem; margin-bottom: .5rem; }
+.week-total .big-stat { font-size: 2rem; line-height: 1; }
 .sloth-quote { font-family: var(--hand); font-size: 1.35rem; line-height: 1.2; font-weight: 700; color: var(--accent-ink); margin-top: .4rem; }
 .sloth-quote cite { display: block; font-family: var(--font); font-style: normal; font-size: .82rem; font-weight: 700; color: var(--muted); margin-top: .2rem; }
 .speech {
@@ -584,8 +614,15 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
 .icon-btn.ghosty { border-color: transparent; background: transparent; color: var(--muted); }
 .icon-btn.ghosty:hover { background: var(--accent-soft); color: var(--ink); }
 .chip-check { border: 1.5px solid var(--line); border-radius: 999px; padding: .35rem .8rem; }
-.hidden-bar { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
-.hidden-bar .chip-opt { font-size: .8rem; padding: .25rem .7rem; }
+.hidden-menu { position: relative; width: fit-content; margin: .2rem 0 0 auto; font-size: .85rem; }
+.hidden-menu summary { list-style: none; cursor: pointer; color: var(--muted); font-weight: 600; padding: .2rem .5rem; border-radius: 8px; }
+.hidden-menu summary::-webkit-details-marker { display: none; }
+.hidden-menu summary::after { content: ' ▾'; }
+.hidden-menu[open] summary::after { content: ' ▴'; }
+.hidden-menu summary:hover { color: var(--ink); background: var(--accent-soft); }
+.hidden-list { position: absolute; right: 0; bottom: calc(100% + 4px); z-index: 20; min-width: 230px; display: flex; flex-direction: column; padding: .3rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.hidden-list button { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .5rem .6rem; border: 0; background: none; border-radius: 8px; font: inherit; color: var(--ink); cursor: pointer; text-align: left; }
+.hidden-list button:hover { background: var(--accent-soft); }
 .grid-2 > .blk, .grid-3 > .blk { align-self: start; }
 
 /* Faltas compacto */
@@ -674,26 +711,34 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
 .empty-sloth.big { width: 120px; height: 120px; }
 .empty.small .empty-sloth { width: 44px; height: 44px; }
 
-/* ---------- El perezoso que baja por la liana ---------- */
+/* ---------- El perezoso que aparece abajo a la izquierda ---------- */
 
 .sloth-peek {
-  position: fixed; top: 0; right: clamp(8px, 4vw, 48px); z-index: 70;
-  display: flex; align-items: flex-start; gap: .2rem;
-  transform: translateY(-115%); pointer-events: none;
+  position: fixed; left: clamp(8px, 2vw, 28px); bottom: 12px; z-index: 70;
+  display: flex; align-items: flex-end; gap: .2rem;
+  transform: translate(-30%, 130%); pointer-events: none;
 }
-.sloth-peek.show { animation: slothIn 8.5s ease-in-out forwards; pointer-events: auto; }
-.sloth-body { width: 250px; height: 240px; border: 0; background: none; padding: 0; cursor: pointer; transform-origin: 50% 0; animation: sway 4s ease-in-out infinite; }
+.sloth-peek:not(.show) { visibility: hidden; }
+.sloth-peek.show { animation: slothIn 8.5s cubic-bezier(.3, .8, .3, 1) forwards; pointer-events: auto; }
+.sloth-body { width: 330px; height: 230px; border: 0; background: none; padding: 0; cursor: pointer; }
 .sloth-body svg { width: 100%; height: 100%; }
 .sloth-bubble {
-  order: -1; margin-top: 150px; max-width: 260px;
-  background: var(--surface); color: var(--ink); font-family: var(--hand); font-weight: 700; font-size: 1.2rem; line-height: 1.15;
-  padding: .7rem .9rem; border-radius: 18px 18px 4px 18px;
+  order: 2; margin-bottom: 150px; margin-left: -40px; max-width: 270px;
+  background: var(--surface); color: var(--ink); font-family: var(--hand); font-weight: 700; font-size: 1.2rem; line-height: 1.2;
+  padding: .7rem .9rem; border-radius: 18px 18px 18px 4px;
   border: 2px solid var(--accent); box-shadow: var(--shadow);
 }
 @keyframes slothIn {
-  0% { transform: translateY(-115%); }
-  14%, 88% { transform: translateY(0); }
-  100% { transform: translateY(-115%); }
+  0% { transform: translate(-30%, 130%); }
+  12%, 90% { transform: translate(0, 0); }
+  100% { transform: translate(-30%, 130%); }
+}
+.page-sloth { display: block; width: min(300px, 90%); aspect-ratio: 344 / 240; border: 0; background: none; padding: 0; cursor: pointer; margin: .2rem auto 0; }
+.page-sloth svg { width: 100%; height: 100%; }
+@media (max-width: 1000px) {
+  .sloth-peek { bottom: calc(70px + env(safe-area-inset-bottom)); }
+  .sloth-body { width: 230px; height: 160px; }
+  .sloth-bubble { margin-bottom: 100px; max-width: 190px; font-size: 1.05rem; }
 }
 @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 .sl-blink { animation: blink 4.5s infinite; transform-origin: 100px 94px; }
@@ -714,12 +759,22 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
 
 @media (max-width: 1100px) {
   .brand-text small { display: none; }
+  .tabs a { padding: .5rem .6rem; font-size: .88rem; }
+}
+
+@media (max-width: 760px) {
+  .ap-preview { display: none; }
+  .studio-preview { position: static; }
+}
+
+@media (max-width: 1100px) {
+  .brand-text small { display: none; }
   .tabs a span { display: none; }
   .tabs a { padding: .55rem; }
   .tabs a.on span { display: inline; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1000px) {
   .topbar { padding: .45rem 16px; backdrop-filter: none; background: var(--bg); }
   .tabs { display: none; }
   .topbar .live-pill { margin-left: auto; }
@@ -738,16 +793,20 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
   .bottom-nav .ic { width: 22px; height: 22px; }
   .bottom-nav .on { background: var(--accent-soft); color: var(--accent-ink); }
   .more-sheet {
-    position: fixed; left: 12px; right: 12px; bottom: calc(70px + env(safe-area-inset-bottom)); z-index: 41;
-    display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; padding: .6rem;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    position: fixed; right: 12px; bottom: calc(72px + env(safe-area-inset-bottom)); z-index: 41;
+    display: flex; flex-direction: column; gap: .15rem; width: min(260px, calc(100vw - 24px)); padding: .4rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
   }
   .more-sheet[hidden] { display: none !important; }
-  .more-sheet a { display: flex; align-items: center; gap: .5rem; padding: .75rem; border-radius: 12px; text-decoration: none; color: var(--ink); font-weight: 700; background: var(--bg); }
+  .more-sheet a { display: flex; align-items: center; gap: .6rem; padding: .7rem .8rem; border-radius: 10px; text-decoration: none; color: var(--ink); font-weight: 700; }
+  .more-sheet a:hover { background: var(--accent-soft); }
   .more-sheet a.on { background: var(--accent); color: var(--on-accent); }
   .sloth-fab { bottom: calc(78px + env(safe-area-inset-bottom)); right: 12px; width: 40px; height: 40px; }
   main { padding: 1rem 16px 6.5rem; }
   .toast { bottom: calc(84px + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 760px) {
   .switch { width: 100%; }
   .switch button { flex: 1; padding: .55rem .5rem; font-size: .88rem; }
   .row, .row-3 { grid-template-columns: 1fr; }
@@ -759,8 +818,6 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
   .month-nav h2 { min-width: 0; font-size: 1.05rem; }
   .log-row { grid-template-columns: auto 1fr auto auto; }
   .log-row .muted, .log-row .src { display: none; }
-  .sloth-body { width: 170px; height: 165px; }
-  .sloth-bubble { margin-top: 110px; max-width: 180px; font-size: 1.05rem; }
   .stats { grid-template-columns: 1fr 1fr; }
 }
 
@@ -819,10 +876,10 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
   <!-- Botoncito discreto para llamar al perezoso -->
   <button class="sloth-fab" id="sloth-fab" data-sloth="head" data-sloth-talk title="Llamar al perezoso" aria-label="Llamar al perezoso"></button>
 
-  <!-- El perezoso que baja colgado de su rama de vez en cuando -->
+  <!-- El perezoso que aparece de vez en cuando abajo a la izquierda -->
   <div id="sloth-peek" class="sloth-peek" aria-live="polite">
     <div class="sloth-bubble" id="sloth-bubble"></div>
-    <button class="sloth-body" id="sloth-body" data-sloth="vine" aria-label="Perezoso (tocá para despedirlo)"></button>
+    <button class="sloth-body" id="sloth-body" data-sloth="full" aria-label="Perezoso (tocá para despedirlo)"></button>
   </div>
 
   <dialog id="modal"><div id="modal-body"></div></dialog>
@@ -1475,17 +1532,20 @@ function block(key, title, body, { actions = '', cls = '' } = {}) {
   </section>`;
 }
 
-// Barrita para volver a mostrar lo oculto. blocks: [[key, título], ...]
+// Menú discreto para volver a mostrar lo oculto. blocks: [[key, título], ...]
 function hiddenBar(blocks) {
   const hidden = blocks.filter(([k]) => isHidden(k));
   if (!hidden.length) return '';
-  return `<div class="hidden-bar"><span class="muted small">Ocultos:</span>${hidden.map(([k, t]) => `<button type="button" class="chip-opt" data-showblock="${k}">+ ${esc(t)}</button>`).join('')}</div>`;
+  return `<details class="hidden-menu">
+    <summary>${hidden.length === 1 ? '1 sección oculta' : `${hidden.length} secciones ocultas`}</summary>
+    <div class="hidden-list">${hidden.map(([k, t]) => `<button type="button" data-showblock="${k}"><span>${esc(t)}</span><span class="muted small">Mostrar</span></button>`).join('')}</div>
+  </details>`;
 }
 
 function bindBlocks(root) {
   const L = layoutState();
   $$('[data-collapse]', root).forEach((b) => (b.onclick = () => { const k = b.dataset.collapse; if (L.collapsed[k]) delete L.collapsed[k]; else L.collapsed[k] = true; Store.save(); rerender(); }));
-  $$('[data-hideblock]', root).forEach((b) => (b.onclick = () => { L.hidden[b.dataset.hideblock] = true; Store.save(); toast('Listo, lo oculté. Lo volvés a mostrar desde abajo de la página.'); rerender(); }));
+  $$('[data-hideblock]', root).forEach((b) => (b.onclick = () => { L.hidden[b.dataset.hideblock] = true; Store.save(); toast('Sección oculta'); rerender(); }));
   $$('[data-showblock]', root).forEach((b) => (b.onclick = () => { delete L.hidden[b.dataset.showblock]; Store.save(); rerender(); }));
 }
 
@@ -1777,20 +1837,60 @@ function semesterBounds() {
   return { start, end };
 }
 
-/** Ritmo de una materia: cuánto falta, cuánto por semana y si va atrasada. */
+// Período de cursado de una materia (fechas propias o, si no tiene, el semestre)
+function subjectPeriod(s) {
+  const sem = semesterBounds();
+  const start = s.courseStart ? parseDate(s.courseStart) : sem.start;
+  const end = s.courseEnd ? parseDate(s.courseEnd) : new Date(sem.end);
+  end.setHours(23, 59, 59);
+  return { start, end };
+}
+
+// ¿La materia se está cursando en esta fecha? (para mostrar su horario)
+function subjectActive(s, date = new Date()) {
+  const { start, end } = subjectPeriod(s);
+  return date >= startOfDay(start) && date <= end;
+}
+
+/**
+ * Ritmo de una materia. Las horas totales (créditos × horas por crédito) se
+ * reparten en partes iguales entre las semanas de cursado. Lo que no se llegó
+ * a hacer en semanas anteriores se suma a la meta de esta semana.
+ */
 function subjectPace(s, now = Date.now()) {
+  const W = 7 * DAY_MS;
   const goal = goalMinutes(s);
   const done = studiedMinutes(s.id);
   const left = Math.max(0, goal - done);
-  const { start, end } = semesterBounds();
-  const span = Math.max(1, end - start);
-  const elapsed = clamp((now - start) / span, 0, 1);
-  const weeksLeft = now < end ? Math.max(1, Math.ceil((end - now) / (7 * DAY_MS))) : 0;
-  const perWeek = weeksLeft ? left / weeksLeft : left;
-  const expected = goal * elapsed;
-  const behind = goal > 0 && elapsed > 0.04 && done < expected * 0.85;
-  const weekDone = studiedMinutes(s.id, startOfWeek(new Date(now)).getTime());
-  return { goal, done, left, weeksLeft, perWeek, expected, behind, weekDone, over: done - goal };
+  const { start, end } = subjectPeriod(s);
+  const firstWeek = startOfWeek(start).getTime();
+  const totalWeeks = Math.max(1, Math.ceil((end.getTime() - firstWeek) / W));
+  const base = goal / totalWeeks;
+  const thisWeek = startOfWeek(new Date(now)).getTime();
+  const started = now >= start.getTime();
+  const finished = now > end.getTime();
+  const weekIdx = clamp(Math.floor((thisWeek - firstWeek) / W), 0, totalWeeks);
+  const doneBefore = studiedMinutes(s.id, 0, thisWeek);
+  const debt = started && !finished ? Math.max(0, Math.min(goal, base * weekIdx) - doneBefore) : 0;
+  const weekDone = studiedMinutes(s.id, thisWeek);
+  const perWeek = started && !finished ? Math.min(Math.max(0, goal - doneBefore), base + debt) : 0;
+  const weeksLeft = finished ? 0 : Math.max(1, Math.ceil((end.getTime() - Math.max(now, firstWeek)) / W));
+  const expected = goal * clamp((now - start.getTime()) / Math.max(1, end.getTime() - start.getTime()), 0, 1);
+  const behind = goal > 0 && debt >= 30;
+  return { goal, done, left, base, debt, perWeek, weeksLeft, totalWeeks, expected, behind, weekDone, over: done - goal, started, finished, start, end };
+}
+
+// Clases de materias que se están cursando
+function activeClasses(date = new Date()) {
+  return Store.data.classes.filter((c) => { const s = subjectById(c.subjectId); return s && subjectActive(s, date); });
+}
+
+// Total de la semana, sumando todas las materias
+function weekSummary(now = Date.now()) {
+  const subs = Store.data.subjects.map((s) => subjectPace(s, now));
+  const target = subs.reduce((a, p) => a + p.perWeek, 0);
+  const done = studiedMinutes('', startOfWeek(new Date(now)).getTime());
+  return { target, done, pct: target ? Math.round((done / target) * 100) : null };
 }
 
 function lastStudyTime() {
@@ -2527,7 +2627,10 @@ const FONTS = {
 const PATTERNS = [
   { id: 'dots', label: 'Puntos' }, { id: 'grid', label: 'Cuadros' }, { id: 'stripes', label: 'Rayas' },
   { id: 'zigzag', label: 'Zigzag' }, { id: 'stars', label: 'Estrellitas' }, { id: 'hearts', label: 'Corazones' },
-  { id: 'leaves', label: 'Hojitas' },
+  { id: 'leaves', label: 'Hojitas' }, { id: 'checks', label: 'Cuadritos' }, { id: 'waves', label: 'Ondas' },
+  { id: 'flowers', label: 'Florcitas' }, { id: 'clouds', label: 'Nubes' }, { id: 'moons', label: 'Lunas' },
+  { id: 'plaid', label: 'Escocés' }, { id: 'confetti', label: 'Confeti' }, { id: 'bubbles', label: 'Burbujas' },
+  { id: 'triangles', label: 'Triángulos' }, { id: 'cherries', label: 'Cerezas' }, { id: 'sparkles', label: 'Brillitos' },
 ];
 
 function patternUrl(kind, color) {
@@ -2540,6 +2643,17 @@ function patternUrl(kind, color) {
     stars: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><path d="M15 8l2 5 5 .5-4 3.5 1.3 5L15 19l-4.3 3 1.3-5-4-3.5 5-.5z" fill="${c}" opacity=".35"/><path d="M45 38l1.4 3.4 3.6.3-2.8 2.4.9 3.5-3.1-2-3.1 2 .9-3.5-2.8-2.4 3.6-.3z" fill="${c}" opacity=".25"/></svg>`,
     hearts: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M12 18c-3-4-9-1-6 4l6 5 6-5c3-5-3-8-6-4z" fill="${c}" opacity=".32"/><path d="M36 42c-2-3-7-1-5 3l5 4 5-4c2-4-3-6-5-3z" fill="${c}" opacity=".22"/></svg>`,
     leaves: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M12 30c6-12 18-12 22-10-4 10-14 16-22 10z" fill="${c}" opacity=".3"/><path d="M40 54c4-8 12-8 15-7-3 7-9 11-15 7z" fill="${c}" opacity=".22"/></svg>`,
+    checks: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="16" height="16" fill="${c}" opacity=".13"/><rect x="16" y="16" width="16" height="16" fill="${c}" opacity=".13"/></svg>`,
+    waves: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="24"><path d="M0 12 Q12 2 24 12 T48 12" fill="none" stroke="${c}" stroke-opacity=".3" stroke-width="2.5"/></svg>`,
+    flowers: `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><g fill="${c}" opacity=".3"><circle cx="14" cy="10" r="3.5"/><circle cx="18" cy="14" r="3.5"/><circle cx="14" cy="18" r="3.5"/><circle cx="10" cy="14" r="3.5"/></g><circle cx="14" cy="14" r="2" fill="${c}" opacity=".5"/><g fill="${c}" opacity=".22"><circle cx="42" cy="38" r="3"/><circle cx="46" cy="42" r="3"/><circle cx="42" cy="46" r="3"/><circle cx="38" cy="42" r="3"/></g></svg>`,
+    clouds: `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60"><path d="M12 24a7 7 0 0 1 13-4 6 6 0 0 1 10 5 5 5 0 0 1-1 10H13a6 6 0 0 1-1-11z" fill="${c}" opacity=".2"/><path d="M50 48a5 5 0 0 1 9-3 4 4 0 0 1 7 4 3.5 3.5 0 0 1-1 7H51a4 4 0 0 1-1-8z" fill="${c}" opacity=".16"/></svg>`,
+    moons: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><path d="M20 8a10 10 0 1 0 8 16A8 8 0 0 1 20 8z" fill="${c}" opacity=".3"/><circle cx="46" cy="44" r="2" fill="${c}" opacity=".35"/><circle cx="40" cy="14" r="1.5" fill="${c}" opacity=".35"/></svg>`,
+    plaid: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect x="0" y="14" width="40" height="8" fill="${c}" opacity=".13"/><rect x="14" y="0" width="8" height="40" fill="${c}" opacity=".13"/><path d="M0 34H40M34 0V40" stroke="${c}" stroke-opacity=".2" stroke-width="1.5"/></svg>`,
+    confetti: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect x="8" y="10" width="7" height="3" rx="1.5" fill="${c}" opacity=".35" transform="rotate(30 11 11)"/><rect x="40" y="18" width="7" height="3" rx="1.5" fill="${c}" opacity=".25" transform="rotate(-40 43 19)"/><circle cx="24" cy="42" r="2.2" fill="${c}" opacity=".3"/><rect x="46" y="46" width="6" height="3" rx="1.5" fill="${c}" opacity=".3" transform="rotate(70 49 47)"/><circle cx="52" cy="6" r="1.8" fill="${c}" opacity=".3"/></svg>`,
+    bubbles: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="16" cy="16" r="9" fill="none" stroke="${c}" stroke-opacity=".3" stroke-width="2"/><circle cx="46" cy="44" r="6" fill="none" stroke="${c}" stroke-opacity=".25" stroke-width="2"/><circle cx="48" cy="12" r="3" fill="none" stroke="${c}" stroke-opacity=".25" stroke-width="1.5"/></svg>`,
+    triangles: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="36"><path d="M0 36 L20 0 L40 36Z" fill="${c}" opacity=".1"/><path d="M-20 36 L0 0 L20 36Z M20 36 L40 0 L60 36Z" fill="none" stroke="${c}" stroke-opacity=".18"/></svg>`,
+    cherries: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M20 12 Q24 22 18 30 M20 12 Q26 20 28 30" stroke="#6f8f5a" stroke-opacity=".5" stroke-width="1.6" fill="none"/><circle cx="17" cy="32" r="5" fill="${c}" opacity=".4"/><circle cx="29" cy="32" r="5" fill="${c}" opacity=".4"/><circle cx="48" cy="52" r="2" fill="${c}" opacity=".25"/></svg>`,
+    sparkles: `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><path d="M14 6 L16 12 L22 14 L16 16 L14 22 L12 16 L6 14 L12 12Z" fill="${c}" opacity=".35"/><path d="M42 34 L43.3 38 L47 39.3 L43.3 40.6 L42 44.6 L40.7 40.6 L37 39.3 L40.7 38Z" fill="${c}" opacity=".28"/></svg>`,
   };
   return `data:image/svg+xml;utf8,${encodeURIComponent(svgs[kind] || svgs.dots)}`;
 }
@@ -2758,7 +2872,6 @@ function renderExams(el) {
       <div class="dow">${DAYS_SHORT.map((d) => `<span>${d}</span>`).join('')}</div>
       <div class="grid">${cells}</div>
     </div>
-    <p class="hint">Tocá un día para agregar un evento ese día.</p>
     <section class="card">
       <div class="list-head">
         <h2>Lo que se viene</h2>
@@ -3090,7 +3203,7 @@ function downloadTimetablePDF() {
     if (h < maxH) { doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(140, 130, 150); doc.text(`${pad(h)}:00`, M + hourW - 1.5, yy + 2.5, { align: 'right' }); }
   }
   for (let i = 0; i <= 6; i++) doc.line(M + hourW + i * cw, top + headH, M + hourW + i * cw, top + headH + (maxH - minH) * hh);
-  Store.data.classes.filter((c) => +c.day <= 6).forEach((c) => {
+  activeClasses().filter((c) => +c.day <= 6).forEach((c) => {
     const x = M + hourW + (c.day - 1) * cw + 0.8;
     const y0 = top + headH + ((toMin(c.start) / 60) - minH) * hh;
     const h = ((toMin(c.end) - toMin(c.start)) / 60) * hh;
@@ -3112,13 +3225,13 @@ function downloadTimetablePDF() {
 
 function timetableRange() {
   let minH = 7, maxH = 23;
-  Store.data.classes.forEach((c) => { minH = Math.min(minH, Math.floor(toMin(c.start) / 60)); maxH = Math.max(maxH, Math.ceil(toMin(c.end) / 60)); });
+  activeClasses().forEach((c) => { minH = Math.min(minH, Math.floor(toMin(c.start) / 60)); maxH = Math.max(maxH, Math.ceil(toMin(c.end) / 60)); });
   return { minH, maxH };
 }
 
 // Huecos de al menos 45 min entre clases del mismo día
 function freeGaps(day) {
-  const cls = Store.data.classes.filter((c) => +c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
+  const cls = activeClasses().filter((c) => +c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
   const gaps = [];
   for (let i = 1; i < cls.length; i++) {
     const prevEnd = Math.max(...cls.slice(0, i).map((c) => toMin(c.end)));
@@ -3129,7 +3242,7 @@ function freeGaps(day) {
 }
 
 function renderTimetable(el) {
-  const classes = Store.data.classes;
+  const classes = activeClasses();
   if (!Store.data.subjects.length) {
     el.innerHTML = `<div class="card empty">
       <h2>Primero creá una materia</h2><p>Después vas a poder cargar tus horarios de clase acá.</p>
@@ -3208,6 +3321,11 @@ function openClassForm(cl, preset = {}) {
         <label>Hasta<input type="time" name="end" required value="${data.end}"></label>
       </div>
       <div class="row">
+        <label>Clases desde<input type="date" name="courseStart" value="${(subjectById(data.subjectId) || {}).courseStart || Store.data.settings.semesterStart}"></label>
+        <label>Hasta<input type="date" name="courseEnd" value="${(subjectById(data.subjectId) || {}).courseEnd || Store.data.settings.semesterEnd}"></label>
+      </div>
+      <p class="hint">Las fechas son de la materia: cuando termina el cursado, su horario deja de aparecer (la materia sigue en Materias).</p>
+      <div class="row">
         <label>Tipo de clase<select name="kind">${CLASS_KINDS.map((k) => `<option ${k === data.kind ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
         <label>Salón <span class="opt">(opcional)</span><input name="room" value="${esc(data.room)}" placeholder="Ej: 501, Anfiteatro"></label>
       </div>
@@ -3220,10 +3338,18 @@ function openClassForm(cl, preset = {}) {
     </form>`, (body) => {
     const f = $('#cl-form', body);
     const el = f.elements;
+    el.subjectId.onchange = () => {
+      const subj = subjectById(el.subjectId.value) || {};
+      el.courseStart.value = subj.courseStart || Store.data.settings.semesterStart;
+      el.courseEnd.value = subj.courseEnd || Store.data.settings.semesterEnd;
+    };
     f.onsubmit = (e) => {
       e.preventDefault();
       if (toMin(el.end.value) <= toMin(el.start.value)) { toast('La hora de fin tiene que ser después del inicio.'); return; }
+      if (el.courseStart.value && el.courseEnd.value && el.courseEnd.value < el.courseStart.value) { toast('La fecha de fin tiene que ser después del inicio.'); return; }
       Object.assign(data, { subjectId: el.subjectId.value, day: +el.day.value, start: el.start.value, end: el.end.value, kind: el.kind.value, room: el.room.value.trim() });
+      const subj = subjectById(data.subjectId);
+      if (subj) { subj.courseStart = el.courseStart.value; subj.courseEnd = el.courseEnd.value; }
       if (isNew) Store.data.classes.push(data);
       else Object.assign(cl, data);
       Store.save();
@@ -3251,7 +3377,7 @@ function openClassForm(cl, preset = {}) {
 const SUBJECT_TABS = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'documentos', label: 'Documentos' },
-  { id: 'practicos', label: 'Prácticos' },
+  { id: 'practicos', label: 'Tareas a realizar' },
   { id: 'notas', label: 'Notas' },
   { id: 'apariencia', label: 'Apariencia' },
 ];
@@ -3287,7 +3413,6 @@ function renderSubjects() {
             return `<a class="card subj-card" href="#materia/${s.id}" style="--c:${s.color}">
               <div class="subj-card-top"><h3>${esc(s.name)}</h3><span class="badge">${Number(s.credits) || 0} cr.</span></div>
               <div class="chip-row">${s.tag ? `<span class="badge tag">${esc(s.tag)}</span>` : ''}${p.behind ? '<span class="badge warn">Atrasada</span>' : ''}</div>
-              <p class="muted">${s.professors.length ? '' + esc(s.professors.map((x) => x.name).filter(Boolean).join(', ')) : 'Sin docente cargado'}</p>
               ${hoursBar(s)}
               <p class="next">${next ? `${esc(typeLabel(next))} · <span class="num" data-countdown="${eventDate(next).getTime()}">${countdown(eventDate(next)).text}</span>` : '<span class="muted">Sin pruebas próximas</span>'}</p>
             </a>`;
@@ -3335,6 +3460,10 @@ function openSubjectForm(s) {
         <div id="profs">${(data.professors.length ? data.professors : [{ name: '', emails: [] }]).map(professorRow).join('')}</div>
         <button type="button" class="btn ghost sm" id="add-prof">+ Otro profesor</button>
       </fieldset>
+      <div class="row">
+        <label>Inicio de clases<input type="date" name="courseStart" value="${data.courseStart || Store.data.settings.semesterStart}"></label>
+        <label>Fin de clases<input type="date" name="courseEnd" value="${data.courseEnd || Store.data.settings.semesterEnd}"></label>
+      </div>
       <label>Bibliografía principal <span class="opt">(opcional)</span><input name="bibliography" value="${esc(data.bibliography)}" placeholder="Ej: Serway, vol. 2"></label>
       <div class="row">
         <label>Créditos<input type="number" name="credits" min="0" step="0.5" value="${data.credits || 0}"></label>
@@ -3361,7 +3490,7 @@ function openSubjectForm(s) {
       }
       Object.assign(data, {
         name: el.name.value.trim(), semester: el.semester.value, year: +el.year.value, tag: el.tag.value.trim(),
-        professors, bibliography: el.bibliography.value.trim(), credits: Number(el.credits.value) || 0, color: el.color.value,
+        professors, bibliography: el.bibliography.value.trim(), courseStart: el.courseStart.value, courseEnd: el.courseEnd.value, credits: Number(el.credits.value) || 0, color: el.color.value,
       });
       if (isNew) Store.data.subjects.push(data);
       else Object.assign(s, data);
@@ -3374,7 +3503,7 @@ function openSubjectForm(s) {
 }
 
 async function deleteSubject(s) {
-  if (!confirm(`¿Eliminar “${s.name}”? Se borran también sus eventos, clases, horas registradas, prácticos, notas y documentos.`)) return;
+  if (!confirm(`¿Eliminar “${s.name}”? Se borran también sus eventos, clases, horas registradas, tareas, notas y documentos.`)) return;
   const d = Store.data;
   d.subjects = d.subjects.filter((x) => x.id !== s.id);
   d.events = d.events.filter((x) => x.subjectId !== s.id);
@@ -3457,7 +3586,7 @@ function tabResumen(s, box) {
       </div>
       <div class="bar big" style="--c:${s.color}"><span style="width:${pct}%"></span></div>
       <div class="bar-legend">${fmtHM(p.done)} dedicadas · ${pct.toFixed(0)}% · esta semana ${fmtHM(p.weekDone)}</div>
-      ${p.left > 0 && p.weeksLeft ? `<div class="pace ${p.behind ? 'behind' : ''}">${p.behind ? 'Vas atrasada. ' : ''}Necesitás <strong>${fmtHM(p.perWeek)} por semana</strong> (quedan ${p.weeksLeft} semanas).</div>` : ''}`
+      ${paceHTML(p)}`
     : '<p class="muted">Cargá los créditos (✎ Editar) para calcular las horas de esfuerzo.</p>'}
       <button class="btn ${studying ? 'danger' : ''}" id="s-study">${studying ? '■ Terminar sesión' : '▶ Estudiar ahora'}</button></div>`;
 
@@ -3506,6 +3635,16 @@ function tabResumen(s, box) {
   $$('[data-note]', box).forEach((c) => (c.onchange = () => { const n = s.pendingNotes.find((x) => x.id === c.dataset.note); n.done = c.checked; Store.save(); rerender(); }));
   $$('[data-rmnote]', box).forEach((b) => (b.onclick = () => { s.pendingNotes = s.pendingNotes.filter((x) => x.id !== b.dataset.rmnote); Store.save(); rerender(); }));
   on(box, '#note-form', 'onsubmit', (e) => { e.preventDefault(); const t = e.target.elements.t.value.trim(); if (!t) return; s.pendingNotes.push({ id: uid(), text: t, done: false }); Store.save(); rerender(); });
+}
+
+function paceHTML(p) {
+  if (!p.goal) return '';
+  if (p.finished) return `<div class="pace">Terminó el cursado (${fmtDateShort(p.end)}).</div>`;
+  if (!p.started) return `<div class="pace">Empieza el ${fmtDateShort(p.start)}. Vas a necesitar unas <strong>${fmtHM(p.base)} por semana</strong>.</div>`;
+  if (p.left <= 0) return '';
+  return `<div class="pace ${p.behind ? 'behind' : ''}">Meta de esta semana: <strong>${fmtHM(p.perWeek)}</strong>
+    ${p.debt >= 1 ? `<span class="small">(${fmtHM(p.base)} de la semana + ${fmtHM(p.debt)} que quedaron de semanas anteriores)</span>` : `<span class="small">(${p.weeksLeft} semanas de cursado por delante)</span>`}
+    <div class="small" style="margin-top:.2rem">Llevás ${fmtHM(p.weekDone)} esta semana.</div></div>`;
 }
 
 /* --- Documentos --- */
@@ -3687,8 +3826,8 @@ function tabPracticos(s, box) {
   box.innerHTML = `
     <section class="card">
       <div class="list-head">
-        <h2>Prácticos</h2>
-        <button class="btn sm" id="add-prac">+ Nuevo práctico</button>
+        <h2>Tareas a realizar</h2>
+        <button class="btn sm" id="add-prac">+ Nueva tarea</button>
       </div>
       ${s.practicos.length ? `
         <div class="grid-2" style="margin-bottom:.8rem">
@@ -3713,13 +3852,13 @@ function tabPracticos(s, box) {
               <div class="sec-head"><h3>${esc(p.name)}</h3>
                 <div><button class="icon-btn sm" data-pren="${p.id}" aria-label="Renombrar">✎</button>
                 <button class="icon-btn sm" data-pcount="${p.id}" aria-label="Cambiar cantidad de ejercicios">#</button>
-                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar práctico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div></div>
+                <button class="icon-btn sm danger" data-prm="${p.id}" aria-label="Eliminar tarea"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button></div></div>
               <div class="muted small">${ps.done}/${ps.total} resueltos · ★ ${ps.prioDone}/${ps.prio} prioritarios</div>
               <div class="bar" style="--c:var(--moss)"><span style="width:${ps.total ? (ps.done / ps.total) * 100 : 0}%"></span></div>
               <div class="ex-grid">${exs.map((e) => `<button class="ex ${e.priority ? 'prio' : ''}" data-ex="${p.id}|${e.n}" data-state="${e.state}" title="Ejercicio ${e.n}: ${EX_LABEL[e.state]}${e.priority ? ' · prioritario' : ''}" aria-label="Ejercicio ${e.n}, ${EX_LABEL[e.state]}${e.priority ? ', prioritario' : ''}">${e.n}</button>`).join('') || '<span class="muted small">No hay prioritarios acá.</span>'}</div>
             </div>`;
           }).join('')}
-        </div>` : `<div class="empty small"><p>Agregá un práctico con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
+        </div>` : `<div class="empty small"><p>Agregá una tarea (por ejemplo, un práctico) con su cantidad de ejercicios y andá marcando cómo vas.</p></div>`}
     </section>`;
   Sloth.paint(box);
 
@@ -3739,7 +3878,7 @@ function tabPracticos(s, box) {
   }));
   $$('[data-pren]', box).forEach((b) => (b.onclick = async () => {
     const p = s.practicos.find((x) => x.id === b.dataset.pren);
-    const t = await askText('Renombrar práctico', 'Nombre', p.name);
+    const t = await askText('Renombrar tarea', 'Nombre', p.name);
     if (t) { p.name = t; Store.save(); rerender(); }
   }));
   $$('[data-pcount]', box).forEach((b) => (b.onclick = async () => {
@@ -3760,7 +3899,7 @@ function tabPracticos(s, box) {
 }
 
 function openPracticoForm(s) {
-  Modal.open('Nuevo práctico', `
+  Modal.open('Nueva tarea', `
     <form class="form" id="prac-form">
       <label>Nombre<input name="name" required placeholder="Ej: Práctico 4" value="Práctico ${s.practicos.length + 1}"></label>
       <label>Cantidad de ejercicios<input type="number" name="count" min="1" max="300" value="10" required></label>
@@ -3781,16 +3920,18 @@ function openPracticoForm(s) {
 }
 
 /* --- Notas y aprobación ---
- * Pensado para notas sobre 12: cada componente tiene un peso (%), una nota
- * máxima y puede ser una sola nota (un parcial) o un grupo del que cuentan
- * las mejores N en promedio (por ejemplo, los 3 controles más altos).
+ * Cada evaluación vale un porcentaje de la nota final (sobre 12). A medida que
+ * cargás notas, se va sumando la nota acumulada: un 9 en un parcial que vale
+ * 40% suma 9 × 0,40 = 3,6 puntos. Una evaluación puede ser una sola nota o
+ * varias, de las que cuentan las mejores N en promedio (por ejemplo, los 3
+ * controles más altos).
  */
 
 const GRADE_PRESETS = [
-  { id: 'p40', label: '+ Parcial 40%', make: (n) => ({ name: `Parcial ${n}`, weight: 40, kind: 'single', count: 1, best: 1 }) },
-  { id: 'p20', label: '+ Parcial 20%', make: (n) => ({ name: `Parcial ${n}`, weight: 20, kind: 'single', count: 1, best: 1 }) },
-  { id: 'ctrl', label: '+ Controles (mejores 3 de 4, 20%)', make: () => ({ name: 'Controles', weight: 20, kind: 'group', count: 4, best: 3 }) },
-  { id: 'otra', label: '+ Otra', make: () => ({ name: 'Evaluación', weight: 10, kind: 'single', count: 1, best: 1 }) },
+  { id: 'p40', label: 'Parcial 40%', make: (n) => ({ name: `Parcial ${n}`, weight: 40, kind: 'single', count: 1, best: 1 }) },
+  { id: 'p20', label: 'Parcial 20%', make: (n) => ({ name: `Parcial ${n}`, weight: 20, kind: 'single', count: 1, best: 1 }) },
+  { id: 'ctrl', label: 'Controles (3 mejores de 4) 20%', make: () => ({ name: 'Controles', weight: 20, kind: 'group', count: 4, best: 3 }) },
+  { id: 'otra', label: 'Otra', make: () => ({ name: 'Evaluación', weight: 10, kind: 'single', count: 1, best: 1 }) },
 ];
 
 function grading(s) {
@@ -3799,107 +3940,102 @@ function grading(s) {
 }
 
 const isNum = (g) => g !== '' && g != null && !Number.isNaN(Number(g));
+const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-UY', { maximumFractionDigits: 2 });
 
-function componentStatus(c) {
+function componentStatus(c, scale) {
   const filled = c.grades.filter(isNum).map(Number);
   const counts = c.kind === 'group' ? clamp(c.best || c.count, 1, c.count) : 1;
   const used = filled.slice().sort((a, b) => b - a).slice(0, counts);
   const avg = used.length ? used.reduce((a, b) => a + b, 0) / used.length : null;
   const done = filled.length >= (c.kind === 'group' ? c.count : 1);
-  return { avg, done, filled: filled.length, counts, frac: avg == null ? null : avg / (Number(c.max) || 12) };
+  const w = (Number(c.weight) || 0) / 100;
+  return { avg, done, filled: filled.length, counts, w, points: avg == null ? 0 : avg * w, maxPoints: w * scale };
 }
 
 function gradeSummary(s) {
   const g = grading(s);
   const scale = Number(g.scale) || 12;
-  let totalW = 0, doneW = 0, doneEarned = 0, anyW = 0, anyEarned = 0;
+  let totalW = 0, gradedW = 0, accumulated = 0, pendingW = 0;
   for (const c of g.components) {
-    const w = Number(c.weight) || 0;
-    const st = componentStatus(c);
-    totalW += w;
-    if (st.frac != null) { anyW += w; anyEarned += w * st.frac; }
-    if (st.done && st.frac != null) { doneW += w; doneEarned += w * st.frac; }
+    const st = componentStatus(c, scale);
+    totalW += st.w;
+    if (st.avg != null) { gradedW += st.w; accumulated += st.points; }
+    if (!st.done) pendingW += st.w;
   }
+  const doneAccum = g.components.reduce((a, c) => { const st = componentStatus(c, scale); return a + (st.done ? st.points : 0); }, 0);
   return {
-    scale, totalW, doneW, remainingW: totalW - doneW,
-    current: anyW ? (anyEarned / anyW) * scale : null,          // promedio sobre lo rendido
-    secured: totalW ? (doneEarned / totalW) * scale : 0,          // puntos asegurados sobre la nota final
-    need: (target) => {
-      const rem = totalW - doneW;
-      if (!totalW) return null;
-      const req = ((target / scale) * totalW - doneEarned) / (rem || 1);
-      return { rem, value: req * scale, done: rem <= 0 };
-    },
+    scale, totalPct: totalW * 100, gradedPct: gradedW * 100, pendingPct: pendingW * 100,
+    accumulated,                                   // nota acumulada hasta ahora (sobre la escala)
+    average: gradedW ? accumulated / gradedW : null, // promedio en lo rendido
+    maxPossible: doneAccum + pendingW * scale,     // si te va perfecto en lo que falta
+    need: (target) => (pendingW > 0 ? (target - doneAccum) / pendingW : null),
   };
 }
-
-const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-UY', { maximumFractionDigits: 2 });
 
 function tabNotas(s, box) {
   const g = grading(s);
   const sum = gradeSummary(s);
-  const target = g.target ?? g.pass ?? 6;
-  const needed = sum.need(Number(target));
+  const target = Number(g.target ?? g.pass ?? 6);
+  const need = sum.need(target);
 
-  const comps = g.components.map((c) => {
-    const st = componentStatus(c);
-    const pts = ((Number(c.weight) || 0) / 100) * sum.scale;
-    const gradeInputs = c.grades.map((v, i) => `<input type="number" step="any" min="0" max="${c.max}" data-grade="${c.id}|${i}" value="${isNum(v) ? v : ''}" placeholder="—" aria-label="${esc(c.name)} nota ${i + 1}">`).join('');
-    return `<div class="comp" data-comp="${c.id}">
-      <div class="comp-top">
-        <input class="comp-name" data-f="name" value="${esc(c.name)}" aria-label="Nombre">
-        <label class="inline small">vale <input type="number" data-f="weight" min="0" max="100" step="any" value="${c.weight}" class="w-num" aria-label="Peso"> %</label>
-        <label class="inline small">sobre <input type="number" data-f="max" min="1" step="any" value="${c.max}" class="w-num" aria-label="Nota máxima"></label>
-        <button type="button" class="icon-btn sm danger" data-rmcomp="${c.id}" aria-label="Eliminar ${esc(c.name)}">✕</button>
+  const segments = g.components.map((c) => {
+    const st = componentStatus(c, sum.scale);
+    return `<span class="seg" style="width:${st.w * 100}%" title="${esc(c.name)}: ${fmtN(st.points)} de ${fmtN(st.maxPoints)}"><i style="width:${st.maxPoints ? (st.points / st.maxPoints) * 100 : 0}%"></i></span>`;
+  }).join('');
+
+  let needLine = '';
+  if (g.components.length) {
+    if (sum.accumulated >= target) needLine = `<p class="ok-line">Ya llegaste a ${fmtN(target)} con lo que llevás acumulado.</p>`;
+    else if (need == null) needLine = `<p class="warn-line">No quedan evaluaciones para llegar a ${fmtN(target)}.</p>`;
+    else if (need > sum.scale) needLine = `<p class="warn-line">Para llegar a ${fmtN(target)} necesitarías más de ${sum.scale} en lo que falta. Mirá la regla de aprobación por si hay recuperatorio.</p>`;
+    else needLine = `<p>Para llegar a <strong>${fmtN(target)}</strong> necesitás un promedio de <strong class="big-inline">${fmtN(Math.max(0, need))}</strong> en lo que te falta (${fmtN(sum.pendingPct)}% de la nota).</p>`;
+  }
+
+  const summary = `
+    <div class="accum">
+      <div><span class="muted small">Nota acumulada</span><div class="big-stat">${fmtN(sum.accumulated)}<span class="muted" style="font-size:1rem"> / ${sum.scale}</span></div></div>
+      <div class="accum-facts small">
+        <span>Rendiste el <strong>${fmtN(sum.gradedPct)}%</strong> de la nota</span>
+        ${sum.average != null ? `<span>Promedio en lo rendido: <strong>${fmtN(sum.average)}</strong></span>` : ''}
+        <span>Máximo que todavía podés sacar: <strong>${fmtN(Math.min(sum.scale, sum.maxPossible))}</strong></span>
       </div>
-      <div class="comp-kind">
-        <div class="switch sm">
-          <button type="button" data-kind="${c.id}|single" class="${c.kind === 'single' ? 'on' : ''}">Una nota</button>
-          <button type="button" data-kind="${c.id}|group" class="${c.kind === 'group' ? 'on' : ''}">Varias notas</button>
-        </div>
-        ${c.kind === 'group' ? `<span class="small">cuentan las mejores <input type="number" data-f="best" min="1" max="${c.count}" value="${c.best}" class="w-num" aria-label="Cuántas cuentan"> de <input type="number" data-f="count" min="1" max="20" value="${c.count}" class="w-num" aria-label="Cantidad de notas"> en promedio</span>` : ''}
+    </div>
+    <div class="seg-bar" aria-hidden="true">${segments}</div>
+    <div class="filters" style="margin-top:.8rem">
+      <label class="inline small">Notas sobre <input type="number" id="g-scale" min="1" value="${sum.scale}" class="w-num"></label>
+      <label class="inline small">Quiero llegar a <input type="number" id="g-target" min="0" step="any" value="${target}" class="w-num"></label>
+    </div>
+    ${needLine}`;
+
+  const rows = g.components.map((c) => {
+    const st = componentStatus(c, sum.scale);
+    const inputs = c.grades.map((v, i) => `<input type="number" step="any" min="0" max="${sum.scale}" data-grade="${c.id}|${i}" value="${isNum(v) ? v : ''}" placeholder="—" aria-label="${esc(c.name)}, nota ${i + 1}">`).join('');
+    return `<div class="ev-grade" data-comp="${c.id}">
+      <div class="eg-name">
+        <input data-f="name" value="${esc(c.name)}" aria-label="Nombre de la evaluación">
+        <span class="small muted">${c.kind === 'group' ? `cuentan las <input type="number" data-f="best" min="1" max="${c.count}" value="${c.best}" class="w-num xs" aria-label="Cuántas cuentan"> mejores de <input type="number" data-f="count" min="2" max="20" value="${c.count}" class="w-num xs" aria-label="Cuántas notas"> · <button type="button" class="link small" data-kind="${c.id}|single">una sola nota</button>` : `<button type="button" class="link small" data-kind="${c.id}|group">son varias notas</button>`}</span>
       </div>
-      <div class="grade-row">${gradeInputs}</div>
-      <p class="small muted">${st.avg == null ? `Aporta hasta ${fmtN(pts)} puntos de ${sum.scale}.` : `${c.kind === 'group' ? `Promedio de las mejores ${Math.min(st.counts, st.filled)}: ` : 'Nota: '}<strong>${fmtN(st.avg)}/${c.max}</strong> · aporta <strong>${fmtN((st.frac || 0) * pts)}</strong> de ${fmtN(pts)} puntos${st.done ? '' : ' (faltan notas)'}`}</p>
+      <label class="eg-pct"><input type="number" data-f="weight" min="0" max="100" step="any" value="${c.weight}" class="w-num" aria-label="Porcentaje"> %</label>
+      <div class="eg-grades">${inputs}</div>
+      <div class="eg-sum"><strong>${st.avg == null ? '—' : `+${fmtN(st.points)}`}</strong><span class="muted small">de ${fmtN(st.maxPoints)}</span></div>
+      <button type="button" class="icon-btn sm ghosty" data-rmcomp="${c.id}" aria-label="Eliminar ${esc(c.name)}">✕</button>
     </div>`;
   }).join('');
 
   const evalBody = `
-    <div class="filters" style="margin-bottom:.8rem">
-      <label class="inline small">Notas sobre <input type="number" id="g-scale" min="1" value="${sum.scale}" class="w-num"></label>
-      <label class="inline small">Se aprueba con <input type="number" id="g-pass" min="0" step="any" value="${g.pass ?? ''}" class="w-num"></label>
-    </div>
-    ${comps || '<p class="muted">Agregá cómo se evalúa la materia. Por ejemplo: dos parciales de 40% y los controles (los 3 mejores) 20%.</p>'}
-    <div class="btn-row" style="margin-top:.8rem">${GRADE_PRESETS.map((p) => `<button type="button" class="btn ghost sm" data-preset-comp="${p.id}">${p.label}</button>`).join('')}</div>
-    ${g.components.length && Math.round(sum.totalW) !== 100 ? `<p class="small" style="color:var(--warn);font-weight:700;margin-top:.6rem">Los pesos suman ${fmtN(sum.totalW)}%, deberían sumar 100%.</p>` : ''}`;
-
-  let needHtml = '';
-  if (needed) {
-    if (needed.done) needHtml = needed.value <= 0 ? '<p class="ok-line">Ya llegaste a esa nota con lo que rendiste.</p>' : '<p class="warn-line">Ya no quedan evaluaciones para llegar a esa nota.</p>';
-    else if (needed.value <= 0) needHtml = '<p class="ok-line">Ya la tenés asegurada con lo que rendiste.</p>';
-    else if (needed.value > sum.scale) needHtml = `<p class="warn-line">Necesitarías ${fmtN(needed.value)} sobre ${sum.scale} en lo que falta: no alcanza. Mirá la regla de aprobación por si hay recuperatorio.</p>`;
-    else needHtml = `<p>Necesitás un promedio de <strong class="big-inline">${fmtN(needed.value)}/${sum.scale}</strong> en lo que te falta rendir (${fmtN(needed.rem)}% de la nota).</p>`;
-  }
-
-  const resumenBody = `
-    ${sum.current == null ? '<p class="muted">Cuando cargues una nota, acá vas a ver tu promedio.</p>' : `
-      <div class="big-stat">${fmtN(sum.current)}<span class="muted" style="font-size:1rem"> / ${sum.scale}</span></div>
-      <p class="muted small">Promedio ponderado de lo que ya rendiste. Asegurado en la nota final: <strong>${fmtN(sum.secured)}</strong> de ${sum.scale}.</p>`}
-    <h3 style="margin-top:1rem">¿Cuánto necesito?</h3>
-    <label class="inline small" style="margin:.4rem 0">Quiero terminar con <input type="number" id="g-target" min="0" step="any" value="${target}" class="w-num"> / ${sum.scale}</label>
-    ${needHtml}`;
+    ${g.components.length ? `<div class="eg-head small muted"><span>Evaluación</span><span>Vale</span><span>Nota</span><span>Suma</span><span></span></div>${rows}` : '<p class="muted">Agregá cómo se evalúa la materia: cada evaluación con el porcentaje que vale.</p>'}
+    <div class="add-evals"><span class="small muted">Agregar:</span>${GRADE_PRESETS.map((p) => `<button type="button" class="chip-opt" data-preset-comp="${p.id}">+ ${p.label}</button>`).join('')}</div>
+    ${g.components.length && Math.round(sum.totalPct) !== 100 ? `<p class="small" style="color:var(--warn);font-weight:700;margin-top:.6rem">Los porcentajes suman ${fmtN(sum.totalPct)}%. Para que la cuenta dé bien, tienen que sumar 100%.</p>` : ''}`;
 
   const reglaBody = `<textarea id="rule" rows="3" placeholder="Ej: Examen de 16 ejercicios, cada uno bien vale 1…">${esc(s.rule)}</textarea><p class="hint">Se muestra también en el Resumen.</p>`;
 
   box.innerHTML = `
-    <div class="grid-notas">
-      ${block('notas.eval', 'Cómo se evalúa', evalBody)}
-      <div class="page" style="gap:1rem">
-        ${block('notas.resumen', 'Cómo vas', resumenBody)}
-        ${block('notas.regla', 'Regla de aprobación', reglaBody)}
-      </div>
-    </div>
-    ${hiddenBar([['notas.eval', 'Cómo se evalúa'], ['notas.resumen', 'Cómo vas'], ['notas.regla', 'Regla de aprobación']])}`;
+    <div class="page" style="gap:1rem">
+      ${block('notas.resumen', 'Cómo vas', summary)}
+      ${block('notas.eval', 'Evaluaciones', evalBody)}
+      ${block('notas.regla', 'Regla de aprobación', reglaBody)}
+      ${hiddenBar([['notas.resumen', 'Cómo vas'], ['notas.eval', 'Evaluaciones'], ['notas.regla', 'Regla de aprobación']])}
+    </div>`;
 
   bindBlocks(box);
   const save = () => { Store.save(); rerender(); };
@@ -3919,8 +4055,7 @@ function tabNotas(s, box) {
     else {
       const v = Number(inp.value);
       if (f === 'weight') c.weight = clamp(v || 0, 0, 100);
-      if (f === 'max') c.max = Math.max(1, v || 12);
-      if (f === 'count') { c.count = clamp(Math.round(v) || 1, 1, 20); c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); c.best = Math.min(c.best, c.count); }
+      if (f === 'count') { c.count = clamp(Math.round(v) || 2, 2, 20); c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); c.best = Math.min(c.best, c.count); }
       if (f === 'best') c.best = clamp(Math.round(v) || 1, 1, c.count);
     }
     save();
@@ -3929,8 +4064,8 @@ function tabNotas(s, box) {
     const [id, kind] = b.dataset.kind.split('|');
     const c = comp(id);
     c.kind = kind;
-    if (kind === 'single') { c.count = 1; c.best = 1; c.grades = [c.grades[0] ?? '']; }
-    else if (c.count < 2) { c.count = 4; c.best = 3; c.grades = Array.from({ length: 4 }, (_, i) => c.grades[i] ?? ''); }
+    if (kind === 'single') { c.count = 1; c.best = 1; c.grades = [c.grades.find(isNum) ?? '']; }
+    else { c.count = Math.max(c.count, 4); c.best = 3; c.grades = Array.from({ length: c.count }, (_, i) => c.grades[i] ?? ''); }
     save();
   }));
   $$('[data-grade]', box).forEach((inp) => (inp.onchange = () => {
@@ -3944,10 +4079,9 @@ function tabNotas(s, box) {
     g.components = g.components.filter((x) => x !== c);
     save();
   }));
-  on(box, '#g-scale', 'onchange', (e) => { g.scale = Math.max(1, Number(e.target.value) || 12); save(); });
-  on(box, '#g-pass', 'onchange', (e) => { g.pass = e.target.value === '' ? null : Number(e.target.value); save(); });
+  on(box, '#g-scale', 'onchange', (e) => { g.scale = Math.max(1, Number(e.target.value) || 12); g.components.forEach((c) => { c.max = g.scale; }); save(); });
   on(box, '#g-target', 'onchange', (e) => { g.target = e.target.value === '' ? null : Number(e.target.value); save(); });
-  on(box, '#rule', 'onchange', (e) => { s.rule = e.target.value.trim(); Store.save(); toast('Regla guardada'); });
+  on(box, '#rule', 'onchange', (e) => { s.rule = e.target.value.trim(); Store.save(); });
 }
 
 /* --- Apariencia (estilo Tumblr) --- */
@@ -4088,6 +4222,7 @@ function renderStudy() {
           <div id="study-clock" class="big-clock">${a ? fmtClock(Date.now() - a.start) : '00:00:00'}</div>
           <p class="muted">${a ? `Empezaste a las ${fmtTime(new Date(a.start))}. Aunque cierres la app, sigue contando.` : 'Lista cuando vos digas.'}</p>
           <button class="btn big ${a ? 'danger' : ''}" id="study-toggle">${a ? '■ Terminar' : '▶ Comenzar'}</button>
+          <button type="button" class="page-sloth" data-sloth="full" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
         </div>
         <div class="stats">
           <div class="card stat"><span>Hoy</span><strong>${fmtHM(studiedMinutes('', todayStart))}</strong></div>
@@ -4147,6 +4282,7 @@ function renderStudy() {
 
   const v = $('#view');
   Sloth.paint(v);
+  $$('[data-sloth-talk]', v).forEach((b) => (b.onclick = () => Sloth.speak()));
   bindBlocks(v);
   const tip = $('.chart-tip', v);
   $$('.bar-g', v).forEach((g) => {
@@ -4342,6 +4478,7 @@ function renderPomoTimer(el) {
           <button class="btn big" id="pomo-toggle">${Pomo.running ? '❚❚ Pausar' : '▶ Empezar'}</button>
           <button class="btn ghost" id="pomo-skip" title="Saltar a la siguiente fase" aria-label="Saltar fase">⏭</button>
         </div>
+        <button type="button" class="page-sloth" data-sloth="full" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
         <p class="muted center">${p.subjectId ? `Cada bloque de foco terminado suma ${p.work} min a <strong>${esc(subjectName(p.subjectId))}</strong>.` : 'Elegí una materia para que los bloques se sumen a tus horas.'}</p>
       </div>
 
@@ -4381,6 +4518,8 @@ function renderPomoTimer(el) {
     if (!Pomo.running) Pomo.remaining = Pomo.duration();
     renderPomoTimer(el);
   };
+  Sloth.paint(el);
+  $$('[data-sloth-talk]', el).forEach((b) => (b.onclick = () => Sloth.speak()));
   paintPomodoro();
 }
 
@@ -4537,7 +4676,7 @@ function renderProjects() {
     <section class="page">
       <div class="page-head">
         <div><h1>Proyectos grupales</h1><p class="sub">Integrantes, tareas, links y entregas en un solo lugar.</p></div>
-        <button class="btn" id="add-proj">+ Nuevo proyecto</button>
+        <div class="btn-row"><label class="btn ghost">Importar proyecto<input type="file" id="imp-proj" accept="application/json,.json" hidden></label><button class="btn" id="add-proj">+ Nuevo proyecto</button></div>
       </div>
       ${list.length ? `<div class="grid-3">${list.map((p) => {
         const done = p.tasks.filter((t) => t.done).length;
@@ -4554,6 +4693,11 @@ function renderProjects() {
     </section>`;
   Sloth.paint($('#view'));
   $('#add-proj').onclick = () => openProjectForm();
+  $('#imp-proj').onchange = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try { importProjectPayload(JSON.parse(await f.text())); } catch (err) { toast('Ese archivo no parece un proyecto de Perezoso.'); }
+  };
 }
 
 function openProjectForm(p) {
@@ -4606,7 +4750,7 @@ function renderProject(id) {
           <h1>${esc(p.name)}</h1>
           <p class="muted">${p.subjectId ? `<a href="#materia/${p.subjectId}">${esc(subjectName(p.subjectId))}</a>` : 'Sin materia'} · ${done}/${p.tasks.length} tareas hechas</p>
         </div>
-        <div class="hero-actions"><button class="btn ghost" id="p-edit">✎ Editar</button></div>
+        <div class="hero-actions"><button class="btn" id="p-share">Compartir</button><button class="btn ghost" id="p-edit">✎ Editar</button></div>
       </header>
       <div class="grid-2">
         <section class="card">
@@ -4646,6 +4790,7 @@ function renderProject(id) {
   const v = $('#view');
   renderEventList($('#p-events', v), projectEvents(p), 'Sin entregas. Cargalas y aparecen también en el calendario.');
   $('#p-edit').onclick = () => openProjectForm(p);
+  $('#p-share').onclick = () => openShareProject(p);
   $('#p-add-ev').onclick = () => openEventForm(null, { projectId: p.id, subjectId: p.subjectId, type: 'entregable' });
   $('#link-form').onsubmit = (e) => { e.preventDefault(); const x = e.target.elements; p.links.push({ title: x.title.value.trim(), url: safeUrl(x.url.value) }); Store.save(); rerender(); };
   $$('[data-rmlink]', v).forEach((b) => (b.onclick = () => { p.links.splice(+b.dataset.rmlink, 1); Store.save(); rerender(); }));
@@ -4653,6 +4798,88 @@ function renderProject(id) {
   $$('[data-tdone]', v).forEach((c) => (c.onchange = () => { p.tasks.find((t) => t.id === c.dataset.tdone).done = c.checked; Store.save(); rerender(); }));
   $$('[data-towner]', v).forEach((s) => (s.onchange = () => { p.tasks.find((t) => t.id === s.dataset.towner).owner = s.value; Store.save(); }));
   $$('[data-trm]', v).forEach((b) => (b.onclick = () => { p.tasks = p.tasks.filter((t) => t.id !== b.dataset.trm); Store.save(); rerender(); }));
+}
+
+/* ---------- Compartir e importar proyectos ----------
+ * No hay servidor: se comparte una copia (integrantes, tareas, links y entregas)
+ * por link, WhatsApp, mail o archivo, y cada persona la importa en su Perezoso.
+ */
+
+function projectPayload(p) {
+  return {
+    v: 1, type: 'perezoso-proyecto', from: Store.data.settings.userName || '',
+    project: { name: p.name, members: p.members, links: p.links, tasks: p.tasks.map((t) => ({ text: t.text, owner: t.owner, done: t.done })) },
+    subjectName: p.subjectId ? subjectName(p.subjectId) : '',
+    events: projectEvents(p).map((e) => ({ type: e.type, customType: e.customType, title: e.title, date: e.date, time: e.time, notes: e.notes })),
+  };
+}
+const toB64 = (str) => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const fromB64 = (b64) => decodeURIComponent(escape(atob(b64.replace(/-/g, '+').replace(/_/g, '/'))));
+
+function projectSummary(p) {
+  const evs = projectEvents(p);
+  return [
+    `Proyecto: ${p.name}`,
+    p.members.length ? `Integrantes: ${p.members.join(', ')}` : '',
+    p.tasks.length ? `Tareas:\n${p.tasks.map((t) => `${t.done ? '[x]' : '[ ]'} ${t.text}${t.owner ? ` (${t.owner})` : ''}`).join('\n')}` : '',
+    evs.length ? `Entregas:\n${evs.map((e) => `${fmtDateShort(eventDate(e))}${e.time ? ' ' + e.time : ''} - ${e.title || typeLabel(e)}`).join('\n')}` : '',
+    p.links.length ? `Links:\n${p.links.map((l) => `${l.title || ''} ${l.url}`.trim()).join('\n')}` : '',
+  ].filter(Boolean).join('\n\n');
+}
+
+function openShareProject(p) {
+  const web = location.protocol.startsWith('http');
+  const link = `${location.origin}${location.pathname}#importar=${toB64(JSON.stringify(projectPayload(p)))}`;
+  const text = projectSummary(p);
+  Modal.open(`Compartir “${p.name}”`, `
+    <div class="form">
+      <p class="muted">Mandales una copia del proyecto con integrantes, tareas, links y entregas. Cada persona la guarda en su Perezoso. Ojo: es una copia, los cambios no se sincronizan solos.</p>
+      <div class="share-grid">
+        ${web ? '<button type="button" class="btn" id="sh-link">Copiar link para importar</button>' : ''}
+        ${navigator.share ? '<button type="button" class="btn ghost" id="sh-native">Compartir…</button>' : ''}
+        <a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text + (web ? `\n\nPara importarlo en Perezoso: ${link}` : ''))}">WhatsApp</a>
+        <a class="btn ghost" href="mailto:?subject=${encodeURIComponent('Proyecto ' + p.name)}&body=${encodeURIComponent(text + (web ? `\n\nPara importarlo en Perezoso: ${link}` : ''))}">Mail</a>
+        <button type="button" class="btn ghost" id="sh-file">Descargar archivo</button>
+      </div>
+      ${web ? '' : '<p class="hint">El link para importar funciona cuando usás Perezoso desde su página web (GitHub Pages). Mientras tanto, podés mandar el archivo: la otra persona lo carga con “Importar proyecto”.</p>'}
+    </div>`, (body) => {
+    on(body, '#sh-link', 'onclick', () => navigator.clipboard.writeText(link).then(() => toast('Link copiado'), () => toast('No pude copiar el link')));
+    on(body, '#sh-native', 'onclick', () => navigator.share({ title: `Proyecto ${p.name}`, text, url: web ? link : undefined }).catch(() => {}));
+    on(body, '#sh-file', 'onclick', () => downloadBlob(new Blob([JSON.stringify(projectPayload(p), null, 1)], { type: 'application/json' }), `proyecto-${p.name.replace(/[^\w-]+/g, '-').toLowerCase()}.json`));
+  });
+}
+
+function importProjectPayload(data) {
+  if (!data || data.type !== 'perezoso-proyecto' || !data.project) { toast('Eso no parece un proyecto de Perezoso.'); return; }
+  const pr = data.project;
+  Modal.open('Importar proyecto', `
+    <div class="form">
+      <p>${data.from ? `<strong>${esc(data.from)}</strong> te compartió` : 'Te compartieron'} el proyecto <strong>${esc(pr.name)}</strong>: ${(pr.members || []).length} integrantes, ${(pr.tasks || []).length} tareas y ${(data.events || []).length} entregas.</p>
+      <div class="form-actions"><span class="grow"></span><button type="button" class="btn ghost" data-close>Cancelar</button><button type="button" class="btn" id="imp-ok">Importar</button></div>
+    </div>`, (body) => {
+    $('#imp-ok', body).onclick = () => {
+      const subj = data.subjectName && Store.data.subjects.find((s) => s.name.toLowerCase() === data.subjectName.toLowerCase());
+      const np = {
+        id: uid(), name: pr.name, subjectId: subj ? subj.id : '', members: pr.members || [], links: pr.links || [],
+        tasks: (pr.tasks || []).map((t) => ({ id: uid(), text: t.text, owner: t.owner || '', done: !!t.done })),
+      };
+      Store.data.projects.push(np);
+      (data.events || []).forEach((e) => Store.data.events.push({ id: uid(), type: e.type || 'entregable', customType: e.customType || '', subjectId: np.subjectId, projectId: np.id, title: e.title || '', date: e.date, time: e.time || '', notes: e.notes || '' }));
+      Store.save();
+      Modal.close();
+      location.hash = `#proyecto/${np.id}`;
+    };
+  });
+}
+
+function checkImportLink() {
+  if (!location.hash.startsWith('#importar=')) return false;
+  let data = null;
+  try { data = JSON.parse(fromB64(location.hash.slice('#importar='.length))); } catch (e) { data = null; }
+  history.replaceState(null, '', `${location.pathname}#proyectos`);
+  rerender();
+  if (data) importProjectPayload(data); else toast('El link del proyecto está incompleto.');
+  return true;
 }
 
 </script>
@@ -4791,6 +5018,29 @@ function greetingWord() {
   return h < 6 ? 'Buenas noches' : h < 13 ? 'Buen día' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
 }
 
+// Frases del día: datos curiosos sobre estudiar y sobre perezosos
+const DAILY_FACTS = [
+  'Estudiar en sesiones cortas repartidas en varios días hace que te acuerdes más que estudiar todo junto la noche anterior. Se llama efecto de espaciado.',
+  'Intentar recordar algo sin mirar (hacerte preguntas a vos misma) fija más la memoria que releer los apuntes.',
+  'La técnica Pomodoro la inventó Francesco Cirillo a fines de los 80, con un reloj de cocina con forma de tomate.',
+  'Mientras dormís, el cerebro repasa y ordena lo que aprendiste en el día. Dormir bien también es estudiar.',
+  'Los perezosos bajan del árbol más o menos una vez por semana, y es solo para ir al baño.',
+  'En el pelo de los perezosos crecen algas: por eso a veces se ven verdosos, y les sirve de camuflaje.',
+  'Explicarle un tema a otra persona es una de las mejores formas de descubrir qué parte todavía no entendiste.',
+  'Mezclar distintos tipos de ejercicios en una misma sesión ayuda a reconocer qué método usar en el examen.',
+  'Los perezosos pueden aguantar la respiración hasta unos 40 minutos, y nadan mejor de lo que caminan.',
+  'Hacer una pausa corta cada tanto ayuda a sostener la concentración por más tiempo.',
+  'Resumir con tus propias palabras sirve más que copiar el texto tal cual.',
+  'Un perezoso se mueve a unos 0,24 km por hora. Lento, pero llega.',
+  'Los perezosos en la naturaleza duermen unas 9 o 10 horas; la fama de dormir 20 viene de los que viven en zoológicos.',
+  'Hacer ejercicios de exámenes anteriores con el tiempo real de la prueba te prepara mejor que solo leer las soluciones.',
+  'Estudiar sin el celular cerca (no solo en silencio, sino en otra habitación) ayuda a concentrarte más.',
+];
+function dailyFact(now = new Date()) {
+  const day = Math.floor((startOfDay(now) - new Date(now.getFullYear(), 0, 0)) / DAY_MS);
+  return DAILY_FACTS[day % DAILY_FACTS.length];
+}
+
 function homeAlerts() {
   const out = [];
   const now = new Date();
@@ -4817,7 +5067,7 @@ function renderHome() {
   const st = Store.data.settings;
   const now = new Date();
   const todayIdx = ((now.getDay() + 6) % 7) + 1;
-  const classes = Store.data.classes.filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
+  const classes = activeClasses().filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
   const upcoming = Store.data.events.filter((e) => eventDate(e) >= now || daysUntil(e.date) === 0).sort(byEventDate).slice(0, 5);
   const alerts = homeAlerts();
   const a = Store.data.activeSession;
@@ -4831,7 +5081,7 @@ function renderHome() {
       <div class="card hero">
         <h1>${greetingWord()}, ${esc(st.userName || '')}</h1>
         <p class="muted">${fmtDateLong(now)}</p>
-        <p class="sloth-quote" id="hero-speech">“${esc(Sloth.daysSinceStudy() >= 3 ? phrase('dormido', { dias: Sloth.daysSinceStudy() }) : phrase('saludo'))}”<cite>— ${esc(Store.data.sloth.name)}</cite></p>
+        <p class="day-fact"><span class="muted small">¿Sabías que…?</span>${esc(dailyFact(now))}</p>
         ${a ? `<p style="margin-top:.6rem"><a class="btn sm" href="#estudio">Estás estudiando ${esc(subjectName(a.subjectId))}</a></p>` : ''}
       </div>
 
@@ -4841,7 +5091,12 @@ function renderHome() {
         ${block('inicio.pruebas', 'Próximas pruebas', '<div id="home-events" class="ev-list"></div>', { actions: '<a class="btn ghost sm" href="#calendario">Ver calendario</a>' })}
         <div class="page" style="gap:1rem">
           ${block('inicio.clases', 'Clases de hoy', classes.length ? `<ul class="plain">${classes.map((c) => `<li class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start}–${c.end} · <strong>${esc(subjectName(c.subjectId))}</strong>${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Hoy no tenés clases.</p>')}
-          ${block('inicio.semana', 'Esta semana', `<div class="progress-list">
+          ${block('inicio.semana', 'Esta semana', `${(() => {
+            const w = weekSummary();
+            return w.target ? `<div class="week-total"><span class="big-stat">${w.pct}%</span><span>Llevás <strong>${fmtHM(w.done)}</strong> de <strong>${fmtHM(w.target)}</strong> que deberías estudiar esta semana.</span></div>
+              <div class="bar big"><span style="width:${Math.min(100, w.pct)}%"></span></div>` : `<p class="muted">Llevás <strong>${fmtHM(w.done)}</strong> esta semana. Cargá los créditos de las materias para ver cuánto te toca.</p>`;
+          })()}
+          <div class="progress-list" style="margin-top:.9rem">
             ${Store.data.subjects.map((s) => {
               const p = subjectPace(s);
               const pct = p.perWeek ? Math.min(100, (p.weekDone / p.perWeek) * 100) : 0;
@@ -4850,7 +5105,7 @@ function renderHome() {
                 <div class="bar" style="--c:${s.color}"><span style="width:${pct}%"></span></div></div>`;
             }).join('') || '<p class="muted">Todavía no hay materias.</p>'}
           </div>
-          <p class="hint" style="margin-top:.6rem">Comparado con el ritmo que necesitás para llegar a las horas de cada materia antes del ${fmtDateShort(semesterBounds().end)}.</p>`)}
+          <p class="hint" style="margin-top:.6rem">La meta de cada semana reparte las horas de la materia entre sus semanas de cursado, y suma lo que quedó pendiente de semanas anteriores.</p>`)}
         </div>
       </div>
       ${hiddenBar([['inicio.alertas', 'Para tener en cuenta'], ['inicio.pruebas', 'Próximas pruebas'], ['inicio.clases', 'Clases de hoy'], ['inicio.semana', 'Esta semana']])}
@@ -4884,7 +5139,7 @@ function renderSettings() {
     <section class="page">
       <div class="page-head"><div><h1>Ajustes</h1><p class="sub">Hacé la app tuya.</p></div></div>
 
-      <div class="grid-2">
+      <div>
         <form class="card form" id="me-form">
           <h2>Vos y tu semestre</h2>
           <label>Tu nombre <span class="opt">(para que el perezoso te salude)</span><input name="userName" value="${esc(st.userName)}"></label>
@@ -4899,7 +5154,6 @@ function renderSettings() {
           <p class="hint">Las fechas del semestre se usan para calcular el ritmo (horas por semana) de cada materia.</p>
         </form>
 
-        <div class="card" id="autosave-card"></div>
       </div>
 
       <section class="card form">
@@ -4914,6 +5168,7 @@ function renderSettings() {
       ${appearanceHTML(st)}
 
       <div class="grid-3">
+        <div class="card" id="autosave-card"></div>
         <div class="card" id="install-card">
           <h2>En el escritorio</h2>
           ${Install.installed()
@@ -4962,7 +5217,6 @@ function renderSettings() {
     if (x.semesterEnd.value) st.semesterEnd = x.semesterEnd.value;
     st.reminderDays = [...new Set(x.reminderDays.value.split(/[,;\s]+/).map((n) => parseInt(n, 10)).filter((n) => n >= 0 && n <= 60))].sort((a, b) => b - a);
     Store.save();
-    toast('Guardado ✓');
     Sloth.refresh();
   };
   me.onsubmit = (e) => e.preventDefault();
@@ -5178,20 +5432,16 @@ function paintAutosaveCard() {
   const st = AutoSave.status;
   let body;
   if (st === 'unsupported') {
-    body = `<p class="muted">Tus datos ya quedan guardados en este navegador. Este navegador no deja además guardarlos solos en un archivo (eso funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Hacé un respaldo de vez en cuando.</p>`;
+    body = '<p class="muted small">Tus datos ya se guardan en este navegador. Guardar además en un archivo funciona en Chrome, Edge u Opera de compu.</p>';
   } else if (st === 'off') {
-    body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se guarda ahí <strong>solo</strong>.</p>
-      <p class="muted" style="margin-top:.4rem">Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
-      <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-choose">Elegir dónde guardar</button>
-      <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
+    body = `<p class="muted small">Tus datos ya se guardan en el navegador. Si querés, se copian solos a un archivo de tu compu (por ejemplo, en tu carpeta de Google Drive).</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn sm" id="as-choose">Elegir archivo</button><button class="btn ghost sm" id="as-open">Usar uno que ya tengo</button></div>`;
   } else if (st === 'ok') {
-    body = `<p style="color:var(--moss);font-weight:700">✓ Guardando solo en <strong>${esc(AutoSave.fileName())}</strong>${AutoSave.lastSaved ? ` · último guardado ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
-      <div class="btn-row" style="margin-top:.6rem"><button class="btn ghost sm" id="as-choose">Cambiar archivo</button>
-      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+    body = `<p class="small ok-line">Guardando en ${esc(AutoSave.fileName())}${AutoSave.lastSaved ? ` · ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn ghost sm" id="as-choose">Cambiar</button><button class="btn ghost sm" id="as-off">Desactivar</button></div>`;
   } else {
-    body = `<p class="muted">El navegador pide permiso otra vez para escribir en <strong>${esc(AutoSave.fileName())}</strong>.</p>
-      <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-reconnect">Permitir</button>
-      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+    body = `<p class="muted small">Falta darle permiso otra vez al navegador para escribir en ${esc(AutoSave.fileName())}.</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn sm" id="as-reconnect">Permitir</button><button class="btn ghost sm" id="as-off">Desactivar</button></div>`;
   }
   card.innerHTML = `<h2>Guardado automático</h2>${body}`;
   const on = (id, fn) => { const b = $(id, card); if (b) b.onclick = fn; };
@@ -5397,6 +5647,7 @@ function rerender() {
 }
 
 function route() {
+  if (checkImportLink()) return;
   Modal.close();
   $('#more-sheet').hidden = true;
   $('#more-btn').setAttribute('aria-expanded', 'false');

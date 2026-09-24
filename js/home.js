@@ -7,6 +7,29 @@ function greetingWord() {
   return h < 6 ? 'Buenas noches' : h < 13 ? 'Buen día' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
 }
 
+// Frases del día: datos curiosos sobre estudiar y sobre perezosos
+const DAILY_FACTS = [
+  'Estudiar en sesiones cortas repartidas en varios días hace que te acuerdes más que estudiar todo junto la noche anterior. Se llama efecto de espaciado.',
+  'Intentar recordar algo sin mirar (hacerte preguntas a vos misma) fija más la memoria que releer los apuntes.',
+  'La técnica Pomodoro la inventó Francesco Cirillo a fines de los 80, con un reloj de cocina con forma de tomate.',
+  'Mientras dormís, el cerebro repasa y ordena lo que aprendiste en el día. Dormir bien también es estudiar.',
+  'Los perezosos bajan del árbol más o menos una vez por semana, y es solo para ir al baño.',
+  'En el pelo de los perezosos crecen algas: por eso a veces se ven verdosos, y les sirve de camuflaje.',
+  'Explicarle un tema a otra persona es una de las mejores formas de descubrir qué parte todavía no entendiste.',
+  'Mezclar distintos tipos de ejercicios en una misma sesión ayuda a reconocer qué método usar en el examen.',
+  'Los perezosos pueden aguantar la respiración hasta unos 40 minutos, y nadan mejor de lo que caminan.',
+  'Hacer una pausa corta cada tanto ayuda a sostener la concentración por más tiempo.',
+  'Resumir con tus propias palabras sirve más que copiar el texto tal cual.',
+  'Un perezoso se mueve a unos 0,24 km por hora. Lento, pero llega.',
+  'Los perezosos en la naturaleza duermen unas 9 o 10 horas; la fama de dormir 20 viene de los que viven en zoológicos.',
+  'Hacer ejercicios de exámenes anteriores con el tiempo real de la prueba te prepara mejor que solo leer las soluciones.',
+  'Estudiar sin el celular cerca (no solo en silencio, sino en otra habitación) ayuda a concentrarte más.',
+];
+function dailyFact(now = new Date()) {
+  const day = Math.floor((startOfDay(now) - new Date(now.getFullYear(), 0, 0)) / DAY_MS);
+  return DAILY_FACTS[day % DAILY_FACTS.length];
+}
+
 function homeAlerts() {
   const out = [];
   const now = new Date();
@@ -33,7 +56,7 @@ function renderHome() {
   const st = Store.data.settings;
   const now = new Date();
   const todayIdx = ((now.getDay() + 6) % 7) + 1;
-  const classes = Store.data.classes.filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
+  const classes = activeClasses().filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
   const upcoming = Store.data.events.filter((e) => eventDate(e) >= now || daysUntil(e.date) === 0).sort(byEventDate).slice(0, 5);
   const alerts = homeAlerts();
   const a = Store.data.activeSession;
@@ -47,7 +70,7 @@ function renderHome() {
       <div class="card hero">
         <h1>${greetingWord()}, ${esc(st.userName || '')}</h1>
         <p class="muted">${fmtDateLong(now)}</p>
-        <p class="sloth-quote" id="hero-speech">“${esc(Sloth.daysSinceStudy() >= 3 ? phrase('dormido', { dias: Sloth.daysSinceStudy() }) : phrase('saludo'))}”<cite>— ${esc(Store.data.sloth.name)}</cite></p>
+        <p class="day-fact"><span class="muted small">¿Sabías que…?</span>${esc(dailyFact(now))}</p>
         ${a ? `<p style="margin-top:.6rem"><a class="btn sm" href="#estudio">Estás estudiando ${esc(subjectName(a.subjectId))}</a></p>` : ''}
       </div>
 
@@ -57,7 +80,12 @@ function renderHome() {
         ${block('inicio.pruebas', 'Próximas pruebas', '<div id="home-events" class="ev-list"></div>', { actions: '<a class="btn ghost sm" href="#calendario">Ver calendario</a>' })}
         <div class="page" style="gap:1rem">
           ${block('inicio.clases', 'Clases de hoy', classes.length ? `<ul class="plain">${classes.map((c) => `<li class="pill" style="--c:${subjectColor(c.subjectId)}">${c.start}–${c.end} · <strong>${esc(subjectName(c.subjectId))}</strong>${c.room ? ' · ' + esc(c.room) : ''}</li>`).join('')}</ul>` : '<p class="muted">Hoy no tenés clases.</p>')}
-          ${block('inicio.semana', 'Esta semana', `<div class="progress-list">
+          ${block('inicio.semana', 'Esta semana', `${(() => {
+            const w = weekSummary();
+            return w.target ? `<div class="week-total"><span class="big-stat">${w.pct}%</span><span>Llevás <strong>${fmtHM(w.done)}</strong> de <strong>${fmtHM(w.target)}</strong> que deberías estudiar esta semana.</span></div>
+              <div class="bar big"><span style="width:${Math.min(100, w.pct)}%"></span></div>` : `<p class="muted">Llevás <strong>${fmtHM(w.done)}</strong> esta semana. Cargá los créditos de las materias para ver cuánto te toca.</p>`;
+          })()}
+          <div class="progress-list" style="margin-top:.9rem">
             ${Store.data.subjects.map((s) => {
               const p = subjectPace(s);
               const pct = p.perWeek ? Math.min(100, (p.weekDone / p.perWeek) * 100) : 0;
@@ -66,7 +94,7 @@ function renderHome() {
                 <div class="bar" style="--c:${s.color}"><span style="width:${pct}%"></span></div></div>`;
             }).join('') || '<p class="muted">Todavía no hay materias.</p>'}
           </div>
-          <p class="hint" style="margin-top:.6rem">Comparado con el ritmo que necesitás para llegar a las horas de cada materia antes del ${fmtDateShort(semesterBounds().end)}.</p>`)}
+          <p class="hint" style="margin-top:.6rem">La meta de cada semana reparte las horas de la materia entre sus semanas de cursado, y suma lo que quedó pendiente de semanas anteriores.</p>`)}
         </div>
       </div>
       ${hiddenBar([['inicio.alertas', 'Para tener en cuenta'], ['inicio.pruebas', 'Próximas pruebas'], ['inicio.clases', 'Clases de hoy'], ['inicio.semana', 'Esta semana']])}

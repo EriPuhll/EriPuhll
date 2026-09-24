@@ -14,7 +14,10 @@ const FONTS = {
 const PATTERNS = [
   { id: 'dots', label: 'Puntos' }, { id: 'grid', label: 'Cuadros' }, { id: 'stripes', label: 'Rayas' },
   { id: 'zigzag', label: 'Zigzag' }, { id: 'stars', label: 'Estrellitas' }, { id: 'hearts', label: 'Corazones' },
-  { id: 'leaves', label: 'Hojitas' },
+  { id: 'leaves', label: 'Hojitas' }, { id: 'checks', label: 'Cuadritos' }, { id: 'waves', label: 'Ondas' },
+  { id: 'flowers', label: 'Florcitas' }, { id: 'clouds', label: 'Nubes' }, { id: 'moons', label: 'Lunas' },
+  { id: 'plaid', label: 'Escocés' }, { id: 'confetti', label: 'Confeti' }, { id: 'bubbles', label: 'Burbujas' },
+  { id: 'triangles', label: 'Triángulos' }, { id: 'cherries', label: 'Cerezas' }, { id: 'sparkles', label: 'Brillitos' },
 ];
 
 function patternUrl(kind, color) {
@@ -27,6 +30,17 @@ function patternUrl(kind, color) {
     stars: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><path d="M15 8l2 5 5 .5-4 3.5 1.3 5L15 19l-4.3 3 1.3-5-4-3.5 5-.5z" fill="${c}" opacity=".35"/><path d="M45 38l1.4 3.4 3.6.3-2.8 2.4.9 3.5-3.1-2-3.1 2 .9-3.5-2.8-2.4 3.6-.3z" fill="${c}" opacity=".25"/></svg>`,
     hearts: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M12 18c-3-4-9-1-6 4l6 5 6-5c3-5-3-8-6-4z" fill="${c}" opacity=".32"/><path d="M36 42c-2-3-7-1-5 3l5 4 5-4c2-4-3-6-5-3z" fill="${c}" opacity=".22"/></svg>`,
     leaves: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M12 30c6-12 18-12 22-10-4 10-14 16-22 10z" fill="${c}" opacity=".3"/><path d="M40 54c4-8 12-8 15-7-3 7-9 11-15 7z" fill="${c}" opacity=".22"/></svg>`,
+    checks: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="16" height="16" fill="${c}" opacity=".13"/><rect x="16" y="16" width="16" height="16" fill="${c}" opacity=".13"/></svg>`,
+    waves: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="24"><path d="M0 12 Q12 2 24 12 T48 12" fill="none" stroke="${c}" stroke-opacity=".3" stroke-width="2.5"/></svg>`,
+    flowers: `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><g fill="${c}" opacity=".3"><circle cx="14" cy="10" r="3.5"/><circle cx="18" cy="14" r="3.5"/><circle cx="14" cy="18" r="3.5"/><circle cx="10" cy="14" r="3.5"/></g><circle cx="14" cy="14" r="2" fill="${c}" opacity=".5"/><g fill="${c}" opacity=".22"><circle cx="42" cy="38" r="3"/><circle cx="46" cy="42" r="3"/><circle cx="42" cy="46" r="3"/><circle cx="38" cy="42" r="3"/></g></svg>`,
+    clouds: `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60"><path d="M12 24a7 7 0 0 1 13-4 6 6 0 0 1 10 5 5 5 0 0 1-1 10H13a6 6 0 0 1-1-11z" fill="${c}" opacity=".2"/><path d="M50 48a5 5 0 0 1 9-3 4 4 0 0 1 7 4 3.5 3.5 0 0 1-1 7H51a4 4 0 0 1-1-8z" fill="${c}" opacity=".16"/></svg>`,
+    moons: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><path d="M20 8a10 10 0 1 0 8 16A8 8 0 0 1 20 8z" fill="${c}" opacity=".3"/><circle cx="46" cy="44" r="2" fill="${c}" opacity=".35"/><circle cx="40" cy="14" r="1.5" fill="${c}" opacity=".35"/></svg>`,
+    plaid: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect x="0" y="14" width="40" height="8" fill="${c}" opacity=".13"/><rect x="14" y="0" width="8" height="40" fill="${c}" opacity=".13"/><path d="M0 34H40M34 0V40" stroke="${c}" stroke-opacity=".2" stroke-width="1.5"/></svg>`,
+    confetti: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect x="8" y="10" width="7" height="3" rx="1.5" fill="${c}" opacity=".35" transform="rotate(30 11 11)"/><rect x="40" y="18" width="7" height="3" rx="1.5" fill="${c}" opacity=".25" transform="rotate(-40 43 19)"/><circle cx="24" cy="42" r="2.2" fill="${c}" opacity=".3"/><rect x="46" y="46" width="6" height="3" rx="1.5" fill="${c}" opacity=".3" transform="rotate(70 49 47)"/><circle cx="52" cy="6" r="1.8" fill="${c}" opacity=".3"/></svg>`,
+    bubbles: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="16" cy="16" r="9" fill="none" stroke="${c}" stroke-opacity=".3" stroke-width="2"/><circle cx="46" cy="44" r="6" fill="none" stroke="${c}" stroke-opacity=".25" stroke-width="2"/><circle cx="48" cy="12" r="3" fill="none" stroke="${c}" stroke-opacity=".25" stroke-width="1.5"/></svg>`,
+    triangles: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="36"><path d="M0 36 L20 0 L40 36Z" fill="${c}" opacity=".1"/><path d="M-20 36 L0 0 L20 36Z M20 36 L40 0 L60 36Z" fill="none" stroke="${c}" stroke-opacity=".18"/></svg>`,
+    cherries: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M20 12 Q24 22 18 30 M20 12 Q26 20 28 30" stroke="#6f8f5a" stroke-opacity=".5" stroke-width="1.6" fill="none"/><circle cx="17" cy="32" r="5" fill="${c}" opacity=".4"/><circle cx="29" cy="32" r="5" fill="${c}" opacity=".4"/><circle cx="48" cy="52" r="2" fill="${c}" opacity=".25"/></svg>`,
+    sparkles: `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><path d="M14 6 L16 12 L22 14 L16 16 L14 22 L12 16 L6 14 L12 12Z" fill="${c}" opacity=".35"/><path d="M42 34 L43.3 38 L47 39.3 L43.3 40.6 L42 44.6 L40.7 40.6 L37 39.3 L40.7 38Z" fill="${c}" opacity=".28"/></svg>`,
   };
   return `data:image/svg+xml;utf8,${encodeURIComponent(svgs[kind] || svgs.dots)}`;
 }
