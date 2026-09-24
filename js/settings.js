@@ -2,156 +2,212 @@
 
 /* ---------- Ajustes ---------- */
 
+const COLOR_TOKENS = [
+  ['accent', 'Color principal'], ['bg', 'Fondo'], ['surface', 'Tarjetas'],
+  ['ink', 'Texto'], ['moss', 'Detalles (hojas, éxito)'], ['hl', 'Resaltado (amarillo)'],
+];
+
 function renderSettings() {
   const st = Store.data.settings;
+  const t = st.theme;
   $('#view').innerHTML = `
     <section class="page">
       <div class="page-head"><div><h1>Ajustes</h1><p class="sub">Hacé la app tuya.</p></div></div>
-      <div class="settings-grid">
-        <div class="card highlight" id="autosave-card"></div>
-        <div class="card highlight" id="install-card">
-          <h2>📲 Tenerla en el escritorio</h2>
+
+      <div class="grid-2">
+        <form class="card form" id="me-form">
+          <h2>👤 Vos y tu semestre</h2>
+          <label>Tu nombre <span class="opt">(para que el perezoso te salude)</span><input name="userName" value="${esc(st.userName)}"></label>
+          <div class="row">
+            <label>Inicio del semestre<input type="date" name="semesterStart" value="${st.semesterStart}"></label>
+            <label>Fin del semestre<input type="date" name="semesterEnd" value="${st.semesterEnd}"></label>
+          </div>
+          <div class="row">
+            <label>Horas por crédito<input type="number" name="hoursPerCredit" min="1" max="60" value="${st.hoursPerCredit}"></label>
+            <label>Avisarme antes de cada prueba <span class="opt">(días)</span><input name="reminderDays" value="${(st.reminderDays || []).join(', ')}" placeholder="7, 2, 1"></label>
+          </div>
+          <p class="hint">Las fechas del semestre se usan para calcular el ritmo (horas por semana) de cada materia.</p>
+        </form>
+
+        <div class="card" id="autosave-card"></div>
+      </div>
+
+      <section class="card" id="theme-card">
+        <div class="list-head"><h2>🎨 Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
+        <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña 🎨 Apariencia).</p>
+        <h3 style="margin-top:1rem">Temas listos</h3>
+        <div class="presets" style="margin-top:.5rem">
+          ${THEME_PRESETS.map((p) => { const x = { ...defaultGlobalTheme(), ...p.t }; return `<button class="preset" data-preset="${p.id}" style="background-color:${x.bg};${x.bgType === 'pattern' ? `background-image:url('${patternUrl(x.pattern, x.patternColor)}');` : ''}color:${x.dark === 'dark' ? '#fff' : x.ink};border-color:${x.accent}"><span style="background:${x.accent};color:#fff;padding:1px 8px;border-radius:999px">${p.label}</span></button>`; }).join('')}
+        </div>
+        <div class="grid-2" style="margin-top:1rem">
+          <div class="form">
+            <h3>Colores</h3>
+            <div class="grid-2" style="gap:.6rem">
+              ${COLOR_TOKENS.map(([k, l]) => `<label class="inline"><input type="color" data-token="${k}" value="${t[k]}"> ${l}</label>`).join('')}
+            </div>
+            <h3>Letra y forma</h3>
+            <label>Tipografía<select id="font">${Object.keys(FONTS).map((k) => `<option value="${k}" ${k === t.font ? 'selected' : ''}>${FONTS[k].label}</option>`).join('')}</select></label>
+            <label>Bordes redondeados <input type="range" id="radius" min="4" max="30" value="${t.radius}"></label>
+            <div class="field"><strong>Modo</strong>
+              <div class="chip-row" style="margin-top:.4rem">${[['light', '☀️ Claro'], ['dark', '🌙 Oscuro'], ['auto', '🌓 Automático']].map(([v, l]) => `<button type="button" class="chip-opt ${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div>
+            </div>
+            <label class="check"><input type="checkbox" id="glass" ${t.glass ? 'checked' : ''}> Tarjetas transparentes con desenfoque</label>
+          </div>
+          <div class="form">
+            <h3>Fondo de la página</h3>
+            <label class="inline"><input type="color" id="pattern-color" value="${t.patternColor || t.accent}"> Color del patrón</label>
+            ${bgEditorHTML(t, t.patternColor || t.accent)}
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-3">
+        <div class="card" id="install-card">
+          <h2>📲 En el escritorio</h2>
           ${Install.installed()
             ? '<p class="muted">Ya la estás usando como app instalada. ✓</p>'
             : Install.prompt
-              ? '<p class="muted">Instalala y se abre como un programa, con su ícono del perezoso y sin internet.</p><button class="btn" id="install">Instalar Perezoso</button>'
+              ? '<p class="muted">Instalala y se abre como un programa, con su ícono y sin internet.</p><button class="btn" id="install" style="margin-top:.6rem">Instalar Perezoso</button>'
               : location.protocol === 'file:'
-                ? '<p class="muted">Para instalarla como app, abrila desde su página web (GitHub Pages) y volvé a esta sección.</p>'
-                : '<p class="muted">Buscá el ícono de instalar (una pantallita con una flecha ⊕) a la derecha de la barra de direcciones, o en el menú del navegador → <strong>Instalar Perezoso</strong>.</p>'}
-        </div>
-        <div class="card">
-          <h2>🎨 Apariencia general</h2>
-          <p class="muted">Color principal y fondo de toda la app. Cada materia puede tener su propio estilo desde su página.</p>
-          <div class="swatch-row"><span class="swatch" style="background:${st.theme.accent}"></span><span class="swatch" style="background:${st.theme.bgColor}"></span></div>
-          <button class="btn" id="g-theme">Personalizar</button>
-        </div>
-        <div class="card">
-          <h2>🦥 El perezoso</h2>
-          <label class="check"><input type="checkbox" id="sloth-on" ${st.slothEnabled ? 'checked' : ''}> Que aparezca de vez en cuando</label>
-          <button class="btn ghost" id="sloth-now">Llamarlo ahora</button>
+                ? '<p class="muted">Para instalarla como app, abrila desde su página web (GitHub Pages).</p>'
+                : '<p class="muted">Buscá el ícono de instalar a la derecha de la barra de direcciones, o en el menú del navegador → <strong>Instalar Perezoso</strong>.</p>'}
         </div>
         <div class="card">
           <h2>🔔 Notificaciones</h2>
-          <p class="muted">Para avisarte cuando termina un pomodoro aunque estés en otra pestaña.</p>
-          <button class="btn ghost" id="notif">${'Notification' in window && Notification.permission === 'granted' ? 'Activadas ✓' : 'Activar'}</button>
+          <p class="muted">Para avisarte de pruebas y del pomodoro aunque estés en otra pestaña.</p>
+          <button class="btn ghost" id="notif" style="margin-top:.6rem">${'Notification' in window && Notification.permission === 'granted' ? 'Activadas ✓' : 'Activar'}</button>
         </div>
         <div class="card">
-          <h2>📦 Respaldo manual</h2>
-          <p class="muted">Descargá una copia de tus datos cuando quieras (los documentos subidos no se incluyen).</p>
-          <div class="btn-row">
-            <button class="btn ghost" id="export">⬇ Descargar respaldo</button>
-            <label class="btn ghost">⬆ Cargar respaldo<input type="file" id="import" accept="application/json,.json" hidden></label>
+          <h2>📦 Respaldo completo</h2>
+          <p class="muted">Un archivo con todo: datos, documentos e imágenes. Sirve para pasarlo a otra compu.</p>
+          <div class="btn-row" style="margin-top:.6rem">
+            <button class="btn ghost" id="export">⬇ Descargar</button>
+            <label class="btn ghost">⬆ Restaurar<input type="file" id="import" accept="application/json,.json" hidden></label>
           </div>
         </div>
         <div class="card">
-          <h2>🧪 Datos de ejemplo</h2>
-          <p class="muted">Carga un par de materias, clases y pruebas para ver cómo funciona todo.</p>
-          <button class="btn ghost" id="demo">Cargar ejemplo</button>
+          <h2>🌱 Datos iniciales</h2>
+          <p class="muted">Vuelve a cargar tus materias, exámenes y proyectos del 2º semestre 2026 (no borra nada, solo agrega lo que falta).</p>
+          <button class="btn ghost" id="seed" style="margin-top:.6rem">Cargar</button>
         </div>
-        <div class="card danger-zone">
+        <div class="card">
           <h2>⚠️ Borrar todo</h2>
           <p class="muted">Elimina materias, eventos, horas y documentos de este navegador.</p>
-          <button class="btn danger" id="wipe">Borrar todos los datos</button>
+          <button class="btn danger" id="wipe" style="margin-top:.6rem">Borrar todos los datos</button>
         </div>
       </div>
     </section>`;
 
-  $('#g-theme').onclick = () => openThemeEditor({
-    title: 'Apariencia general',
-    current: { ...st.theme },
-    onSave: (t) => { st.theme = t; Store.save(); applyTheme(globalTheme()); toast('Listo 💜'); renderSettings(); },
-    onCancel: () => applyTheme(globalTheme()),
-  });
-  $('#sloth-on').onchange = (e) => {
-    st.slothEnabled = e.target.checked;
+  const v = $('#view');
+
+  // Vos y tu semestre
+  const me = $('#me-form', v);
+  me.onchange = () => {
+    const x = me.elements;
+    st.userName = x.userName.value.trim();
+    st.hoursPerCredit = clamp(parseFloat(x.hoursPerCredit.value) || 10, 1, 60);
+    if (x.semesterStart.value) st.semesterStart = x.semesterStart.value;
+    if (x.semesterEnd.value) st.semesterEnd = x.semesterEnd.value;
+    st.reminderDays = [...new Set(x.reminderDays.value.split(/[,;\s]+/).map((n) => parseInt(n, 10)).filter((n) => n >= 0 && n <= 60))].sort((a, b) => b - a);
     Store.save();
-    Sloth.schedule(true);
-    if (!st.slothEnabled) Sloth.hide();
+    toast('Guardado ✓');
+    Sloth.refresh();
   };
-  $('#sloth-now').onclick = () => Sloth.show();
-  const inst = $('#install'); if (inst) inst.onclick = () => Install.run();
+  me.onsubmit = (e) => e.preventDefault();
+
+  // Apariencia (en vivo)
+  const setTheme = (patch, { live } = {}) => {
+    Object.assign(st.theme, patch);
+    applyTheme(globalTheme());
+    if (!live) { Store.save(); renderSettings(); }
+  };
+  $$('[data-token]', v).forEach((inp) => {
+    inp.oninput = () => setTheme({ [inp.dataset.token]: inp.value }, { live: true });
+    inp.onchange = () => setTheme({ [inp.dataset.token]: inp.value });
+  });
+  $('#font', v).onchange = (e) => setTheme({ font: e.target.value });
+  const rad = $('#radius', v);
+  rad.oninput = () => setTheme({ radius: +rad.value }, { live: true });
+  rad.onchange = () => setTheme({ radius: +rad.value });
+  $$('[data-dark]', v).forEach((b) => (b.onclick = () => setTheme({ dark: b.dataset.dark })));
+  $('#glass', v).onchange = (e) => setTheme({ glass: e.target.checked });
+  const pc = $('#pattern-color', v);
+  pc.oninput = () => setTheme({ patternColor: pc.value }, { live: true });
+  pc.onchange = () => setTheme({ patternColor: pc.value });
+  bindBgEditor($('#theme-card', v), st.theme, setTheme);
+  $$('[data-preset]', v).forEach((b) => (b.onclick = () => {
+    const p = THEME_PRESETS.find((x) => x.id === b.dataset.preset);
+    const keepImg = st.theme.bgImageId;
+    st.theme = { ...defaultGlobalTheme(), ...p.t, bgImageId: keepImg };
+    applyTheme(globalTheme()); Store.save(); renderSettings();
+    toast(`Tema “${p.label}” aplicado`);
+  }));
+  $('#theme-reset', v).onclick = () => { st.theme = { ...defaultGlobalTheme(), bgImageId: st.theme.bgImageId }; applyTheme(globalTheme()); Store.save(); renderSettings(); };
+
   paintAutosaveCard();
-  $('#notif').onclick = async () => {
+  const inst = $('#install', v); if (inst) inst.onclick = () => Install.run();
+  $('#notif', v).onclick = async () => {
     if (!('Notification' in window)) { toast('Este navegador no soporta notificaciones.'); return; }
     const r = await Notification.requestPermission();
     toast(r === 'granted' ? 'Notificaciones activadas 🔔' : 'No se activaron las notificaciones.');
     renderSettings();
   };
-  $('#export').onclick = () => {
-    const blob = new Blob([JSON.stringify(Store.data, null, 2)], { type: 'application/json' });
-    downloadBlob(blob, `perezoso-respaldo-${toISODate(new Date())}.json`);
-  };
-  $('#import').onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const data = parseBackup(await file.text());
-      if (!data) throw new Error('formato');
-      if (!confirm('Esto reemplaza tus datos actuales por los del respaldo. ¿Seguimos?')) return;
-      Store.data = Store.merge(Store.defaults(), data);
-      Store.save();
-      toast('Respaldo cargado ✓');
-      applyTheme(globalTheme());
-      renderSettings();
-    } catch (err) {
-      toast('Ese archivo no parece un respaldo de Perezoso.');
-    }
-  };
-  $('#demo').onclick = loadDemoData;
-  $('#wipe').onclick = async () => {
-    if (!confirm('¿Seguro? Se borra TODO y no se puede deshacer.')) return;
+  $('#export', v).onclick = exportBackup;
+  $('#import', v).onchange = (e) => importBackup(e.target.files[0]);
+  $('#seed', v).onclick = () => { seedInitialData(Store.data, { onlyMissing: true }); Store.save(); toast('Listo, cargué lo que faltaba 🦥'); };
+  $('#wipe', v).onclick = async () => {
+    if (!confirm('¿Segura? Se borra TODO y no se puede deshacer.')) return;
     Store.data = Store.defaults();
+    Store.data.settings.seedDismissed = true;
     Store.save();
     await Files.clear().catch(() => {});
     AutoSave.handle = null;
     AutoSave.status = AutoSave.supported ? 'off' : 'unsupported';
     Pomo.reset();
     applyTheme(globalTheme());
+    Sloth.refresh();
     toast('Datos borrados. Empezamos de cero 🌱');
-    location.hash = '#calendario';
+    location.hash = '#inicio';
   };
 }
 
-function loadDemoData() {
-  const d = Store.data;
-  const now = new Date();
-  const y = now.getFullYear();
-  const sem = now.getMonth() < 6 ? '1' : '2';
-  const inDays = (n, time) => { const x = new Date(now); x.setDate(x.getDate() + n); return { date: toISODate(x), time }; };
+/* ---------- Respaldo completo (con archivos) ---------- */
 
-  const calc = { ...newSubject(), name: 'Cálculo II', semester: sem, year: y, professor: 'Dra. Ana Pérez', emails: ['ana.perez@facultad.edu'], credits: 13, color: '#a075ea' };
-  const fis = { ...newSubject(), name: 'Física General', semester: sem, year: y, professor: 'Ing. Martín Silva', emails: ['msilva@facultad.edu'], credits: 10, color: '#5fb3a1' };
-  const prog = { ...newSubject(), name: 'Programación I', semester: sem, year: y, professor: 'Lic. Sofía Rodríguez', emails: ['srodriguez@facultad.edu', 'sofi.prog@gmail.com'], credits: 8, color: '#f28bb3' };
-  d.subjects.push(calc, fis, prog);
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsDataURL(blob); });
+}
 
-  d.classes.push(
-    { id: uid(), subjectId: calc.id, day: 1, start: '08:00', end: '10:00', kind: 'Teórico', room: '501' },
-    { id: uid(), subjectId: calc.id, day: 3, start: '08:00', end: '10:00', kind: 'Teórico', room: '501' },
-    { id: uid(), subjectId: calc.id, day: 4, start: '14:00', end: '16:00', kind: 'Práctico', room: '302' },
-    { id: uid(), subjectId: fis.id, day: 2, start: '10:00', end: '12:00', kind: 'Teórico', room: 'Anfiteatro' },
-    { id: uid(), subjectId: fis.id, day: 5, start: '10:00', end: '13:00', kind: 'Laboratorio', room: 'Lab 2' },
-    { id: uid(), subjectId: prog.id, day: 2, start: '16:00', end: '18:00', kind: 'Teórico', room: '105' },
-    { id: uid(), subjectId: prog.id, day: 4, start: '18:00', end: '20:00', kind: 'Práctico', room: 'Sala PC' },
-  );
+async function exportBackup() {
+  toast('Preparando el respaldo…');
+  const files = {};
+  try {
+    for (const key of await Files.keys()) {
+      if (String(key).startsWith('meta:')) continue;
+      const blob = await Files.get(key);
+      if (blob instanceof Blob) files[key] = await blobToDataUrl(blob);
+    }
+  } catch (e) { toast('No pude leer algunos archivos; el respaldo va sin ellos.'); }
+  const payload = { app: 'perezoso', version: DATA_VERSION, exportedAt: new Date().toISOString(), data: Store.data, files };
+  downloadBlob(new Blob([JSON.stringify(payload)], { type: 'application/json' }), `perezoso-respaldo-${toISODate(new Date())}.json`);
+}
 
-  d.events.push(
-    { id: uid(), type: 'control', customType: '', subjectId: calc.id, title: 'Control de integrales', ...inDays(1, '10:00'), notes: '' },
-    { id: uid(), type: 'laboratorio', customType: '', subjectId: fis.id, title: 'Informe de péndulo', ...inDays(4, '23:59'), notes: 'Entregar por EVA' },
-    { id: uid(), type: 'parcial', customType: '', subjectId: calc.id, title: 'Primer parcial', ...inDays(12, '09:00'), notes: 'Unidades 1 a 4' },
-    { id: uid(), type: 'entregable', customType: '', subjectId: prog.id, title: 'Obligatorio 1', ...inDays(8, '20:00'), notes: '' },
-    { id: uid(), type: 'charla', customType: '', subjectId: '', title: 'Charla de orientación laboral', ...inDays(6, '18:30'), notes: '' },
-    { id: uid(), type: 'otro', customType: 'Defensa oral', subjectId: prog.id, title: 'Defensa del obligatorio', ...inDays(15, '17:00'), notes: '' },
-  );
-
-  const past = (daysAgo, h, mins, subjectId, source = 'manual') => {
-    const s = new Date(now); s.setDate(s.getDate() - daysAgo); s.setHours(h, 0, 0, 0);
-    return { id: uid(), subjectId, start: s.getTime(), end: s.getTime() + mins * 60000, source };
-  };
-  d.sessions.push(past(0, 9, 50, calc.id), past(1, 15, 120, fis.id), past(1, 19, 25, prog.id, 'pomodoro'), past(2, 10, 95, calc.id), past(3, 17, 60, prog.id));
-
+async function importBackup(file) {
+  if (!file) return;
+  let raw;
+  try { raw = JSON.parse(await file.text()); } catch (e) { toast('Ese archivo no parece un respaldo de Perezoso.'); return; }
+  const data = parseBackup(JSON.stringify(raw));
+  if (!data) { toast('Ese archivo no parece un respaldo de Perezoso.'); return; }
+  if (!confirm('Esto reemplaza tus datos actuales por los del respaldo. ¿Seguimos?')) return;
+  if (raw.files && typeof raw.files === 'object') {
+    for (const [id, url] of Object.entries(raw.files)) {
+      try { await Files.put(id, await (await fetch(url)).blob()); } catch (e) { /* sigue con el resto */ }
+    }
+  }
+  Store.data = Store.merge(Store.defaults(), data);
   Store.save();
-  toast('¡Datos de ejemplo cargados! 🦥');
-  location.hash = '#calendario';
+  applyTheme(globalTheme());
+  Sloth.refresh();
+  toast('Respaldo restaurado ✓');
   rerender();
 }
 
@@ -161,19 +217,19 @@ function paintAutosaveCard() {
   const st = AutoSave.status;
   let body;
   if (st === 'unsupported') {
-    body = `<p class="muted">Este navegador no deja guardar en un archivo automáticamente (funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Igual tus datos quedan guardados en el navegador; hacé un respaldo manual de vez en cuando.</p>`;
+    body = `<p class="muted">Tus datos ya quedan guardados en este navegador. Este navegador no deja además guardarlos solos en un archivo (eso funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Hacé un respaldo de vez en cuando.</p>`;
   } else if (st === 'off') {
-    body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se va a guardar ahí <strong>solo</strong>.</p>
-      <p class="muted">💡 Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
-      <div class="btn-row"><button class="btn" id="as-choose">Elegir dónde guardar</button>
+    body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se guarda ahí <strong>solo</strong>.</p>
+      <p class="muted" style="margin-top:.4rem">💡 Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-choose">Elegir dónde guardar</button>
       <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
   } else if (st === 'ok') {
-    body = `<p class="ok-line">✓ Guardando solo en <strong>${esc(AutoSave.fileName())}</strong>${AutoSave.lastSaved ? ` · último guardado ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
-      <div class="btn-row"><button class="btn ghost sm" id="as-choose">Cambiar archivo</button>
+    body = `<p style="color:var(--moss);font-weight:700">✓ Guardando solo en <strong>${esc(AutoSave.fileName())}</strong>${AutoSave.lastSaved ? ` · último guardado ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn ghost sm" id="as-choose">Cambiar archivo</button>
       <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
   } else {
     body = `<p class="muted">El navegador pide permiso otra vez para escribir en <strong>${esc(AutoSave.fileName())}</strong>.</p>
-      <div class="btn-row"><button class="btn" id="as-reconnect">Permitir</button>
+      <div class="btn-row" style="margin-top:.6rem"><button class="btn" id="as-reconnect">Permitir</button>
       <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
   }
   card.innerHTML = `<h2>💾 Guardado automático</h2>${body}`;

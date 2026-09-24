@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Perezoso · Organizador semestral</title>
   <meta name="theme-color" content="#a075ea">
   <link rel="icon" href="img/perezoso.svg" type="image/svg+xml">
@@ -10,32 +10,59 @@
   <link rel="apple-touch-icon" href="img/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Fredoka:wght@400;600&family=Gaegu:wght@400;700&family=Nunito:wght@400;700;800&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="#calendario">
-      <span class="brand-logo" data-sloth="face"></span>
-      <span class="brand-text"><strong>Perezoso</strong><small>despacito, pero al día</small></span>
-    </a>
-    <nav class="tabs" id="tabs" aria-label="Secciones">
-      <a href="#calendario" data-tab="calendario"><span class="ic">📅</span><span>Calendario</span></a>
-      <a href="#materias" data-tab="materias"><span class="ic">📚</span><span>Materias</span></a>
-      <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span><span>Estudio</span></a>
-      <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span><span>Pomodoro</span></a>
-      <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span><span>Ajustes</span></a>
-    </nav>
-    <a id="live-pill" class="live-pill" href="#estudio" hidden></a>
-  </header>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="dock">
+        <button class="dock-sloth" data-sloth="full" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
+        <div class="dock-bubble" id="dock-bubble" role="status"></div>
+      </div>
+      <a class="brand" href="#inicio"><strong>Perezoso</strong><small>despacito, pero al día</small></a>
+      <nav class="side-nav" aria-label="Secciones">
+        <a href="#inicio" data-tab="inicio"><span class="ic">🏡</span>Inicio</a>
+        <a href="#calendario" data-tab="calendario"><span class="ic">📅</span>Calendario</a>
+        <a href="#materias" data-tab="materias"><span class="ic">📚</span>Materias</a>
+        <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span>Horas de estudio</a>
+        <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span>Pomodoro</a>
+        <a href="#proyectos" data-tab="proyectos"><span class="ic">🤝</span>Proyectos</a>
+        <a href="#perezoso" data-tab="perezoso"><span class="ic">🦥</span>Perezoso</a>
+        <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span>Ajustes</a>
+      </nav>
+      <a class="live-pill" href="#estudio" hidden></a>
+    </aside>
 
-  <div id="save-banner" class="save-banner" hidden></div>
-  <main id="view"></main>
+    <div class="main-col">
+      <header class="mobile-top">
+        <button class="mobile-sloth" data-sloth="head" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
+        <a class="brand" href="#inicio"><strong>Perezoso</strong></a>
+        <a class="live-pill" href="#estudio" hidden></a>
+      </header>
+      <div id="save-banner" class="save-banner" hidden></div>
+      <main id="view" tabindex="-1"></main>
+    </div>
+  </div>
 
-  <!-- El perezoso que aparece de vez en cuando -->
+  <nav class="bottom-nav" aria-label="Secciones">
+    <a href="#inicio" data-tab="inicio"><span class="ic">🏡</span><span>Inicio</span></a>
+    <a href="#calendario" data-tab="calendario"><span class="ic">📅</span><span>Calendario</span></a>
+    <a href="#materias" data-tab="materias"><span class="ic">📚</span><span>Materias</span></a>
+    <a href="#estudio" data-tab="estudio"><span class="ic">⏱️</span><span>Estudio</span></a>
+    <button type="button" id="more-btn" aria-expanded="false" aria-controls="more-sheet"><span class="ic">☰</span><span>Más</span></button>
+  </nav>
+  <div id="more-sheet" class="more-sheet" hidden>
+    <a href="#pomodoro" data-tab="pomodoro"><span class="ic">🍅</span>Pomodoro</a>
+    <a href="#proyectos" data-tab="proyectos"><span class="ic">🤝</span>Proyectos</a>
+    <a href="#perezoso" data-tab="perezoso"><span class="ic">🦥</span>Perezoso</a>
+    <a href="#ajustes" data-tab="ajustes"><span class="ic">⚙️</span>Ajustes</a>
+  </div>
+
+  <!-- El perezoso que baja por la liana de vez en cuando -->
   <div id="sloth-peek" class="sloth-peek" aria-live="polite">
     <div class="sloth-bubble" id="sloth-bubble"></div>
-    <button class="sloth-body" id="sloth-body" data-sloth="hang" aria-label="Perezoso (tocá para despedirlo)"></button>
+    <button class="sloth-body" id="sloth-body" data-sloth="vine" aria-label="Perezoso (tocá para despedirlo)"></button>
   </div>
 
   <dialog id="modal"><div id="modal-body"></div></dialog>
@@ -44,12 +71,16 @@
   <script src="js/vendor/jspdf.umd.min.js" defer></script>
   <script src="js/util.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/phrases.js"></script>
   <script src="js/sloth.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/subjects.js"></script>
   <script src="js/study.js"></script>
   <script src="js/pomodoro.js"></script>
+  <script src="js/projects.js"></script>
+  <script src="js/slothpage.js"></script>
+  <script src="js/home.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/autosave.js"></script>
   <script src="js/app.js"></script>

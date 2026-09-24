@@ -3,13 +3,13 @@
  * así los cambios nuevos aparecen la próxima vez que se abre.
  * Si cambiás la lista de archivos, subí el número de versión.
  */
-const CACHE = 'perezoso-v1';
+const CACHE = 'perezoso-v2';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/styles.css',
   'img/perezoso.svg', 'img/icon-192.png', 'img/icon-512.png',
-  'js/vendor/jspdf.umd.min.js', 'js/util.js', 'js/store.js', 'js/sloth.js', 'js/theme.js',
-  'js/calendar.js', 'js/subjects.js', 'js/study.js', 'js/pomodoro.js', 'js/settings.js',
-  'js/autosave.js', 'js/app.js',
+  'js/vendor/jspdf.umd.min.js', 'js/util.js', 'js/store.js', 'js/phrases.js', 'js/sloth.js', 'js/theme.js',
+  'js/calendar.js', 'js/subjects.js', 'js/study.js', 'js/pomodoro.js', 'js/projects.js', 'js/slothpage.js',
+  'js/home.js', 'js/settings.js', 'js/autosave.js', 'js/app.js',
 ];
 
 self.addEventListener('install', (e) => {

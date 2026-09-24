@@ -1,11 +1,11 @@
 'use strict';
 
-/* ---------- Calendario: horario de facultad + calendario de pruebas ---------- */
+/* ---------- Calendario: calendario de pruebas + horario de facultad ---------- */
 
 let calCursor = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
 const listFilter = { subject: '', type: '', past: false };
 
-const CLASS_KINDS = ['Teórico', 'Práctico', 'Laboratorio', 'Consulta', 'Taller', 'Otro'];
+const CLASS_KINDS = ['Teórico', 'Práctico', 'Laboratorio', 'Otro'];
 
 function renderCalendar() {
   const mode = Store.data.settings.calMode || 'pruebas';
@@ -17,8 +17,8 @@ function renderCalendar() {
           <p class="sub">${mode === 'pruebas' ? 'Pruebas, entregas y todo lo que se viene.' : 'Tu semana de clases en la facu.'}</p>
         </div>
         <div class="switch" role="tablist">
-          <button role="tab" data-mode="horario" class="${mode === 'horario' ? 'on' : ''}">🏫 Horario de facultad</button>
-          <button role="tab" data-mode="pruebas" class="${mode === 'pruebas' ? 'on' : ''}">📝 Calendario de pruebas</button>
+          <button role="tab" aria-selected="${mode === 'horario'}" data-mode="horario" class="${mode === 'horario' ? 'on' : ''}">🏫 Horario de facultad</button>
+          <button role="tab" aria-selected="${mode === 'pruebas'}" data-mode="pruebas" class="${mode === 'pruebas' ? 'on' : ''}">📝 Calendario de pruebas</button>
         </div>
       </div>
       <div id="cal-content"></div>
@@ -37,8 +37,9 @@ function renderCalendar() {
 function chipHtml(ev) {
   const t = eventType(ev);
   const subj = ev.subjectId ? subjectName(ev.subjectId) : '';
-  return `<button class="chip" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
-      title="${esc(`${typeLabel(ev)}${subj ? ' · ' + subj : ''}${ev.time ? ' · ' + ev.time : ''}`)}">
+  const cd = countdown(eventDate(ev));
+  return `<button class="chip ${cd.level === 'urgent' ? 'near' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
+      title="${esc(`${typeLabel(ev)}${subj ? ' · ' + subj : ''}${ev.title ? ' · ' + ev.title : ''}${ev.time ? ' · ' + ev.time : ''}`)}">
       <span class="chip-ic">${t.icon}</span><span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
     </button>`;
 }
@@ -51,18 +52,22 @@ function renderExams(el) {
   const dim = new Date(y, m + 1, 0).getDate();
   const weeks = Math.ceil((offset + dim) / 7);
   const byDate = groupEventsByDate();
+  const crit = criticalWeeks();
 
   let cells = '';
   for (let i = 0; i < weeks * 7; i++) {
     const d = new Date(y, m, 1 - offset + i);
     const iso = toISODate(d);
+    const wk = toISODate(startOfWeek(d));
     const evs = byDate[iso] || [];
     cells += `
-      <div class="day ${d.getMonth() !== m ? 'out' : ''} ${iso === today ? 'today' : ''}" data-date="${iso}">
-        <span class="num">${d.getDate()}</span>
+      <div class="day ${d.getMonth() !== m ? 'out' : ''} ${iso === today ? 'today' : ''} ${crit[wk] ? 'crit' : ''}" data-date="${iso}">
+        <span class="dnum">${d.getDate()}</span>
+        ${crit[wk] && i % 7 === 0 ? `<span class="crit-tag" title="${crit[wk]} pruebas esta semana">🔥 Semana crítica</span>` : ''}
         <div class="chips">${evs.map(chipHtml).join('')}</div>
       </div>`;
   }
+  const monthCrit = Object.keys(crit).filter((k) => { const d = parseDate(k); const e = new Date(d); e.setDate(e.getDate() + 6); return e >= first && d <= new Date(y, m, dim); });
 
   el.innerHTML = `
     <div class="card toolbar">
@@ -74,12 +79,14 @@ function renderExams(el) {
       </div>
       <div class="actions">
         <button class="btn" id="add-ev">+ Nuevo evento</button>
-        <button class="btn ghost" id="pdf">⬇ Descargar PDF</button>
+        <button class="btn ghost" id="pdf">⬇ PDF</button>
+        <button class="btn ghost" id="ics" title="Para importar en Google Calendar o el celular">📆 Exportar .ics</button>
       </div>
     </div>
+    ${monthCrit.length ? `<div class="alert warn">🔥 <span><strong>Semana crítica:</strong> ${monthCrit.map((k) => `semana del ${fmtDateShort(parseDate(k))} (${crit[k]} pruebas)`).join(', ')}. Organizate con tiempo.</span></div>` : ''}
     <div class="card month">
       <div class="dow">${DAYS_SHORT.map((d) => `<span>${d}</span>`).join('')}</div>
-      <div class="grid" style="--weeks:${weeks}">${cells}</div>
+      <div class="grid">${cells}</div>
     </div>
     <p class="hint">Tocá un día para agregar un evento ese día.</p>
     <section class="card">
@@ -89,7 +96,7 @@ function renderExams(el) {
           <select id="f-subj" aria-label="Filtrar por materia"><option value="">Todas las materias</option>${subjectOptions(listFilter.subject)}</select>
           <select id="f-type" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option>
             ${EVENT_TYPES.map((t) => `<option value="${t.id}" ${t.id === listFilter.type ? 'selected' : ''}>${t.icon} ${t.label}</option>`).join('')}</select>
-          <label class="check"><input type="checkbox" id="f-past" ${listFilter.past ? 'checked' : ''}> Mostrar pasados</label>
+          <label class="check"><input type="checkbox" id="f-past" ${listFilter.past ? 'checked' : ''}> Ver pasados</label>
         </div>
       </div>
       <div id="ev-list" class="ev-list"></div>
@@ -101,8 +108,10 @@ function renderExams(el) {
     else calCursor = new Date(y, m + n, 1);
     renderExams(el);
   }));
-  $('#add-ev', el).onclick = () => openEventForm(null, { date: m === new Date().getMonth() && y === new Date().getFullYear() ? today : toISODate(first) });
+  const thisMonth = m === new Date().getMonth() && y === new Date().getFullYear();
+  $('#add-ev', el).onclick = () => openEventForm(null, { date: thisMonth ? today : toISODate(first) });
   $('#pdf', el).onclick = downloadMonthPDF;
+  $('#ics', el).onclick = exportICS;
   $$('.day', el).forEach((c) => (c.onclick = (e) => {
     const chip = e.target.closest('.chip');
     if (chip) openEventForm(Store.data.events.find((x) => x.id === chip.dataset.ev));
@@ -117,18 +126,16 @@ function renderExams(el) {
     const evs = Store.data.events
       .filter((ev) => (!listFilter.subject || ev.subjectId === listFilter.subject)
         && (!listFilter.type || ev.type === listFilter.type)
-        && (listFilter.past || eventDate(ev) >= now))
+        && (listFilter.past || eventDate(ev) >= now || daysUntil(ev.date) === 0))
       .sort(byEventDate);
-    renderEventList($('#ev-list', el), evs, listFilter.past
-      ? 'No hay eventos con esos filtros.'
-      : 'No tenés nada pendiente. Disfrutá (como un perezoso). 🦥');
+    renderEventList($('#ev-list', el), evs, listFilter.past ? 'No hay eventos con esos filtros.' : 'No tenés nada pendiente. Disfrutá (como un perezoso). 🦥');
   }
   paintList();
 }
 
 function renderEventList(container, evs, emptyMsg) {
   if (!evs.length) {
-    container.innerHTML = `<div class="empty small"><span class="empty-sloth" data-sloth="face"></span><p>${esc(emptyMsg)}</p></div>`;
+    container.innerHTML = `<div class="empty small"><span class="empty-sloth" data-sloth="head"></span><p>${esc(emptyMsg)}</p></div>`;
     Sloth.paint(container);
     return;
   }
@@ -136,31 +143,33 @@ function renderEventList(container, evs, emptyMsg) {
     const d = eventDate(ev);
     const cd = countdown(d);
     const t = eventType(ev);
+    const proj = ev.projectId && projectById(ev.projectId);
     return `
-      <article class="ev-row" data-ev="${ev.id}" data-level="${cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0">
+      <article class="ev-row" data-ev="${ev.id}" data-level="${cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" role="button">
         <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
         <div class="ev-main">
           <div class="ev-type">${t.icon} ${esc(typeLabel(ev))}</div>
-          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}</div>
+          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · 🤝 ${esc(proj.name)}` : ''}</div>
           ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
-          <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'sin hora'}</div>
+          <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
         </div>
-        <div class="countdown" data-countdown="${d.getTime()}" data-level="${cd.level}">${cd.text}</div>
+        <div class="countdown" data-countdown="${d.getTime()}" data-level="${cd.level}" title="Cuánto falta">${cd.text}</div>
       </article>`;
   }).join('');
   $$('.ev-row', container).forEach((r) => {
     const open = () => openEventForm(Store.data.events.find((x) => x.id === r.dataset.ev));
     r.onclick = open;
-    r.onkeydown = (e) => { if (e.key === 'Enter') open(); };
+    r.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
   });
 }
 
 function openEventForm(ev, preset = {}) {
   const isNew = !ev;
   const data = ev ? { ...ev } : {
-    id: uid(), type: 'parcial', customType: '', subjectId: preset.subjectId || '',
+    id: uid(), type: preset.type || 'parcial', customType: '', subjectId: preset.subjectId || '', projectId: preset.projectId || '',
     title: '', date: preset.date || toISODate(new Date()), time: '', notes: '',
   };
+  const projOpts = Store.data.projects.map((p) => `<option value="${p.id}" ${p.id === data.projectId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   Modal.open(isNew ? 'Nuevo evento' : 'Editar evento', `
     <form class="form" id="ev-form">
       <label>Tipo de evento
@@ -169,15 +178,14 @@ function openEventForm(ev, preset = {}) {
       <label class="custom-type" ${data.type === 'otro' ? '' : 'hidden'}>¿Qué es?
         <input name="customType" value="${esc(data.customType)}" placeholder="Ej: Defensa oral, tutoría, feria…">
       </label>
-      <label>Materia
-        <select name="subjectId">${subjectOptions(data.subjectId, { allowEmpty: true })}</select>
-      </label>
-      <label>Título o detalle <span class="opt">(opcional)</span>
-        <input name="title" value="${esc(data.title)}" placeholder="Ej: Parcial 1 — unidades 1 a 3">
-      </label>
+      <div class="row">
+        <label>Materia<select name="subjectId">${subjectOptions(data.subjectId, { allowEmpty: true })}</select></label>
+        <label>Proyecto <span class="opt">(opcional)</span><select name="projectId"><option value="">— Ninguno —</option>${projOpts}</select></label>
+      </div>
+      <label>Título <input name="title" value="${esc(data.title)}" placeholder="Ej: Parcial 1 — unidades 1 a 3"></label>
       <div class="row">
         <label>Fecha<input type="date" name="date" required value="${data.date}"></label>
-        <label>Hora<input type="time" name="time" value="${data.time}"></label>
+        <label>Hora <span class="opt">(opcional)</span><input type="time" name="time" value="${data.time || ''}"></label>
       </div>
       <label>Notas <span class="opt">(opcional)</span>
         <textarea name="notes" rows="3" placeholder="Salón, qué entra, qué llevar…">${esc(data.notes)}</textarea>
@@ -192,13 +200,19 @@ function openEventForm(ev, preset = {}) {
     const f = $('#ev-form', body);
     const el = f.elements;
     el.type.onchange = () => { $('.custom-type', f).hidden = el.type.value !== 'otro'; };
+    el.projectId.onchange = () => {
+      const p = projectById(el.projectId.value);
+      if (p && p.subjectId && !el.subjectId.value) el.subjectId.value = p.subjectId;
+    };
     f.onsubmit = (e) => {
       e.preventDefault();
       if (el.type.value === 'otro' && !el.customType.value.trim()) { toast('Contá qué tipo de evento es 🙂'); el.customType.focus(); return; }
+      const changedDate = !isNew && (ev.date !== el.date.value);
       Object.assign(data, {
         type: el.type.value,
         customType: el.type.value === 'otro' ? el.customType.value.trim() : '',
         subjectId: el.subjectId.value,
+        projectId: el.projectId.value,
         title: el.title.value.trim(),
         date: el.date.value,
         time: el.time.value,
@@ -206,15 +220,18 @@ function openEventForm(ev, preset = {}) {
       });
       if (isNew) Store.data.events.push(data);
       else Object.assign(ev, data);
+      if (changedDate) delete Store.data.remindersSent[data.id];
       Store.save();
       Modal.close();
       toast(isNew ? 'Evento agregado 🦥' : 'Evento actualizado');
       rerender();
+      Sloth.paint();
     };
     const del = $('#ev-del', f);
     if (del) del.onclick = () => {
       if (!confirm('¿Eliminar este evento?')) return;
       Store.data.events = Store.data.events.filter((x) => x.id !== ev.id);
+      delete Store.data.remindersSent[ev.id];
       Store.save();
       Modal.close();
       toast('Evento eliminado');
@@ -223,7 +240,42 @@ function openEventForm(ev, preset = {}) {
   });
 }
 
-/* ===== PDF del mes ===== */
+/* ===== Exportar .ics (Google Calendar, celular) ===== */
+
+function icsEscape(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+function icsDate(d) { return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`; }
+function icsDateTime(d) { return `${icsDate(d)}T${pad(d.getHours())}${pad(d.getMinutes())}00`; }
+
+function exportICS() {
+  const evs = Store.data.events.slice().sort(byEventDate);
+  if (!evs.length) { toast('No hay eventos para exportar.'); return; }
+  const stamp = new Date();
+  const utc = `${stamp.getUTCFullYear()}${pad(stamp.getUTCMonth() + 1)}${pad(stamp.getUTCDate())}T${pad(stamp.getUTCHours())}${pad(stamp.getUTCMinutes())}00Z`;
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Perezoso//Organizador semestral//ES', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Pruebas del semestre'];
+  for (const ev of evs) {
+    const d = eventDate(ev);
+    const subj = ev.subjectId ? subjectName(ev.subjectId) : '';
+    lines.push('BEGIN:VEVENT', `UID:${ev.id}@perezoso`, `DTSTAMP:${utc}`);
+    if (ev.time) {
+      const end = new Date(d.getTime() + 2 * 36e5);
+      lines.push(`DTSTART:${icsDateTime(d)}`, `DTEND:${icsDateTime(end)}`);
+    } else {
+      const next = new Date(d); next.setDate(next.getDate() + 1);
+      lines.push(`DTSTART;VALUE=DATE:${icsDate(d)}`, `DTEND;VALUE=DATE:${icsDate(next)}`);
+    }
+    lines.push(`SUMMARY:${icsEscape(`${typeLabel(ev)}${subj ? ' - ' + subj : ''}${ev.title ? ': ' + ev.title : ''}`)}`);
+    if (ev.notes) lines.push(`DESCRIPTION:${icsEscape(ev.notes)}`);
+    (Store.data.settings.reminderDays || []).forEach((n) => {
+      lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEscape(typeLabel(ev))}`, `TRIGGER:-P${n}D`, 'END:VALARM');
+    });
+    lines.push('END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar' }), 'pruebas-semestre.ics');
+  toast('Calendario exportado. Abrilo o importalo en Google Calendar 📆');
+}
+
+/* ===== PDF ===== */
 
 function fitText(doc, txt, w) {
   if (doc.getTextWidth(txt) <= w) return txt;
@@ -231,36 +283,43 @@ function fitText(doc, txt, w) {
   return txt + '...';
 }
 
-function downloadMonthPDF() {
+function pdfOrPrint() {
   const J = window.jspdf && window.jspdf.jsPDF;
   if (!J) {
-    toast('No pude cargar el generador de PDF (¿sin internet?). Abro la impresión: elegí "Guardar como PDF".');
+    toast('No pude cargar el generador de PDF. Abro la impresión: elegí "Guardar como PDF".');
     setTimeout(() => window.print(), 600);
-    return;
+    return null;
   }
-  const y = calCursor.getFullYear(), m = calCursor.getMonth();
-  const doc = new J({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const W = 297, H = 210, M = 10;
+  return new J({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+}
+
+function pdfHeader(doc, title) {
+  const W = 297, M = 10;
   const acc = hexToRgb(Store.data.settings.theme.accent || DEFAULT_ACCENT);
+  doc.setFillColor(...acc);
+  doc.rect(0, 0, W, 16, 'F');
+  doc.setTextColor(...(isLight(acc) ? [40, 30, 50] : [255, 255, 255]));
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+  doc.text(title, M, 10.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text('Perezoso - organizador semestral', W - M, 10.5, { align: 'right' });
+  return acc;
+}
 
-  const header = (title) => {
-    doc.setFillColor(...acc);
-    doc.rect(0, 0, W, 16, 'F');
-    doc.setTextColor(...(isLight(acc) ? [40, 30, 50] : [255, 255, 255]));
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-    doc.text(title, M, 10.5);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text('Perezoso - organizador semestral', W - M, 10.5, { align: 'right' });
-  };
+function downloadMonthPDF() {
+  const doc = pdfOrPrint();
+  if (!doc) return;
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  const W = 297, H = 210, M = 10;
+  const acc = pdfHeader(doc, `Calendario de pruebas - ${MONTHS[m]} ${y}`);
 
-  // Página 1: grilla del mes
-  header(`Calendario de pruebas - ${MONTHS[m]} ${y}`);
   const first = new Date(y, m, 1);
   const offset = (first.getDay() + 6) % 7;
   const dim = new Date(y, m + 1, 0).getDate();
   const weeks = Math.ceil((offset + dim) / 7);
   const top = 21, headH = 6, cw = (W - 2 * M) / 7, ch = (H - top - M - headH) / weeks;
   const byDate = groupEventsByDate();
+  const crit = criticalWeeks();
 
   doc.setTextColor(90, 80, 100); doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   DAYS.forEach((d, i) => doc.text(d, M + i * cw + cw / 2, top + 4, { align: 'center' }));
@@ -270,11 +329,13 @@ function downloadMonthPDF() {
     const d = new Date(y, m, 1 - offset + i);
     const x = M + (i % 7) * cw, yy = top + headH + Math.floor(i / 7) * ch;
     const out = d.getMonth() !== m;
-    doc.setFillColor(...(out ? [245, 242, 236] : [255, 255, 255]));
+    const isCrit = crit[toISODate(startOfWeek(d))];
+    doc.setFillColor(...(out ? [245, 242, 236] : isCrit ? [253, 238, 241] : [255, 255, 255]));
     doc.rect(x, yy, cw, ch, 'FD');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
     doc.setTextColor(...(out ? [180, 172, 160] : [60, 55, 70]));
     doc.text(String(d.getDate()), x + 1.8, yy + 4);
+    if (isCrit && i % 7 === 0) { doc.setTextColor(200, 60, 90); doc.setFontSize(6); doc.text('SEMANA CRITICA', x + cw - 1.5, yy + 3.6, { align: 'right' }); }
 
     const evs = byDate[toISODate(d)] || [];
     const lineH = 3.8;
@@ -296,15 +357,15 @@ function downloadMonthPDF() {
     }
   }
 
-  // Página 2+: lista de eventos del mes con cuenta regresiva
+  // Lista de eventos del mes con cuenta regresiva
   const list = Store.data.events
     .filter((e) => { const d = parseDate(e.date); return d.getFullYear() === y && d.getMonth() === m; })
     .sort(byEventDate);
   doc.addPage();
-  header(`Eventos de ${MONTHS[m]} ${y}`);
+  pdfHeader(doc, `Eventos de ${MONTHS[m]} ${y}`);
   const cols = [
-    { t: 'Fecha', w: 34 }, { t: 'Hora', w: 16 }, { t: 'Tipo', w: 46 },
-    { t: 'Materia', w: 60 }, { t: 'Detalle', w: 76 }, { t: 'Cuánto falta', w: 45 },
+    { t: 'Fecha', w: 32 }, { t: 'Hora', w: 16 }, { t: 'Tipo', w: 46 },
+    { t: 'Materia', w: 58 }, { t: 'Título', w: 80 }, { t: 'Cuánto falta', w: 45 },
   ];
   let cy = 26;
   const drawHead = () => {
@@ -320,7 +381,7 @@ function downloadMonthPDF() {
     doc.text('No hay eventos este mes.', M + 5, cy);
   }
   list.forEach((ev, i) => {
-    if (cy > H - M - 4) { doc.addPage(); header(`Eventos de ${MONTHS[m]} ${y} (cont.)`); cy = 26; drawHead(); }
+    if (cy > H - M - 4) { doc.addPage(); pdfHeader(doc, `Eventos de ${MONTHS[m]} ${y} (cont.)`); cy = 26; drawHead(); }
     const d = eventDate(ev);
     if (i % 2 === 0) { doc.setFillColor(248, 245, 238); doc.rect(M, cy - 5, W - 2 * M, 8, 'F'); }
     doc.setFillColor(...hexToRgb(subjectColor(ev.subjectId)));
@@ -341,24 +402,79 @@ function downloadMonthPDF() {
   toast('PDF descargado 📄');
 }
 
+function downloadTimetablePDF() {
+  const doc = pdfOrPrint();
+  if (!doc) return;
+  const W = 297, H = 210, M = 10;
+  pdfHeader(doc, 'Horario de facultad');
+  const { minH, maxH } = timetableRange();
+  const top = 22, headH = 7, hourW = 14;
+  const cw = (W - 2 * M - hourW) / 6;
+  const hh = (H - top - M - headH) / (maxH - minH);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(90, 80, 100);
+  DAYS.slice(0, 6).forEach((d, i) => doc.text(d, M + hourW + i * cw + cw / 2, top + 4.5, { align: 'center' }));
+  doc.setDrawColor(225, 218, 205); doc.setLineWidth(0.2);
+  for (let h = minH; h <= maxH; h++) {
+    const yy = top + headH + (h - minH) * hh;
+    doc.line(M + hourW, yy, W - M, yy);
+    if (h < maxH) { doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(140, 130, 150); doc.text(`${pad(h)}:00`, M + hourW - 1.5, yy + 2.5, { align: 'right' }); }
+  }
+  for (let i = 0; i <= 6; i++) doc.line(M + hourW + i * cw, top + headH, M + hourW + i * cw, top + headH + (maxH - minH) * hh);
+  Store.data.classes.filter((c) => +c.day <= 6).forEach((c) => {
+    const x = M + hourW + (c.day - 1) * cw + 0.8;
+    const y0 = top + headH + ((toMin(c.start) / 60) - minH) * hh;
+    const h = ((toMin(c.end) - toMin(c.start)) / 60) * hh;
+    const col = hexToRgb(subjectColor(c.subjectId));
+    doc.setFillColor(...col);
+    doc.roundedRect(x, y0 + 0.4, cw - 1.6, h - 0.8, 1.2, 1.2, 'F');
+    doc.setTextColor(...(isLight(col) ? [40, 30, 50] : [255, 255, 255]));
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text(fitText(doc, subjectName(c.subjectId), cw - 4), x + 1.5, y0 + 4);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+    if (h > 7) doc.text(`${c.start}-${c.end}`, x + 1.5, y0 + 7.2);
+    if (h > 10) doc.text(fitText(doc, `${c.kind}${c.room ? ' - ' + c.room : ''}`, cw - 4), x + 1.5, y0 + 10.2);
+  });
+  doc.save('horario-facultad.pdf');
+  toast('PDF del horario descargado 📄');
+}
+
 /* ===== Horario de facultad ===== */
+
+function timetableRange() {
+  let minH = 7, maxH = 23;
+  Store.data.classes.forEach((c) => { minH = Math.min(minH, Math.floor(toMin(c.start) / 60)); maxH = Math.max(maxH, Math.ceil(toMin(c.end) / 60)); });
+  return { minH, maxH };
+}
+
+// Huecos de al menos 45 min entre clases del mismo día
+function freeGaps(day) {
+  const cls = Store.data.classes.filter((c) => +c.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
+  const gaps = [];
+  for (let i = 1; i < cls.length; i++) {
+    const prevEnd = Math.max(...cls.slice(0, i).map((c) => toMin(c.end)));
+    const next = toMin(cls[i].start);
+    if (next - prevEnd >= 45) gaps.push([prevEnd, next]);
+  }
+  return gaps;
+}
 
 function renderTimetable(el) {
   const classes = Store.data.classes;
   if (!Store.data.subjects.length) {
-    el.innerHTML = `<div class="card empty"><span class="empty-sloth" data-sloth="face"></span>
+    el.innerHTML = `<div class="card empty"><span class="empty-sloth big" data-sloth="head"></span>
       <h2>Primero creá una materia</h2><p>Después vas a poder cargar tus horarios de clase acá.</p>
       <a class="btn" href="#materias">Ir a Materias</a></div>`;
     Sloth.paint(el);
     return;
   }
-  const nDays = classes.some((c) => +c.day === 7) ? 7 : 6;
-  let minH = 8, maxH = 20;
-  classes.forEach((c) => { minH = Math.min(minH, Math.floor(toMin(c.start) / 60)); maxH = Math.max(maxH, Math.ceil(toMin(c.end) / 60)); });
-  const PX = 52;
+  const showFree = Store.data.settings.showFreeTime !== false;
+  const nDays = 6;
+  const { minH, maxH } = timetableRange();
+  const PX = 46;
   const now = new Date();
   const todayIdx = ((now.getDay() + 6) % 7) + 1;
   const nowMin = now.getHours() * 60 + now.getMinutes();
+  const pos = (min) => ((min - minH * 60) / 60) * PX;
 
   let hours = '';
   for (let h = minH; h < maxH; h++) hours += `<span style="top:${(h - minH) * PX}px">${pad(h)}:00</span>`;
@@ -366,26 +482,28 @@ function renderTimetable(el) {
   let cols = '';
   for (let d = 1; d <= nDays; d++) {
     const blocks = classes.filter((c) => +c.day === d).map((c) => {
-      const top = ((toMin(c.start) - minH * 60) / 60) * PX;
-      const h = Math.max(22, ((toMin(c.end) - toMin(c.start)) / 60) * PX);
-      return `<button class="block" data-cl="${c.id}" style="top:${top}px;height:${h}px;--c:${subjectColor(c.subjectId)}">
+      const h = Math.max(22, pos(toMin(c.end)) - pos(toMin(c.start)));
+      return `<button class="block" data-cl="${c.id}" style="top:${pos(toMin(c.start))}px;height:${h}px;--c:${subjectColor(c.subjectId)}">
           <strong>${esc(subjectName(c.subjectId))}</strong>
           <span>${c.start}–${c.end}</span>
           <span>${esc(c.kind)}${c.room ? ' · ' + esc(c.room) : ''}</span>
         </button>`;
     }).join('');
-    const nowLine = d === todayIdx && nowMin >= minH * 60 && nowMin <= maxH * 60
-      ? `<div class="now-line" style="top:${((nowMin - minH * 60) / 60) * PX}px"></div>` : '';
+    const free = showFree ? freeGaps(d).map(([a, b]) => `<div class="free" style="top:${pos(a) + 3}px;height:${pos(b) - pos(a) - 6}px" title="Tiempo libre entre clases">📖 ${fmtHM(b - a)} libres para estudiar</div>`).join('') : '';
+    const nowLine = d === todayIdx && nowMin >= minH * 60 && nowMin <= maxH * 60 ? `<div class="now-line" style="top:${pos(nowMin)}px"></div>` : '';
     cols += `<div class="tt-col ${d === todayIdx ? 'today' : ''}"><div class="tt-day">${DAYS[d - 1]}</div>
-      <div class="tt-body" style="height:${(maxH - minH) * PX}px;--px:${PX}px">${blocks}${nowLine}</div></div>`;
+      <div class="tt-body" style="height:${(maxH - minH) * PX}px;--px:${PX}px">${free}${blocks}${nowLine}</div></div>`;
   }
 
   const todays = classes.filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
 
   el.innerHTML = `
     <div class="card toolbar">
-      <div class="month-nav"><h2>Semana tipo</h2></div>
-      <div class="actions"><button class="btn" id="add-cl">+ Agregar clase</button></div>
+      <label class="check"><input type="checkbox" id="free-toggle" ${showFree ? 'checked' : ''}> Resaltar tiempo libre para estudiar</label>
+      <div class="actions">
+        <button class="btn" id="add-cl">+ Agregar clase</button>
+        <button class="btn ghost" id="tt-pdf">⬇ PDF</button>
+      </div>
     </div>
     <div class="card today-strip">
       <strong>Hoy, ${DAYS[todayIdx - 1].toLowerCase()}:</strong>
@@ -402,22 +520,25 @@ function renderTimetable(el) {
     ${classes.length ? '' : '<p class="hint">Todavía no cargaste clases. Tocá “+ Agregar clase”.</p>'}`;
 
   $('#add-cl', el).onclick = () => openClassForm();
+  $('#tt-pdf', el).onclick = downloadTimetablePDF;
+  $('#free-toggle', el).onchange = (e) => { Store.data.settings.showFreeTime = e.target.checked; Store.save(); renderTimetable(el); };
   $$('.block', el).forEach((b) => (b.onclick = () => openClassForm(Store.data.classes.find((c) => c.id === b.dataset.cl))));
 }
 
 function openClassForm(cl, preset = {}) {
+  if (!Store.data.subjects.length) { toast('Primero creá una materia.'); return; }
   const isNew = !cl;
-  const data = cl ? { ...cl } : { id: uid(), subjectId: preset.subjectId || (Store.data.subjects[0] || {}).id, day: 1, start: '08:00', end: '10:00', kind: 'Teórico', room: '' };
+  const data = cl ? { ...cl } : { id: uid(), subjectId: preset.subjectId || Store.data.subjects[0].id, day: preset.day || 1, start: '08:00', end: '10:00', kind: 'Teórico', room: '' };
   Modal.open(isNew ? 'Nueva clase' : 'Editar clase', `
     <form class="form" id="cl-form">
       <label>Materia<select name="subjectId" required>${subjectOptions(data.subjectId)}</select></label>
-      <label>Día<select name="day">${DAYS.map((d, i) => `<option value="${i + 1}" ${+data.day === i + 1 ? 'selected' : ''}>${d}</option>`).join('')}</select></label>
+      <label>Día<select name="day">${DAYS.slice(0, 6).map((d, i) => `<option value="${i + 1}" ${+data.day === i + 1 ? 'selected' : ''}>${d}</option>`).join('')}</select></label>
       <div class="row">
         <label>Desde<input type="time" name="start" required value="${data.start}"></label>
         <label>Hasta<input type="time" name="end" required value="${data.end}"></label>
       </div>
       <div class="row">
-        <label>Tipo<select name="kind">${CLASS_KINDS.map((k) => `<option ${k === data.kind ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+        <label>Tipo de clase<select name="kind">${CLASS_KINDS.map((k) => `<option ${k === data.kind ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
         <label>Salón <span class="opt">(opcional)</span><input name="room" value="${esc(data.room)}" placeholder="Ej: 501, Anfiteatro"></label>
       </div>
       <div class="form-actions">

@@ -1,152 +1,140 @@
 'use strict';
 
-/* ---------- Temas: colores y fondos estilo Tumblr ---------- */
+/* ---------- Temas: colores, tipografía y fondos estilo Tumblr ---------- */
 
-const svgPattern = (svg) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+const FONTS = {
+  bricolage: { label: 'Bricolage Grotesque', css: "'Bricolage Grotesque', system-ui, sans-serif" },
+  nunito: { label: 'Nunito (redondita)', css: "'Nunito', system-ui, sans-serif" },
+  quicksand: { label: 'Quicksand (fina)', css: "'Quicksand', system-ui, sans-serif" },
+  fredoka: { label: 'Fredoka (burbuja)', css: "'Fredoka', system-ui, sans-serif" },
+  gaegu: { label: 'Gaegu (a mano)', css: "'Gaegu', 'Comic Sans MS', cursive" },
+  system: { label: 'La del sistema', css: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
+};
 
-const BG_PRESETS = [
-  { id: 'none', label: 'Liso', url: '' },
-  { id: 'dots', label: 'Puntitos', url: svgPattern('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="4" cy="4" r="2" fill="#a075ea" opacity=".22"/><circle cx="16" cy="16" r="2" fill="#a075ea" opacity=".22"/></svg>') },
-  { id: 'grid', label: 'Cuadrillé', url: svgPattern('<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><path d="M28 0H0V28" fill="none" stroke="#6c9eeb" stroke-opacity=".18"/></svg>') },
-  { id: 'stars', label: 'Estrellitas', url: svgPattern('<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><path d="M15 8l2 5 5 .5-4 3.5 1.3 5L15 19l-4.3 3 1.3-5-4-3.5 5-.5z" fill="#f2a65a" opacity=".3"/><path d="M45 38l1.4 3.4 3.6.3-2.8 2.4.9 3.5-3.1-2-3.1 2 .9-3.5-2.8-2.4 3.6-.3z" fill="#a075ea" opacity=".3"/></svg>') },
-  { id: 'leaves', label: 'Hojitas', url: svgPattern('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M12 30c6-12 18-12 22-10-4 10-14 16-22 10z" fill="#8cc084" opacity=".28"/><path d="M40 54c4-8 12-8 15-7-3 7-9 11-15 7z" fill="#5fb3a1" opacity=".28"/></svg>') },
-  { id: 'hearts', label: 'Corazones', url: svgPattern('<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M12 18c-3-4-9-1-6 4l6 5 6-5c3-5-3-8-6-4z" fill="#f28bb3" opacity=".3"/><path d="M36 42c-2-3-7-1-5 3l5 4 5-4c2-4-3-6-5-3z" fill="#a075ea" opacity=".25"/></svg>') },
+const PATTERNS = [
+  { id: 'dots', label: 'Puntos' }, { id: 'grid', label: 'Cuadros' }, { id: 'stripes', label: 'Rayas' },
+  { id: 'zigzag', label: 'Zigzag' }, { id: 'stars', label: 'Estrellitas' }, { id: 'hearts', label: 'Corazones' },
+  { id: 'leaves', label: 'Hojitas' },
+];
+
+function patternUrl(kind, color) {
+  const c = color || DEFAULT_ACCENT;
+  const svgs = {
+    dots: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="6" cy="6" r="2.2" fill="${c}" opacity=".38"/><circle cx="18" cy="18" r="2.2" fill="${c}" opacity=".38"/></svg>`,
+    grid: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><path d="M28 0H0V28" fill="none" stroke="${c}" stroke-opacity=".3" stroke-width="1.2"/></svg>`,
+    stripes: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="M-5 5 L5 -5 M0 20 L20 0 M15 25 L25 15" stroke="${c}" stroke-opacity=".22" stroke-width="4"/></svg>`,
+    zigzag: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><polyline points="0,15 10,5 20,15 30,5 40,15" fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="2.5"/></svg>`,
+    stars: `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><path d="M15 8l2 5 5 .5-4 3.5 1.3 5L15 19l-4.3 3 1.3-5-4-3.5 5-.5z" fill="${c}" opacity=".35"/><path d="M45 38l1.4 3.4 3.6.3-2.8 2.4.9 3.5-3.1-2-3.1 2 .9-3.5-2.8-2.4 3.6-.3z" fill="${c}" opacity=".25"/></svg>`,
+    hearts: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M12 18c-3-4-9-1-6 4l6 5 6-5c3-5-3-8-6-4z" fill="${c}" opacity=".32"/><path d="M36 42c-2-3-7-1-5 3l5 4 5-4c2-4-3-6-5-3z" fill="${c}" opacity=".22"/></svg>`,
+    leaves: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M12 30c6-12 18-12 22-10-4 10-14 16-22 10z" fill="${c}" opacity=".3"/><path d="M40 54c4-8 12-8 15-7-3 7-9 11-15 7z" fill="${c}" opacity=".22"/></svg>`,
+  };
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svgs[kind] || svgs.dots)}`;
+}
+
+const THEME_PRESETS = [
+  { id: 'lavanda', label: 'Lavanda original', t: {} },
+  { id: 'frutilla', label: 'Frutilla', t: { accent: '#ff5f8f', bg: '#fff0f3', surface: '#fffafb', ink: '#3a1f2b', bgType: 'pattern', pattern: 'hearts', patternColor: '#ff5f8f' } },
+  { id: 'muneca', label: 'Muñeca rosa', t: { accent: '#ff4fa3', bg: '#ffe3f1', surface: '#fff7fb', ink: '#4a1235', hl: '#ffe066', font: 'fredoka', radius: 24, bgType: 'pattern', pattern: 'stars', patternColor: '#ff4fa3' } },
+  { id: 'monstruito', label: 'Monstruito chic', t: { accent: '#e05ab6', bg: '#2a1f35', surface: '#34283f', ink: '#f6ecff', moss: '#8e44ad', hl: '#c7f464', dark: 'dark', bgType: 'pattern', pattern: 'stripes', patternColor: '#8e44ad' } },
+  { id: 'dino', label: 'Dino', t: { accent: '#4e9a54', bg: '#eef5e4', surface: '#fbfff7', ink: '#1f3322', moss: '#4e9a54', bgType: 'pattern', pattern: 'leaves', patternColor: '#4e9a54' } },
+  { id: 'alien', label: 'Héroe alien', t: { accent: '#2fbf4a', bg: '#e9f7ec', surface: '#fbfffb', ink: '#10261a', hl: '#c7f464', font: 'system', radius: 10, bgType: 'pattern', pattern: 'grid', patternColor: '#2fbf4a' } },
+  { id: 'y2k', label: 'Y2K', t: { accent: '#5b8def', bg: '#eaf2ff', surface: '#fbfdff', ink: '#1d2a4a', font: 'quicksand', bgType: 'pattern', pattern: 'stars', patternColor: '#c78bd9' } },
+  { id: 'noche', label: 'Noche', t: { dark: 'dark' } },
 ];
 
 let themeToken = 0;
 
+function isDarkTheme(t) {
+  return t.dark === 'dark' || (t.dark === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
 async function applyTheme(t) {
   const tok = ++themeToken;
-  const root = document.documentElement.style;
-  root.setProperty('--accent', t.accent || DEFAULT_ACCENT);
-  root.setProperty('--bg', t.bgColor || DEFAULT_BG);
+  const dark = isDarkTheme(t);
+  const accent = t.accent || DEFAULT_ACCENT;
+  const bg = dark ? mixHex(t.bg || DEFAULT_BG, '#14111c', 0.9) : (t.bg || DEFAULT_BG);
+  const surface = dark ? mixHex(t.surface || '#fffdf8', '#221c2e', 0.9) : (t.surface || '#fffdf8');
+  const ink = dark ? '#efe9f7' : (t.ink || '#2a2238');
+  const r = document.documentElement;
+  const set = (k, v) => r.style.setProperty(k, v);
+  set('--accent', accent);
+  set('--accent-ink', dark ? mixHex(accent, '#ffffff', 0.35) : mixHex(accent, '#000000', 0.32));
+  set('--accent-soft', mixHex(accent, surface, 0.84));
+  set('--on-accent', isLight(accent) ? '#2a2238' : '#ffffff');
+  set('--bg', bg);
+  set('--surface', surface);
+  set('--ink', ink);
+  set('--muted', mixHex(ink, surface, 0.45));
+  set('--line', mixHex(surface, ink, dark ? 0.2 : 0.12));
+  set('--moss', t.moss || '#6f8f5a');
+  set('--hl', t.hl || '#f5d76e');
+  set('--hl-soft', mixHex(t.hl || '#f5d76e', surface, 0.55));
+  set('--radius', `${Number(t.radius) || 18}px`);
+  set('--font', (FONTS[t.font] || FONTS.bricolage).css);
+  r.dataset.theme = dark ? 'dark' : 'light';
   const meta = $('meta[name="theme-color"]');
-  if (meta) meta.content = t.accent || DEFAULT_ACCENT;
+  if (meta) meta.content = accent;
 
-  let url = t.previewUrl || '';
-  if (!url && t.bgImageId) url = await Files.url(t.bgImageId).catch(() => '');
-  if (!url && t.bgUrl) url = t.bgUrl;
+  let img = 'none', mode = 'tile', color = bg;
+  if (t.bgType === 'color') color = dark ? mixHex(t.bgColor, '#14111c', 0.8) : t.bgColor;
+  else if (t.bgType === 'pattern') img = `url("${patternUrl(t.pattern, t.patternColor || accent)}")`;
+  else if (t.bgType === 'image') {
+    let url = t.previewUrl || '';
+    if (!url && t.bgImageId) url = await Files.url(t.bgImageId).catch(() => '');
+    if (url) { img = `url("${url.replace(/"/g, '%22')}")`; mode = 'cover'; }
+  }
   if (tok !== themeToken) return; // otra navegación ganó la carrera
-  document.body.style.backgroundImage = url ? `url("${url.replace(/"/g, '%22')}")` : 'none';
-  document.body.dataset.bgmode = t.bgMode || 'tile';
+  document.body.style.backgroundColor = color;
+  document.body.style.backgroundImage = img;
+  document.body.dataset.bgmode = mode;
+  document.body.classList.toggle('glass', (t.bgType && t.bgType !== 'none') || !!t.glass);
 }
 
 function globalTheme() { return { ...Store.data.settings.theme }; }
 
 function subjectTheme(s) {
   const g = globalTheme();
-  const t = s.theme || {};
-  const ownBg = t.bgImageId || t.bgUrl;
-  return {
-    accent: s.color || g.accent,
-    bgColor: t.bgColor || g.bgColor,
-    bgImageId: ownBg ? t.bgImageId : g.bgImageId,
-    bgUrl: ownBg ? t.bgUrl : g.bgUrl,
-    bgMode: t.bgMode || g.bgMode,
-  };
+  const st = s.theme || {};
+  return { ...g, accent: s.color || g.accent, bgType: st.bgType || 'none', bgColor: st.bgColor, pattern: st.pattern || 'dots', patternColor: s.color, bgImageId: st.bgImageId || '' };
+}
+
+/* ---------- Editor de fondo (se usa en Ajustes y en cada materia) ---------- */
+
+function bgEditorHTML(t, patternColor) {
+  const types = [['none', 'Ninguno'], ['color', 'Color'], ['pattern', 'Patrón'], ['image', 'Imagen']];
+  return `
+    <div class="chip-row" role="radiogroup" aria-label="Tipo de fondo">
+      ${types.map(([v, l]) => `<button type="button" class="chip-opt ${t.bgType === v ? 'on' : ''}" data-bgtype="${v}">${l}</button>`).join('')}
+    </div>
+    <div class="bg-opts" data-show="color" ${t.bgType === 'color' ? '' : 'hidden'}>
+      <label class="inline">Color de fondo <input type="color" data-bgcolor value="${t.bgColor || '#efe7fb'}"></label>
+    </div>
+    <div class="bg-opts" data-show="pattern" ${t.bgType === 'pattern' ? '' : 'hidden'}>
+      <div class="presets">${PATTERNS.map((p) => `<button type="button" class="preset ${t.pattern === p.id ? 'on' : ''}" data-pattern="${p.id}" style="background-image:url('${patternUrl(p.id, patternColor)}')">${p.label}</button>`).join('')}</div>
+    </div>
+    <div class="bg-opts" data-show="image" ${t.bgType === 'image' ? '' : 'hidden'}>
+      <label class="btn ghost sm">🖼️ Elegir imagen<input type="file" accept="image/*" data-bgfile hidden></label>
+      <span class="muted small">${t.bgImageId ? 'Imagen cargada ✓' : 'Todavía no elegiste ninguna.'}</span>
+    </div>`;
 }
 
 /**
- * Editor de apariencia (sirve para la app entera y para cada materia).
- * current: {accent, bgColor, bgMode, bgImageId, bgUrl}
- * onSave(draft) recibe el resultado final ya con la imagen guardada.
+ * Conecta el editor de fondo. onChange(patch) recibe los cambios; si hay imagen nueva,
+ * primero la guarda en IndexedDB y manda {bgImageId}.
  */
-function openThemeEditor({ title, current, accentLabel = 'Color principal', onSave, onCancel }) {
-  const draft = { ...current, previewUrl: '', newFile: null, removeImage: false };
-  const presetOf = () => (BG_PRESETS.find((p) => p.url && p.url === draft.bgUrl) || {}).id;
-  let saved = false;
-
-  const preview = () => applyTheme({ ...draft, bgImageId: draft.removeImage ? '' : draft.bgImageId });
-
-  Modal.open(title, `
-    <form class="form theme-form" id="theme-form">
-      <div class="row">
-        <label>${esc(accentLabel)}<input type="color" name="accent" value="${draft.accent || DEFAULT_ACCENT}"></label>
-        <label>Color de fondo<input type="color" name="bgColor" value="${draft.bgColor || DEFAULT_BG}"></label>
-      </div>
-      <fieldset>
-        <legend>Fondo de la página</legend>
-        <div class="presets">
-          ${BG_PRESETS.map((p) => `<button type="button" class="preset" data-preset="${p.id}" style="${p.url ? `background-image:url('${p.url}')` : ''}">${p.label}</button>`).join('')}
-        </div>
-        <div class="row">
-          <label>Subir imagen<input type="file" name="file" accept="image/*"></label>
-          <label>…o pegar un link de imagen<input type="url" name="bgUrl" placeholder="https://…" value="${esc(draft.bgUrl && !draft.bgUrl.startsWith('data:') ? draft.bgUrl : '')}"></label>
-        </div>
-        <label>Cómo se ve
-          <select name="bgMode">
-            <option value="tile">Mosaico (como Tumblr)</option>
-            <option value="cover">Cubrir toda la página</option>
-            <option value="center">Centrada, sin repetir</option>
-          </select>
-        </label>
-        <button type="button" class="btn ghost sm" id="rm-img">Quitar imagen de fondo</button>
-      </fieldset>
-      <div class="form-actions">
-        <button type="button" class="btn ghost" id="reset-theme">Volver al lila original</button>
-        <span class="grow"></span>
-        <button type="button" class="btn ghost" data-close>Cancelar</button>
-        <button class="btn">Guardar</button>
-      </div>
-    </form>`, (body) => {
-    const f = $('#theme-form', body);
-    const el = f.elements;
-    el.bgMode.value = draft.bgMode || 'tile';
-    const markPreset = () => $$('.preset', f).forEach((b) => b.classList.toggle('on', b.dataset.preset === (presetOf() || (!draft.bgUrl && !draft.bgImageId && !draft.previewUrl ? 'none' : ''))));
-    markPreset();
-
-    el.accent.oninput = () => { draft.accent = el.accent.value; preview(); };
-    el.bgColor.oninput = () => { draft.bgColor = el.bgColor.value; preview(); };
-    el.bgMode.onchange = () => { draft.bgMode = el.bgMode.value; preview(); };
-    el.bgUrl.onchange = () => {
-      draft.bgUrl = el.bgUrl.value.trim();
-      if (draft.bgUrl) { draft.removeImage = true; draft.previewUrl = ''; draft.newFile = null; }
-      preview(); markPreset();
-    };
-    el.file.onchange = () => {
-      const file = el.file.files[0];
-      if (!file) return;
-      draft.newFile = file;
-      draft.previewUrl = URL.createObjectURL(file);
-      draft.bgUrl = '';
-      el.bgUrl.value = '';
-      if (draft.bgMode === 'tile' && file.size > 150 * 1024) { draft.bgMode = 'cover'; el.bgMode.value = 'cover'; }
-      preview(); markPreset();
-    };
-    $$('.preset', f).forEach((b) => (b.onclick = () => {
-      const p = BG_PRESETS.find((x) => x.id === b.dataset.preset);
-      draft.bgUrl = p.url;
-      draft.previewUrl = ''; draft.newFile = null; draft.removeImage = true;
-      draft.bgMode = 'tile'; el.bgMode.value = 'tile'; el.bgUrl.value = ''; el.file.value = '';
-      preview(); markPreset();
-    }));
-    $('#rm-img', f).onclick = () => {
-      draft.previewUrl = ''; draft.newFile = null; draft.bgUrl = ''; draft.removeImage = true;
-      el.bgUrl.value = ''; el.file.value = '';
-      preview(); markPreset();
-    };
-    $('#reset-theme', f).onclick = () => {
-      Object.assign(draft, { accent: DEFAULT_ACCENT, bgColor: DEFAULT_BG, bgMode: 'tile', bgUrl: BG_PRESETS[1].url, previewUrl: '', newFile: null, removeImage: true });
-      el.accent.value = DEFAULT_ACCENT; el.bgColor.value = DEFAULT_BG; el.bgMode.value = 'tile'; el.bgUrl.value = ''; el.file.value = '';
-      preview(); markPreset();
-    };
-
-    f.onsubmit = async (e) => {
-      e.preventDefault();
-      const out = { accent: draft.accent, bgColor: draft.bgColor, bgMode: draft.bgMode, bgUrl: draft.bgUrl, bgImageId: draft.bgImageId };
-      if (draft.newFile) {
-        const id = uid();
-        try { await Files.put(id, draft.newFile); } catch (err) { toast('No se pudo guardar la imagen.'); return; }
-        if (current.bgImageId) await Files.del(current.bgImageId);
-        out.bgImageId = id;
-        out.bgUrl = '';
-      } else if (draft.removeImage && current.bgImageId) {
-        await Files.del(current.bgImageId);
-        out.bgImageId = '';
-      }
-      saved = true;
-      onSave(out);
-      Modal.close();
-    };
-  }, () => { if (!saved && onCancel) onCancel(); });
+function bindBgEditor(root, current, onChange) {
+  $$('[data-bgtype]', root).forEach((b) => (b.onclick = () => onChange({ bgType: b.dataset.bgtype })));
+  const col = $('[data-bgcolor]', root);
+  if (col) col.oninput = () => onChange({ bgColor: col.value }, { live: true });
+  if (col) col.onchange = () => onChange({ bgColor: col.value });
+  $$('[data-pattern]', root).forEach((b) => (b.onclick = () => onChange({ pattern: b.dataset.pattern })));
+  const file = $('[data-bgfile]', root);
+  if (file) file.onchange = async () => {
+    const f = file.files[0];
+    if (!f) return;
+    const id = uid();
+    try { await Files.put(id, f); } catch (e) { toast('No se pudo guardar la imagen.'); return; }
+    if (current.bgImageId) await Files.del(current.bgImageId);
+    onChange({ bgType: 'image', bgImageId: id });
+  };
 }

@@ -2,77 +2,64 @@
 
 *Despacito, pero al día.*
 
-Una app web para organizar el semestre de facultad: calendario de pruebas, horario de clases, materias con documentos y créditos, registro de horas de estudio y pomodoro. Todo con un perezoso que aparece de vez en cuando para darte ánimo.
+App web personal para organizar el semestre de facultad, con un perezoso que te acompaña, se viste con lo que vas desbloqueando al estudiar y te habla según su personalidad.
 
-## Cómo usarla
+## Cómo abrirla
 
-**La forma más fácil:** descargá **`Perezoso.html`** y abrilo con doble clic. Es la app entera en un solo archivo, funciona sin internet y sin instalar nada.
+- **La más fácil:** descargá **`Perezoso.html`** y abrilo con doble clic. Es la app entera en un solo archivo y funciona sin internet.
+- **Con link (y para instalarla en el escritorio o el celular):** activá GitHub Pages (Settings → Pages → rama de esta app, carpeta `/ (root)`) y entrá a `https://eripuhll.github.io/EriPuhll/`.
+- `index.html` también sirve, pero solo si está junto a las carpetas `css`, `js` e `img`.
 
-También podés abrir `index.html`, pero solo si está junto a las carpetas `css`, `js` e `img` (si lo abrís desde adentro del ZIP sin descomprimir, se ve sin estilos).
+## Tus datos
 
-Si preferís servirla localmente:
+- Todo se guarda **solo** en el navegador (localStorage + IndexedDB para archivos), aunque cierres la app.
+- **Guardado automático en un archivo** (Chrome, Edge u Opera de computadora): Ajustes → 💾. Si el archivo está en tu carpeta de Google Drive, queda también en la nube.
+- **Respaldo completo** (datos + documentos + imágenes) para pasar a otra compu: Ajustes → 📦.
+- En el primer uso se precargan las materias, exámenes y proyectos del 2º semestre 2026 (se pueden editar o borrar).
 
-```bash
-python3 -m http.server 8000
-# y abrí http://localhost:8000
-```
+## Secciones
 
-### Tus datos
-- Todo se guarda **solo, en el navegador**, aunque cierres la app o apagues la compu.
-- **Guardado automático en un archivo** (Chrome, Edge u Opera de computadora): en **Ajustes → 💾 Guardado automático** elegí dónde guardar `perezoso-datos.json` y cada cambio se escribe ahí. Si lo ponés en tu carpeta de **Google Drive** u OneDrive, queda también en la nube. En otra compu, usá **“Abrir un archivo que ya tengo”**.
-- **Instalar en el escritorio**: abrila desde su página web (GitHub Pages) y en **Ajustes → 📲 Tenerla en el escritorio** tocá **Instalar**. Se abre como un programa y funciona sin internet.
+| Sección | Qué tiene |
+|---|---|
+| 🏡 **Inicio** | Saludo del perezoso, alertas (pruebas cerca, materias atrasadas, semanas críticas, faltas, apuntes), próximas 5 pruebas, clases de hoy y horas de la semana vs. el ritmo necesario. |
+| 📅 **Calendario** | Botón entre **calendario de pruebas** (mes, lista con cuenta regresiva “12 d 4 h”, eventos a < 3 días destacados, semanas críticas, PDF y exportar `.ics` para Google Calendar) y **horario de facultad** (lunes a sábado, 7 a 23 h, huecos libres para estudiar, PDF). |
+| 📚 **Materias** | Pestañas **Resumen** (profes con mails, bibliografía, créditos × horas, contador de horas restantes, ritmo por semana, faltas, apuntes pendientes, regla de aprobación), **Documentos** (secciones propias con archivos o links, reordenables), **Prácticos** (ejercicios pendiente → en proceso → resuelto, prioritarios en amarillo, filtro y progreso), **Notas** (promedio ponderado y “¿cuánto necesito?”) y **Apariencia** (color y fondo estilo Tumblr: color, patrón o imagen). |
+| ⏱️ **Horas de estudio** | Cronómetro que sobrevive a cerrar la app, registro editable con origen, carga manual, últimos 14 días, semana por materia, total del semestre y racha. |
+| 🍅 **Pomodoro** | Tiempos configurables; cada bloque terminado se suma a la materia. **Simulacro de parcial** con tiempo por ejercicio y comparación con simulacros anteriores. |
+| 🤝 **Proyectos** | Integrantes, links, tareas con responsable y entregas que aparecen también en el calendario. |
+| 🦥 **Perezoso** | Nombre, color de pelo, 6 personalidades (Maestro dramático por defecto), frecuencia, y un **ropero de 45 prendas** que se desbloquean con horas de estudio. |
+| ⚙️ **Ajustes** | Nombre, horas por crédito, fechas del semestre, recordatorios, **apariencia completa** (6 colores, tipografía, bordes, modo oscuro, fondo y temas listos), guardado automático, instalar, respaldo. |
 
-## Qué tiene
+### El ropero del perezoso
+Prendas originales en estilos **clásico, princesa, muñeca fashion, monstruito chic, dino, héroe alien, Gen Z y maestro**: vestidos de princesa (rosa, de hielo, dorado), tiara, corona, alas de hada, look fashionista rosa, vestido gótico con costuras, pijama y capucha de dino, reloj alien, bucket hat, gafas Y2K, vaso térmico XL, matcha, y más. Se desbloquean entre 0 y 50 horas de estudio en el semestre.
 
-### 📅 Calendario
-Un botón para cambiar entre:
-- **Horario de facultad**: la semana tipo con tus clases (teórico, práctico, laboratorio…), el salón, una línea roja con la hora actual y la lista de clases de hoy.
-- **Calendario de pruebas**: vista mensual con controles, entregas de laboratorio, entregables, parciales, exámenes, prácticos, charlas y **Otro** (escribís lo que quieras).
-  - Debajo, la lista **“Lo que se viene”** con tipo, materia y **cuántos días y horas faltan** (se actualiza sola y cambia de color cuando se acerca).
-  - **⬇ Descargar PDF**: genera el mes en una grilla + la lista de eventos con su cuenta regresiva.
+Su cara cambia según cómo vas: **feliz**, **dormido** (3+ días sin estudiar), **preocupado** (prueba cerca y materia atrasada), **orgulloso** (después de estudiar o si cumplís el ritmo) y **estirándose** (en los descansos del pomodoro).
 
-### 📚 Materias
-- Nombre, semestre, año, profesor/a y sus mails (con botón para copiar o escribir).
-- **Créditos**: 1 crédito = 10 horas de esfuerzo. Muestra el total de horas y un **contador de cuántas quedan**.
-- **Documentos por secciones** que vos nombrás (vienen “Prácticos”, “Teóricos” y “Parciales y exámenes anteriores”, y podés crear, renombrar o borrar). Subí archivos o arrastralos.
-- **🎨 Personalizar**: color propio y **fondo de página estilo Tumblr** (imagen propia, link o patrones: puntitos, cuadrillé, estrellitas, hojitas, corazones; en mosaico, cubriendo todo o centrado).
+## Para desarrollar
 
-### ⏱️ Horas de estudio
-Elegís la materia, **Comenzar** y al terminar **Terminar**: ese tiempo se descuenta de las horas que le faltan a la materia. Hay un registro por fecha con cuánto dedicaste, totales de hoy, de la semana y en total, y se puede cargar horas a mano.
-
-### 🍅 Pomodoro
-Foco, descanso corto y descanso largo configurables, con sonido y notificación al terminar. Opcionalmente cada pomodoro completo **suma horas de estudio** a una materia.
-
-### 🦥 El perezoso
-Es el logo y aparece colgado de una rama cada tanto, con frases de ánimo o recordatorios de lo que se viene en las próximas 48 h. Se puede apagar en Ajustes.
-
-## Colores
-- Principal: `#a075ea`
-- Fondo: blanco hueso `#f7f3ea`
-
-## Estructura
+Sin dependencias ni compilación: HTML + CSS + JavaScript. La capa de datos está en `js/store.js` para poder migrar a un backend más adelante.
 
 ```
-index.html
-css/styles.css
-img/perezoso.svg          ícono
-js/util.js                utilidades, fechas, modal
-js/store.js               datos (localStorage) y archivos (IndexedDB)
-js/sloth.js               el perezoso 🦥
-js/theme.js               colores y fondos
-js/calendar.js            horario + calendario de pruebas + PDF
-js/subjects.js            materias y documentos
-js/study.js               horas de estudio
-js/pomodoro.js            pomodoro
-js/settings.js            ajustes, respaldo y datos de ejemplo
-js/autosave.js            guardado automático en archivo + instalar como app
-js/app.js                 navegación y reloj
-manifest.webmanifest, sw.js  para instalarla y usarla sin internet
-js/vendor/jspdf.umd.min.js  generador de PDF (jsPDF, licencia MIT)
-Perezoso.html             versión en un solo archivo (se genera)
-tools/build-standalone.py genera Perezoso.html
+index.html               estructura (barra lateral / navegación inferior)
+css/styles.css           estilos (todo con variables de color)
+js/util.js               utilidades, fechas, modal
+js/store.js              datos, migraciones, datos iniciales y consultas
+js/phrases.js            frases del perezoso por personalidad y contexto
+js/sloth.js              dibujo por capas, ropero, ánimo y apariciones
+js/theme.js              temas, patrones y fondos
+js/home.js               Inicio
+js/calendar.js           calendario de pruebas, horario, PDF e .ics
+js/subjects.js           materias y sus pestañas
+js/study.js              horas de estudio
+js/pomodoro.js           pomodoro y simulacro
+js/projects.js           proyectos grupales
+js/slothpage.js          sección Perezoso
+js/settings.js           ajustes y respaldo
+js/autosave.js           guardado automático en archivo + instalar como app
+js/app.js                navegación y reloj
+manifest.webmanifest, sw.js   instalar y usar sin internet
+js/vendor/jspdf.umd.min.js    generador de PDF (jsPDF, licencia MIT)
+tools/build-standalone.py     genera Perezoso.html
 ```
 
-Después de cambiar el código, regenerá la versión de un solo archivo con `python3 tools/build-standalone.py`.
-
-¿Querés probarla rápido? En **Materias** o **Ajustes** tocá **“Datos de ejemplo”**.
+Después de cambiar el código: `python3 tools/build-standalone.py` y subí el número de `CACHE` en `sw.js`.

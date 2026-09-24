@@ -7,9 +7,11 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pad = (n) => String(n).padStart(2, '0');
+const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+const DAY_MS = 864e5;
 
 const DEFAULT_ACCENT = '#a075ea';
-const DEFAULT_BG = '#f7f3ea';
+const DEFAULT_BG = '#f4f0e6';
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -25,8 +27,10 @@ const EVENT_TYPES = [
   { id: 'charla', label: 'Charla', icon: '🎤' },
   { id: 'otro', label: 'Otro', icon: '✨' },
 ];
+// Tipos que cuentan como "prueba" para marcar semanas críticas
+const EXAM_TYPES = ['control', 'laboratorio', 'entregable', 'parcial', 'examen', 'practico'];
 
-const SUBJECT_COLORS = ['#a075ea', '#f28bb3', '#5fb3a1', '#f2a65a', '#6c9eeb', '#e46a6a', '#9bbf5a', '#c78bd9'];
+const SUBJECT_COLORS = ['#a075ea', '#f28bb3', '#5fb3a1', '#f2a65a', '#6c9eeb', '#e46a6a', '#6f8f5a', '#c78bd9', '#e0b43a', '#4bb3c9'];
 
 function eventType(ev) {
   return EVENT_TYPES.find((t) => t.id === ev.type) || EVENT_TYPES[EVENT_TYPES.length - 1];
@@ -41,25 +45,34 @@ function toISODate(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 function parseDate(iso) {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d);
+  const [y, m, d] = String(iso).split('-').map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
 }
+function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function toMin(hhmm) {
   const [h, m] = (hhmm || '0:0').split(':').map(Number);
   return h * 60 + m;
 }
+function minToHHMM(min) { return `${pad(Math.floor(min / 60))}:${pad(min % 60)}`; }
 function eventDate(ev) {
   const d = parseDate(ev.date);
   if (ev.time) { const [h, m] = ev.time.split(':').map(Number); d.setHours(h, m); }
   return d;
 }
 function byEventDate(a, b) { return eventDate(a) - eventDate(b); }
+// Días de calendario entre hoy y la fecha del evento (0 = hoy, 1 = mañana)
+function daysUntil(dateIso, now = new Date()) {
+  return Math.round((parseDate(dateIso) - startOfDay(now)) / DAY_MS);
+}
 function fmtDateShort(d) {
   return `${DAYS_SHORT[(d.getDay() + 6) % 7].toLowerCase()} ${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3).toLowerCase()}`;
 }
+function fmtDateLong(d) {
+  return `${DAYS[(d.getDay() + 6) % 7]} ${d.getDate()} de ${MONTHS[d.getMonth()].toLowerCase()}`;
+}
 function fmtTime(d) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 function startOfWeek(d) {
-  const r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const r = startOfDay(d);
   r.setDate(r.getDate() - ((r.getDay() + 6) % 7));
   return r;
 }
@@ -76,30 +89,43 @@ function fmtClock(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
 }
+function fmtMS(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
+}
+// "12 d 4 h" o, si falta menos de un día, "5 h 20 min"
 function countdown(target, now = new Date()) {
   let diff = target - now;
   const past = diff < 0;
   diff = Math.abs(diff);
-  const days = Math.floor(diff / 864e5);
-  const hours = Math.floor((diff % 864e5) / 36e5);
+  const days = Math.floor(diff / DAY_MS);
+  const hours = Math.floor((diff % DAY_MS) / 36e5);
   const mins = Math.floor((diff % 36e5) / 6e4);
   let txt;
-  if (days > 0) txt = `${days} ${days === 1 ? 'día' : 'días'} y ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+  if (days > 0) txt = `${days} d ${hours} h`;
   else if (hours > 0) txt = `${hours} h ${mins} min`;
   else txt = `${mins} min`;
-  const level = past ? 'past' : diff < 2 * 864e5 ? 'urgent' : diff < 7 * 864e5 ? 'soon' : 'ok';
-  return { text: past ? `Hace ${txt}` : `Faltan ${txt}`, past, level };
+  const level = past ? 'past' : diff < 3 * DAY_MS ? 'urgent' : diff < 7 * DAY_MS ? 'soon' : 'ok';
+  return { text: past ? `hace ${txt}` : txt, past, level, days };
 }
 
 /* ---------- Colores ---------- */
 
 function hexToRgb(hex) {
-  let h = (hex || DEFAULT_ACCENT).replace('#', '');
+  let h = String(hex || DEFAULT_ACCENT).replace('#', '');
   if (h.length === 3) h = h.split('').map((c) => c + c).join('');
   const n = parseInt(h, 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
-function isLight([r, g, b]) {
+function rgbToHex([r, g, b]) {
+  return '#' + [r, g, b].map((v) => pad(Math.round(clamp(v, 0, 255)).toString(16))).join('');
+}
+function mixHex(a, b, t) {
+  const A = hexToRgb(a), B = hexToRgb(b);
+  return rgbToHex(A.map((v, i) => v + (B[i] - v) * t));
+}
+function isLight(rgb) {
+  const [r, g, b] = Array.isArray(rgb) ? rgb : hexToRgb(rgb);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62;
 }
 
@@ -110,7 +136,7 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => t.classList.remove('show'), 2800);
+  toast._t = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 const Modal = {
@@ -132,12 +158,12 @@ const Modal = {
   },
 };
 
-function askText(title, label, value = '') {
+function askText(title, label, value = '', { placeholder = '', type = 'text' } = {}) {
   return new Promise((resolve) => {
     let answered = false;
     Modal.open(title, `
       <form class="form" id="ask-form">
-        <label>${esc(label)}<input name="v" value="${esc(value)}" required autofocus></label>
+        <label>${esc(label)}<input name="v" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}" required autofocus></label>
         <div class="form-actions"><span class="grow"></span>
           <button type="button" class="btn ghost" data-close>Cancelar</button>
           <button class="btn">Aceptar</button></div>
@@ -170,13 +196,21 @@ function fmtBytes(n) {
 }
 
 function fileIcon(name) {
-  const ext = (name.split('.').pop() || '').toLowerCase();
+  const ext = (String(name).split('.').pop() || '').toLowerCase();
   if (ext === 'pdf') return '📕';
   if (['doc', 'docx', 'odt', 'txt', 'md'].includes(ext)) return '📄';
   if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return '📊';
   if (['ppt', 'pptx', 'odp', 'key'].includes(ext)) return '📽️';
   if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '🖼️';
   if (['zip', 'rar', '7z'].includes(ext)) return '🗜️';
-  if (['py', 'js', 'c', 'cpp', 'java', 'm', 'r', 'ipynb', 'html'].includes(ext)) return '💻';
+  if (['py', 'js', 'c', 'cpp', 'java', 'm', 'r', 'ipynb', 'html', 'sql'].includes(ext)) return '💻';
   return '📎';
 }
+
+function safeUrl(u) {
+  const s = String(u || '').trim();
+  if (!s) return '';
+  return /^(https?:|mailto:)/i.test(s) ? s : `https://${s}`;
+}
+
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
