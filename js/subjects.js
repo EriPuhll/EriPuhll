@@ -716,10 +716,10 @@ function tabApariencia(s, box) {
         <div class="field"><strong>Color de la materia</strong>
           <div class="swatches" style="margin-top:.4rem">
             ${SUBJECT_COLORS.map((c) => `<button type="button" class="swatch-btn ${c === s.color ? 'on' : ''}" style="background:${c}" data-color="${c}" aria-label="Color ${c}"></button>`).join('')}
-            <label class="inline">Otro <input type="color" id="s-color" value="${s.color}"></label>
+            <label class="color-dot" title="Otro color" style="background:${s.color}"><input type="color" id="s-color" value="${s.color}" aria-label="Otro color"></label>
           </div>
         </div>
-        <fieldset><legend>Fondo de la página</legend>${bgEditorHTML(t, s.color)}</fieldset>
+        <div class="field"><strong>Fondo de la página</strong><div style="margin-top:.4rem">${bgEditorHTML(t, s.color)}</div></div>
       </div>
     </section>`;
   const setColor = (c, live) => {
@@ -729,7 +729,7 @@ function tabApariencia(s, box) {
   };
   $$('[data-color]', box).forEach((b) => (b.onclick = () => setColor(b.dataset.color)));
   const ci = $('#s-color', box);
-  ci.oninput = () => setColor(ci.value, true);
+  ci.oninput = () => { ci.parentElement.style.background = ci.value; setColor(ci.value, true); };
   ci.onchange = () => setColor(ci.value);
   bindBgEditor(box, t, (patch, { live } = {}) => {
     Object.assign(s.theme, patch);

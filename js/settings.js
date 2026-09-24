@@ -41,40 +41,7 @@ function renderSettings() {
         <div class="btn-row"><button type="button" class="btn ghost sm" id="show-all">Volver a mostrar todo lo que oculté (${Object.keys(layoutState().hidden).length})</button></div>
       </section>
 
-      <section class="card" id="theme-card">
-        <div class="list-head"><h2>Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al lila original</button></div>
-        <p class="hint">Cambiá lo que quieras: se guarda solo y lo ves en vivo. Cada materia además puede tener su propio color y fondo (pestaña Apariencia).</p>
-        <h3 style="margin-top:1rem">Temas listos</h3>
-        <div class="presets" style="margin-top:.5rem">
-          ${THEME_PRESETS.map((p) => { const x = { ...defaultGlobalTheme(), ...p.t }; return `<button class="preset" data-preset="${p.id}" style="background-color:${x.bg};${x.bgType === 'pattern' ? `background-image:url('${patternUrl(x.pattern, x.patternColor)}');` : ''}color:${x.dark === 'dark' ? '#fff' : x.ink};border-color:${x.accent}"><span style="background:${x.accent};color:#fff;padding:1px 8px;border-radius:999px">${p.label}</span></button>`; }).join('')}
-        </div>
-        <div class="grid-2" style="margin-top:1rem">
-          <div class="form">
-            <h3>Colores</h3>
-            <div class="grid-2" style="gap:.6rem">
-              ${COLOR_TOKENS.map(([k, l]) => `<label class="inline"><input type="color" data-token="${k}" value="${t[k]}"> ${l}</label>`).join('')}
-            </div>
-            <h3>Letra y forma</h3>
-            <label>Tipografía<select id="font">${Object.keys(FONTS).map((k) => `<option value="${k}" ${k === t.font ? 'selected' : ''}>${FONTS[k].label}</option>`).join('')}</select></label>
-            <label>Bordes redondeados <input type="range" id="radius" min="4" max="30" value="${t.radius}"></label>
-            <div class="field"><strong>Modo</strong>
-              <div class="chip-row" style="margin-top:.4rem">${[['light', 'Claro'], ['dark', 'Oscuro'], ['auto', 'Automático']].map(([v, l]) => `<button type="button" class="chip-opt ${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div>
-            </div>
-            <label class="check"><input type="checkbox" id="glass" ${t.glass ? 'checked' : ''}> Tarjetas transparentes con desenfoque</label>
-            <div class="field"><strong>Símbolo de las listas</strong>
-              <div class="chip-row" style="margin-top:.4rem">${BULLETS.map((b) => `<button type="button" class="chip-opt ${b === st.bullet ? 'on' : ''}" data-bullet="${esc(b)}" aria-label="Usar ${esc(b)}">${esc(b)}</button>`).join('')}
-                <label class="inline">Otro <input id="bullet-custom" maxlength="3" value="${BULLETS.includes(st.bullet) ? '' : esc(st.bullet)}" placeholder="✎" style="width:70px"></label>
-              </div>
-              <ul class="plain small" style="margin-top:.5rem"><li>Así se ven las listas</li><li>con el símbolo que elijas</li></ul>
-            </div>
-          </div>
-          <div class="form">
-            <h3>Fondo de la página</h3>
-            <label class="inline"><input type="color" id="pattern-color" value="${t.patternColor || t.accent}"> Color del patrón</label>
-            ${bgEditorHTML(t, t.patternColor || t.accent)}
-          </div>
-        </div>
-      </section>
+      ${appearanceHTML(st)}
 
       <div class="grid-3">
         <div class="card" id="install-card">
@@ -131,36 +98,7 @@ function renderSettings() {
   me.onsubmit = (e) => e.preventDefault();
 
   // Apariencia (en vivo)
-  const setTheme = (patch, { live } = {}) => {
-    Object.assign(st.theme, patch);
-    applyTheme(globalTheme());
-    if (!live) { Store.save(); renderSettings(); }
-  };
-  $$('[data-token]', v).forEach((inp) => {
-    inp.oninput = () => setTheme({ [inp.dataset.token]: inp.value }, { live: true });
-    inp.onchange = () => setTheme({ [inp.dataset.token]: inp.value });
-  });
-  $('#font', v).onchange = (e) => setTheme({ font: e.target.value });
-  const rad = $('#radius', v);
-  rad.oninput = () => setTheme({ radius: +rad.value }, { live: true });
-  rad.onchange = () => setTheme({ radius: +rad.value });
-  $$('[data-dark]', v).forEach((b) => (b.onclick = () => setTheme({ dark: b.dataset.dark })));
-  $('#glass', v).onchange = (e) => setTheme({ glass: e.target.checked });
-  const setBullet = (b) => { if (!b) return; st.bullet = b; applyBullet(); Store.save(); renderSettings(); };
-  $$('[data-bullet]', v).forEach((b) => (b.onclick = () => setBullet(b.dataset.bullet)));
-  $('#bullet-custom', v).onchange = (e) => setBullet(e.target.value.trim());
-  const pc = $('#pattern-color', v);
-  pc.oninput = () => setTheme({ patternColor: pc.value }, { live: true });
-  pc.onchange = () => setTheme({ patternColor: pc.value });
-  bindBgEditor($('#theme-card', v), st.theme, setTheme);
-  $$('[data-preset]', v).forEach((b) => (b.onclick = () => {
-    const p = THEME_PRESETS.find((x) => x.id === b.dataset.preset);
-    const keepImg = st.theme.bgImageId;
-    st.theme = { ...defaultGlobalTheme(), ...p.t, bgImageId: keepImg };
-    applyTheme(globalTheme()); Store.save(); renderSettings();
-    toast(`Tema “${p.label}” aplicado`);
-  }));
-  $('#theme-reset', v).onclick = () => { st.theme = { ...defaultGlobalTheme(), bgImageId: st.theme.bgImageId }; applyTheme(globalTheme()); Store.save(); renderSettings(); };
+  bindAppearance(v, st);
 
   $$('[data-subtab]', v).forEach((c) => (c.onchange = () => {
     const set = new Set(st.subjectTabsHidden || []);
@@ -194,6 +132,133 @@ function renderSettings() {
     toast('Datos borrados. Empezamos de cero ');
     location.hash = '#inicio';
   };
+}
+
+/* ---------- Apariencia (Ajustes) ---------- */
+
+let apTab = 'temas';
+const AP_TABS = [['temas', 'Temas'], ['colores', 'Colores'], ['letra', 'Letra y forma'], ['fondo', 'Fondo'], ['listas', 'Listas']];
+
+function themeMatches(a, b) {
+  return ['accent', 'bg', 'surface', 'ink', 'dark', 'bgType', 'pattern'].every((k) => String(a[k] || '').toLowerCase() === String(b[k] || '').toLowerCase());
+}
+
+function themeThumb(x) {
+  const c = themeColors(x);
+  const bgImg = x.bgType === 'pattern' ? `background-image:url('${patternUrl(x.pattern, x.patternColor || x.accent)}');` : '';
+  return `<span class="tt-thumb" style="background-color:${c.bg};${bgImg}">
+    <span class="tt-bar" style="background:${c.surface};border-color:${c.line}"><i style="background:${x.accent}"></i><i style="background:${c.line}"></i><i style="background:${c.line}"></i></span>
+    <span class="tt-card" style="background:${c.surface};border-color:${c.line}">
+      <b style="background:${c.ink}"></b><b style="background:${c.muted};width:55%"></b>
+      <span class="tt-pill" style="background:${x.accent}"></span>
+    </span>
+  </span>`;
+}
+
+function appearancePanel(st) {
+  const t = st.theme;
+  switch (apTab) {
+    case 'temas':
+      return `<p class="hint">Tocá un tema para usarlo. Después podés cambiarle lo que quieras.</p>
+        <div class="theme-grid">${THEME_PRESETS.map((p) => {
+          const x = { ...defaultGlobalTheme(), ...p.t };
+          const on = themeMatches(x, t);
+          return `<button type="button" class="theme-opt ${on ? 'on' : ''}" data-preset="${p.id}" aria-pressed="${on}">${themeThumb(x)}<span class="tt-name">${esc(p.label)}${on ? ' ✓' : ''}</span></button>`;
+        }).join('')}</div>`;
+    case 'colores':
+      return `<div class="color-grid">${COLOR_TOKENS.map(([k, l]) => `
+          <label class="color-row"><span class="color-dot" style="background:${t[k]}"><input type="color" data-token="${k}" value="${t[k]}" aria-label="${esc(l)}"></span>
+            <span><strong>${esc(l)}</strong><span class="muted small hex">${t[k]}</span></span></label>`).join('')}
+        </div>
+        <p class="hint" style="margin-top:.8rem">Sugeridos para el color principal:</p>
+        <div class="swatches">${SUBJECT_COLORS.map((c) => `<button type="button" class="swatch-btn ${c === t.accent ? 'on' : ''}" style="background:${c}" data-accent="${c}" aria-label="Usar ${c}"></button>`).join('')}</div>`;
+    case 'letra':
+      return `<div class="field"><strong>Tipografía</strong>
+          <div class="font-grid">${Object.keys(FONTS).map((k) => `<button type="button" class="font-opt ${k === t.font ? 'on' : ''}" data-font="${k}" style="font-family:${FONTS[k].css}"><span class="aa">Aa</span><span class="small">${esc(FONTS[k].label)}</span></button>`).join('')}</div></div>
+        <div class="field" style="margin-top:1rem"><strong>Bordes</strong>
+          <div class="range-row"><span class="small muted">Rectos</span><input type="range" id="radius" min="4" max="30" value="${t.radius}" aria-label="Qué tan redondeados"><span class="small muted">Redondos</span></div></div>
+        <div class="field" style="margin-top:1rem"><strong>Modo</strong>
+          <div class="switch sm" style="margin-top:.4rem">${[['light', 'Claro'], ['dark', 'Oscuro'], ['auto', 'Automático']].map(([v, l]) => `<button type="button" class="${t.dark === v ? 'on' : ''}" data-dark="${v}">${l}</button>`).join('')}</div></div>
+        <label class="check" style="margin-top:1rem"><input type="checkbox" id="glass" ${t.glass ? 'checked' : ''}> Tarjetas transparentes con desenfoque</label>`;
+    case 'fondo':
+      return `${bgEditorHTML(t, t.patternColor || t.accent)}
+        ${t.bgType === 'pattern' ? `<label class="color-row" style="margin-top:.8rem;max-width:320px"><span class="color-dot" style="background:${t.patternColor || t.accent}"><input type="color" id="pattern-color" value="${t.patternColor || t.accent}" aria-label="Color del patrón"></span><span><strong>Color del patrón</strong></span></label>` : ''}`;
+    case 'listas':
+      return `<p class="hint">El símbolo que aparece adelante de cada ítem en las listas.</p>
+        <div class="bullet-grid">${BULLETS.map((b) => `<button type="button" class="bullet-opt ${b === st.bullet ? 'on' : ''}" data-bullet="${esc(b)}" aria-label="Usar ${esc(b)}">${esc(b)}</button>`).join('')}</div>
+        <label class="inline" style="margin-top:.8rem">Otro símbolo <input id="bullet-custom" maxlength="3" value="${BULLETS.includes(st.bullet) ? '' : esc(st.bullet)}" placeholder="✎" style="width:80px;text-align:center"></label>`;
+    default: return '';
+  }
+}
+
+function appearanceHTML(st) {
+  return `<section class="card" id="theme-card">
+    <div class="list-head"><h2>Apariencia</h2><button class="btn ghost sm" id="theme-reset">Volver al original</button></div>
+    <div class="ap-layout">
+      <div class="ap-controls">
+        <div class="tabs-scroll"><div class="tabs-row sm" role="tablist">${AP_TABS.map(([k, l]) => `<button type="button" role="tab" aria-selected="${apTab === k}" class="${apTab === k ? 'on' : ''}" data-aptab="${k}">${l}</button>`).join('')}</div></div>
+        <div class="ap-panel">${appearancePanel(st)}</div>
+      </div>
+      <aside class="ap-preview" aria-label="Vista previa">
+        <span class="muted small">Vista previa</span>
+        <div class="pv">
+          <div class="pv-top"><span class="pv-logo" data-sloth="head"></span><strong>Perezoso</strong><span class="pv-tab on">Inicio</span><span class="pv-tab">Materias</span></div>
+          <div class="pv-body" id="pv-body">
+            <div class="pv-card">
+              <div class="pv-row"><strong>Parcial de Física</strong><span class="countdown" data-level="soon">3 d 4 h</span></div>
+              <div class="bar"><span style="width:62%"></span></div>
+              <ul class="plain small"><li>Repasar el práctico 4</li><li>Armar la hoja de fórmulas</li></ul>
+              <div class="pv-row"><span class="pv-hl">Prioritario</span><button type="button" class="btn sm" tabindex="-1">Estudiar</button></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>`;
+}
+
+function paintPreviewBg() {
+  const body = $('#pv-body');
+  if (!body) return;
+  const t = Store.data.settings.theme;
+  body.style.backgroundImage = t.bgType === 'pattern' ? `url("${patternUrl(t.pattern, t.patternColor || t.accent)}")` : 'none';
+  body.style.backgroundColor = t.bgType === 'color' ? t.bgColor : '';
+}
+
+function bindAppearance(v, st) {
+  const card = $('#theme-card', v);
+  const redraw = () => { card.outerHTML = appearanceHTML(st); bindAppearance(v, st); };
+  const setTheme = (patch, { live } = {}) => {
+    Object.assign(st.theme, patch);
+    applyTheme(globalTheme());
+    paintPreviewBg();
+    if (!live) { Store.save(); redraw(); }
+  };
+  Sloth.paint(card);
+  paintPreviewBg();
+  $$('[data-aptab]', card).forEach((b) => (b.onclick = () => { apTab = b.dataset.aptab; redraw(); }));
+  $$('[data-preset]', card).forEach((b) => (b.onclick = () => {
+    const p = THEME_PRESETS.find((x) => x.id === b.dataset.preset);
+    st.theme = { ...defaultGlobalTheme(), ...p.t, bgImageId: st.theme.bgImageId };
+    applyTheme(globalTheme()); Store.save(); redraw();
+  }));
+  $$('[data-token]', card).forEach((inp) => {
+    inp.oninput = () => { inp.parentElement.style.background = inp.value; setTheme({ [inp.dataset.token]: inp.value }, { live: true }); };
+    inp.onchange = () => setTheme({ [inp.dataset.token]: inp.value });
+  });
+  $$('[data-accent]', card).forEach((b) => (b.onclick = () => setTheme({ accent: b.dataset.accent })));
+  $$('[data-font]', card).forEach((b) => (b.onclick = () => setTheme({ font: b.dataset.font })));
+  on(card, '#radius', 'oninput', (e) => setTheme({ radius: +e.target.value }, { live: true }));
+  on(card, '#radius', 'onchange', (e) => setTheme({ radius: +e.target.value }));
+  $$('[data-dark]', card).forEach((b) => (b.onclick = () => setTheme({ dark: b.dataset.dark })));
+  on(card, '#glass', 'onchange', (e) => setTheme({ glass: e.target.checked }));
+  on(card, '#pattern-color', 'oninput', (e) => { e.target.parentElement.style.background = e.target.value; setTheme({ patternColor: e.target.value }, { live: true }); });
+  on(card, '#pattern-color', 'onchange', (e) => setTheme({ patternColor: e.target.value }));
+  if (apTab === 'fondo') bindBgEditor(card, st.theme, setTheme);
+  const setBullet = (b) => { if (!b) return; st.bullet = b; applyBullet(); Store.save(); redraw(); };
+  $$('[data-bullet]', card).forEach((b) => (b.onclick = () => setBullet(b.dataset.bullet)));
+  on(card, '#bullet-custom', 'onchange', (e) => setBullet(e.target.value.trim()));
+  on(card, '#theme-reset', 'onclick', () => { st.theme = { ...defaultGlobalTheme(), bgImageId: st.theme.bgImageId }; st.bullet = '•'; applyBullet(); applyTheme(globalTheme()); Store.save(); redraw(); });
 }
 
 /* ---------- Respaldo completo (con archivos) ---------- */

@@ -48,13 +48,19 @@ function isDarkTheme(t) {
   return t.dark === 'dark' || (t.dark === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 }
 
-async function applyTheme(t) {
-  const tok = ++themeToken;
+// Colores efectivos de un tema (el modo oscuro oscurece fondo y tarjetas)
+function themeColors(t) {
   const dark = isDarkTheme(t);
-  const accent = t.accent || DEFAULT_ACCENT;
   const bg = dark ? mixHex(t.bg || DEFAULT_BG, '#14111c', 0.9) : (t.bg || DEFAULT_BG);
   const surface = dark ? mixHex(t.surface || '#fffdf8', '#221c2e', 0.9) : (t.surface || '#fffdf8');
   const ink = dark ? '#efe9f7' : (t.ink || '#2a2238');
+  return { dark, bg, surface, ink, muted: mixHex(ink, surface, 0.45), line: mixHex(surface, ink, dark ? 0.2 : 0.12) };
+}
+
+async function applyTheme(t) {
+  const tok = ++themeToken;
+  const { dark, bg, surface, ink } = themeColors(t);
+  const accent = t.accent || DEFAULT_ACCENT;
   const r = document.documentElement;
   const set = (k, v) => r.style.setProperty(k, v);
   set('--accent', accent);
@@ -111,14 +117,14 @@ function subjectTheme(s) {
 function bgEditorHTML(t, patternColor) {
   const types = [['none', 'Ninguno'], ['color', 'Color'], ['pattern', 'Patrón'], ['image', 'Imagen']];
   return `
-    <div class="chip-row" role="radiogroup" aria-label="Tipo de fondo">
-      ${types.map(([v, l]) => `<button type="button" class="chip-opt ${t.bgType === v ? 'on' : ''}" data-bgtype="${v}">${l}</button>`).join('')}
+    <div class="switch sm" role="radiogroup" aria-label="Tipo de fondo" style="margin-bottom:.8rem">
+      ${types.map(([v, l]) => `<button type="button" class="${t.bgType === v ? 'on' : ''}" data-bgtype="${v}">${l}</button>`).join('')}
     </div>
     <div class="bg-opts" data-show="color" ${t.bgType === 'color' ? '' : 'hidden'}>
-      <label class="inline">Color de fondo <input type="color" data-bgcolor value="${t.bgColor || '#efe7fb'}"></label>
+      <label class="color-row" style="max-width:320px"><span class="color-dot" style="background:${t.bgColor || '#efe7fb'}"><input type="color" data-bgcolor value="${t.bgColor || '#efe7fb'}" aria-label="Color de fondo"></span><span><strong>Color de fondo</strong></span></label>
     </div>
     <div class="bg-opts" data-show="pattern" ${t.bgType === 'pattern' ? '' : 'hidden'}>
-      <div class="presets">${PATTERNS.map((p) => `<button type="button" class="preset ${t.pattern === p.id ? 'on' : ''}" data-pattern="${p.id}" style="background-image:url('${patternUrl(p.id, patternColor)}')">${p.label}</button>`).join('')}</div>
+      <div class="pattern-grid">${PATTERNS.map((p) => `<button type="button" class="pat-opt ${t.pattern === p.id ? 'on' : ''}" data-pattern="${p.id}" aria-pressed="${t.pattern === p.id}"><span class="pat-sw" style="background-image:url('${patternUrl(p.id, patternColor)}')"></span><span class="small">${p.label}</span></button>`).join('')}</div>
     </div>
     <div class="bg-opts" data-show="image" ${t.bgType === 'image' ? '' : 'hidden'}>
       <label class="btn ghost sm">Elegir imagen<input type="file" accept="image/*" data-bgfile hidden></label>
@@ -133,7 +139,7 @@ function bgEditorHTML(t, patternColor) {
 function bindBgEditor(root, current, onChange) {
   $$('[data-bgtype]', root).forEach((b) => (b.onclick = () => onChange({ bgType: b.dataset.bgtype })));
   const col = $('[data-bgcolor]', root);
-  if (col) col.oninput = () => onChange({ bgColor: col.value }, { live: true });
+  if (col) col.oninput = () => { col.parentElement.style.background = col.value; onChange({ bgColor: col.value }, { live: true }); };
   if (col) col.onchange = () => onChange({ bgColor: col.value });
   $$('[data-pattern]', root).forEach((b) => (b.onclick = () => onChange({ pattern: b.dataset.pattern })));
   const file = $('[data-bgfile]', root);
