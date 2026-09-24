@@ -8,6 +8,17 @@ function renderSettings() {
     <section class="page">
       <div class="page-head"><div><h1>Ajustes</h1><p class="sub">Hacé la app tuya.</p></div></div>
       <div class="settings-grid">
+        <div class="card highlight" id="autosave-card"></div>
+        <div class="card highlight" id="install-card">
+          <h2>📲 Tenerla en el escritorio</h2>
+          ${Install.installed()
+            ? '<p class="muted">Ya la estás usando como app instalada. ✓</p>'
+            : Install.prompt
+              ? '<p class="muted">Instalala y se abre como un programa, con su ícono del perezoso y sin internet.</p><button class="btn" id="install">Instalar Perezoso</button>'
+              : location.protocol === 'file:'
+                ? '<p class="muted">Para instalarla como app, abrila desde su página web (GitHub Pages) y volvé a esta sección.</p>'
+                : '<p class="muted">Buscá el ícono de instalar (una pantallita con una flecha ⊕) a la derecha de la barra de direcciones, o en el menú del navegador → <strong>Instalar Perezoso</strong>.</p>'}
+        </div>
         <div class="card">
           <h2>🎨 Apariencia general</h2>
           <p class="muted">Color principal y fondo de toda la app. Cada materia puede tener su propio estilo desde su página.</p>
@@ -25,8 +36,8 @@ function renderSettings() {
           <button class="btn ghost" id="notif">${'Notification' in window && Notification.permission === 'granted' ? 'Activadas ✓' : 'Activar'}</button>
         </div>
         <div class="card">
-          <h2>💾 Respaldo</h2>
-          <p class="muted">Todo se guarda en este navegador. Descargá un respaldo para pasarlo a otra compu (los documentos subidos no se incluyen).</p>
+          <h2>📦 Respaldo manual</h2>
+          <p class="muted">Descargá una copia de tus datos cuando quieras (los documentos subidos no se incluyen).</p>
           <div class="btn-row">
             <button class="btn ghost" id="export">⬇ Descargar respaldo</button>
             <label class="btn ghost">⬆ Cargar respaldo<input type="file" id="import" accept="application/json,.json" hidden></label>
@@ -58,6 +69,8 @@ function renderSettings() {
     if (!st.slothEnabled) Sloth.hide();
   };
   $('#sloth-now').onclick = () => Sloth.show();
+  const inst = $('#install'); if (inst) inst.onclick = () => Install.run();
+  paintAutosaveCard();
   $('#notif').onclick = async () => {
     if (!('Notification' in window)) { toast('Este navegador no soporta notificaciones.'); return; }
     const r = await Notification.requestPermission();
@@ -72,8 +85,8 @@ function renderSettings() {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const data = JSON.parse(await file.text());
-      if (!data || !Array.isArray(data.subjects)) throw new Error('formato');
+      const data = parseBackup(await file.text());
+      if (!data) throw new Error('formato');
       if (!confirm('Esto reemplaza tus datos actuales por los del respaldo. ¿Seguimos?')) return;
       Store.data = Store.merge(Store.defaults(), data);
       Store.save();
@@ -90,6 +103,8 @@ function renderSettings() {
     Store.data = Store.defaults();
     Store.save();
     await Files.clear().catch(() => {});
+    AutoSave.handle = null;
+    AutoSave.status = AutoSave.supported ? 'off' : 'unsupported';
     Pomo.reset();
     applyTheme(globalTheme());
     toast('Datos borrados. Empezamos de cero 🌱');
@@ -138,4 +153,33 @@ function loadDemoData() {
   toast('¡Datos de ejemplo cargados! 🦥');
   location.hash = '#calendario';
   rerender();
+}
+
+function paintAutosaveCard() {
+  const card = $('#autosave-card');
+  if (!card) return;
+  const st = AutoSave.status;
+  let body;
+  if (st === 'unsupported') {
+    body = `<p class="muted">Este navegador no deja guardar en un archivo automáticamente (funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Igual tus datos quedan guardados en el navegador; hacé un respaldo manual de vez en cuando.</p>`;
+  } else if (st === 'off') {
+    body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se va a guardar ahí <strong>solo</strong>.</p>
+      <p class="muted">💡 Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
+      <div class="btn-row"><button class="btn" id="as-choose">Elegir dónde guardar</button>
+      <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
+  } else if (st === 'ok') {
+    body = `<p class="ok-line">✓ Guardando solo en <strong>${esc(AutoSave.fileName())}</strong>${AutoSave.lastSaved ? ` · último guardado ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
+      <div class="btn-row"><button class="btn ghost sm" id="as-choose">Cambiar archivo</button>
+      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+  } else {
+    body = `<p class="muted">El navegador pide permiso otra vez para escribir en <strong>${esc(AutoSave.fileName())}</strong>.</p>
+      <div class="btn-row"><button class="btn" id="as-reconnect">Permitir</button>
+      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+  }
+  card.innerHTML = `<h2>💾 Guardado automático</h2>${body}`;
+  const on = (id, fn) => { const b = $(id, card); if (b) b.onclick = fn; };
+  on('#as-choose', () => AutoSave.choose());
+  on('#as-open', () => AutoSave.openExisting());
+  on('#as-reconnect', () => AutoSave.reconnect());
+  on('#as-off', () => { if (confirm('¿Dejar de guardar en el archivo? Tus datos siguen en el navegador.')) AutoSave.disconnect(); });
 }

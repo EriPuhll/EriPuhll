@@ -1,0 +1,16 @@
+{
+  "name": "Perezoso · organizador semestral",
+  "short_name": "Perezoso",
+  "description": "Calendario de pruebas, horario, materias, horas de estudio y pomodoro. Despacito, pero al día.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ea",
+  "theme_color": "#a075ea",
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

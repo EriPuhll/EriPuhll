@@ -45,6 +45,7 @@ const Store = {
     } catch (e) {
       toast('No se pudo guardar: el almacenamiento del navegador está lleno o bloqueado.');
     }
+    if (typeof AutoSave !== 'undefined') AutoSave.schedule();
   },
 };
 

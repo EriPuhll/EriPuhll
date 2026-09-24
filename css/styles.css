@@ -400,6 +400,15 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .swatch { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--line); }
 .danger-zone { border-color: color-mix(in srgb, var(--danger) 35%, white); }
 
+.settings-grid .highlight { border: 2px solid var(--accent); }
+.ok-line { color: #2f7d5b; font-weight: 700; }
+
+.save-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .6rem;
+  padding: .6rem 16px; background: var(--accent-soft); color: var(--ink); font-weight: 700;
+  border-bottom: 1px solid var(--line); text-align: center;
+}
+
 /* ---------- Estados vacíos ---------- */
 
 .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .6rem; padding: 2rem 1rem; }

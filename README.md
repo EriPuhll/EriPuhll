@@ -17,7 +17,10 @@ python3 -m http.server 8000
 # y abrí http://localhost:8000
 ```
 
-> Los datos se guardan **en tu navegador** (localStorage + IndexedDB para los archivos). Desde **Ajustes → Respaldo** podés descargar un respaldo y cargarlo en otra compu.
+### Tus datos
+- Todo se guarda **solo, en el navegador**, aunque cierres la app o apagues la compu.
+- **Guardado automático en un archivo** (Chrome, Edge u Opera de computadora): en **Ajustes → 💾 Guardado automático** elegí dónde guardar `perezoso-datos.json` y cada cambio se escribe ahí. Si lo ponés en tu carpeta de **Google Drive** u OneDrive, queda también en la nube. En otra compu, usá **“Abrir un archivo que ya tengo”**.
+- **Instalar en el escritorio**: abrila desde su página web (GitHub Pages) y en **Ajustes → 📲 Tenerla en el escritorio** tocá **Instalar**. Se abre como un programa y funciona sin internet.
 
 ## Qué tiene
 
@@ -62,7 +65,9 @@ js/subjects.js            materias y documentos
 js/study.js               horas de estudio
 js/pomodoro.js            pomodoro
 js/settings.js            ajustes, respaldo y datos de ejemplo
+js/autosave.js            guardado automático en archivo + instalar como app
 js/app.js                 navegación y reloj
+manifest.webmanifest, sw.js  para instalarla y usarla sin internet
 js/vendor/jspdf.umd.min.js  generador de PDF (jsPDF, licencia MIT)
 Perezoso.html             versión en un solo archivo (se genera)
 tools/build-standalone.py genera Perezoso.html

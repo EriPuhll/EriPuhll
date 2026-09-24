@@ -67,6 +67,8 @@ function updateLive() {
 function init() {
   Store.load();
   Sloth.init();
+  Install.init();
+  AutoSave.init();
 
   const modal = $('#modal');
   modal.addEventListener('click', (e) => { if (e.target === modal) Modal.close(); });

@@ -412,6 +412,15 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .swatch { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--line); }
 .danger-zone { border-color: color-mix(in srgb, var(--danger) 35%, white); }
 
+.settings-grid .highlight { border: 2px solid var(--accent); }
+.ok-line { color: #2f7d5b; font-weight: 700; }
+
+.save-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .6rem;
+  padding: .6rem 16px; background: var(--accent-soft); color: var(--ink); font-weight: 700;
+  border-bottom: 1px solid var(--line); text-align: center;
+}
+
 /* ---------- Estados vacíos ---------- */
 
 .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .6rem; padding: 2rem 1rem; }
@@ -513,6 +522,7 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
     <a id="live-pill" class="live-pill" href="#estudio" hidden></a>
   </header>
 
+  <div id="save-banner" class="save-banner" hidden></div>
   <main id="view"></main>
 
   <!-- El perezoso que aparece de vez en cuando -->
@@ -1158,6 +1168,7 @@ const Store = {
     } catch (e) {
       toast('No se pudo guardar: el almacenamiento del navegador está lleno o bloqueado.');
     }
+    if (typeof AutoSave !== 'undefined') AutoSave.schedule();
   },
 };
 
@@ -2660,6 +2671,17 @@ function renderSettings() {
     <section class="page">
       <div class="page-head"><div><h1>Ajustes</h1><p class="sub">Hacé la app tuya.</p></div></div>
       <div class="settings-grid">
+        <div class="card highlight" id="autosave-card"></div>
+        <div class="card highlight" id="install-card">
+          <h2>📲 Tenerla en el escritorio</h2>
+          ${Install.installed()
+            ? '<p class="muted">Ya la estás usando como app instalada. ✓</p>'
+            : Install.prompt
+              ? '<p class="muted">Instalala y se abre como un programa, con su ícono del perezoso y sin internet.</p><button class="btn" id="install">Instalar Perezoso</button>'
+              : location.protocol === 'file:'
+                ? '<p class="muted">Para instalarla como app, abrila desde su página web (GitHub Pages) y volvé a esta sección.</p>'
+                : '<p class="muted">Buscá el ícono de instalar (una pantallita con una flecha ⊕) a la derecha de la barra de direcciones, o en el menú del navegador → <strong>Instalar Perezoso</strong>.</p>'}
+        </div>
         <div class="card">
           <h2>🎨 Apariencia general</h2>
           <p class="muted">Color principal y fondo de toda la app. Cada materia puede tener su propio estilo desde su página.</p>
@@ -2677,8 +2699,8 @@ function renderSettings() {
           <button class="btn ghost" id="notif">${'Notification' in window && Notification.permission === 'granted' ? 'Activadas ✓' : 'Activar'}</button>
         </div>
         <div class="card">
-          <h2>💾 Respaldo</h2>
-          <p class="muted">Todo se guarda en este navegador. Descargá un respaldo para pasarlo a otra compu (los documentos subidos no se incluyen).</p>
+          <h2>📦 Respaldo manual</h2>
+          <p class="muted">Descargá una copia de tus datos cuando quieras (los documentos subidos no se incluyen).</p>
           <div class="btn-row">
             <button class="btn ghost" id="export">⬇ Descargar respaldo</button>
             <label class="btn ghost">⬆ Cargar respaldo<input type="file" id="import" accept="application/json,.json" hidden></label>
@@ -2710,6 +2732,8 @@ function renderSettings() {
     if (!st.slothEnabled) Sloth.hide();
   };
   $('#sloth-now').onclick = () => Sloth.show();
+  const inst = $('#install'); if (inst) inst.onclick = () => Install.run();
+  paintAutosaveCard();
   $('#notif').onclick = async () => {
     if (!('Notification' in window)) { toast('Este navegador no soporta notificaciones.'); return; }
     const r = await Notification.requestPermission();
@@ -2724,8 +2748,8 @@ function renderSettings() {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const data = JSON.parse(await file.text());
-      if (!data || !Array.isArray(data.subjects)) throw new Error('formato');
+      const data = parseBackup(await file.text());
+      if (!data) throw new Error('formato');
       if (!confirm('Esto reemplaza tus datos actuales por los del respaldo. ¿Seguimos?')) return;
       Store.data = Store.merge(Store.defaults(), data);
       Store.save();
@@ -2742,6 +2766,8 @@ function renderSettings() {
     Store.data = Store.defaults();
     Store.save();
     await Files.clear().catch(() => {});
+    AutoSave.handle = null;
+    AutoSave.status = AutoSave.supported ? 'off' : 'unsupported';
     Pomo.reset();
     applyTheme(globalTheme());
     toast('Datos borrados. Empezamos de cero 🌱');
@@ -2791,6 +2817,194 @@ function loadDemoData() {
   location.hash = '#calendario';
   rerender();
 }
+
+function paintAutosaveCard() {
+  const card = $('#autosave-card');
+  if (!card) return;
+  const st = AutoSave.status;
+  let body;
+  if (st === 'unsupported') {
+    body = `<p class="muted">Este navegador no deja guardar en un archivo automáticamente (funciona en <strong>Chrome, Edge u Opera</strong> de computadora). Igual tus datos quedan guardados en el navegador; hacé un respaldo manual de vez en cuando.</p>`;
+  } else if (st === 'off') {
+    body = `<p class="muted">Tus datos ya quedan en el navegador. Para más seguridad, elegí un archivo en tu compu y cada cambio se va a guardar ahí <strong>solo</strong>.</p>
+      <p class="muted">💡 Si lo guardás en tu carpeta de <strong>Google Drive</strong> (o OneDrive), también queda en la nube.</p>
+      <div class="btn-row"><button class="btn" id="as-choose">Elegir dónde guardar</button>
+      <button class="btn ghost" id="as-open">Abrir un archivo que ya tengo</button></div>`;
+  } else if (st === 'ok') {
+    body = `<p class="ok-line">✓ Guardando solo en <strong>${esc(AutoSave.fileName())}</strong>${AutoSave.lastSaved ? ` · último guardado ${fmtTime(new Date(AutoSave.lastSaved))}` : ''}</p>
+      <div class="btn-row"><button class="btn ghost sm" id="as-choose">Cambiar archivo</button>
+      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+  } else {
+    body = `<p class="muted">El navegador pide permiso otra vez para escribir en <strong>${esc(AutoSave.fileName())}</strong>.</p>
+      <div class="btn-row"><button class="btn" id="as-reconnect">Permitir</button>
+      <button class="btn ghost sm" id="as-off">Dejar de guardar en archivo</button></div>`;
+  }
+  card.innerHTML = `<h2>💾 Guardado automático</h2>${body}`;
+  const on = (id, fn) => { const b = $(id, card); if (b) b.onclick = fn; };
+  on('#as-choose', () => AutoSave.choose());
+  on('#as-open', () => AutoSave.openExisting());
+  on('#as-reconnect', () => AutoSave.reconnect());
+  on('#as-off', () => { if (confirm('¿Dejar de guardar en el archivo? Tus datos siguen en el navegador.')) AutoSave.disconnect(); });
+}
+
+</script>
+  <script>
+'use strict';
+
+/* ---------- Guardado automático en un archivo de la compu ----------
+ * Usa la File System Access API (Chrome, Edge y Opera de escritorio).
+ * La persona elige una vez dónde guardar "perezoso-datos.json" y desde ahí
+ * cada cambio se escribe solo. Si el archivo está en la carpeta de Google
+ * Drive u OneDrive, además queda en la nube.
+ */
+
+const AUTOSAVE_KEY = 'meta:autosave-handle';
+
+const AutoSave = {
+  supported: 'showSaveFilePicker' in window,
+  handle: null,
+  status: 'off', // off | ok | needs-permission | unsupported | error
+  lastSaved: 0,
+  timer: null,
+
+  fileTypes: [{ description: 'Datos de Perezoso', accept: { 'application/json': ['.json'] } }],
+
+  async init() {
+    if (!this.supported) { this.status = 'unsupported'; return; }
+    try { this.handle = (await Files.get(AUTOSAVE_KEY)) || null; } catch (e) { this.handle = null; }
+    if (!this.handle) { this.status = 'off'; return; }
+    try {
+      const p = await this.handle.queryPermission({ mode: 'readwrite' });
+      this.status = p === 'granted' ? 'ok' : 'needs-permission';
+    } catch (e) { this.status = 'needs-permission'; }
+    if (this.status === 'ok') await this.write();
+    this.paint();
+  },
+
+  // Elegir dónde guardar (necesita un clic de la persona)
+  async choose() {
+    try {
+      const h = await window.showSaveFilePicker({ suggestedName: 'perezoso-datos.json', types: this.fileTypes });
+      await this.link(h);
+      await this.write();
+      toast('¡Listo! Desde ahora todo se guarda solo en ese archivo 💾');
+    } catch (e) {
+      if (e.name !== 'AbortError') toast('No se pudo elegir el archivo.');
+    }
+  },
+
+  // Abrir un archivo de datos que ya existe (por ejemplo en otra compu)
+  async openExisting() {
+    try {
+      const [h] = await window.showOpenFilePicker({ types: this.fileTypes });
+      const data = parseBackup(await (await h.getFile()).text());
+      if (!data) { toast('Ese archivo no parece de Perezoso.'); return; }
+      if (Store.data.subjects.length && !confirm('Esto reemplaza lo que tenés ahora por lo del archivo. ¿Seguimos?')) return;
+      if ((await h.requestPermission({ mode: 'readwrite' })) !== 'granted') { toast('Necesito permiso para seguir guardando en ese archivo.'); return; }
+      await this.link(h);
+      Store.data = Store.merge(Store.defaults(), data);
+      Store.save();
+      toast('Datos cargados y guardado automático activado 💾');
+      rerender();
+    } catch (e) {
+      if (e.name !== 'AbortError') toast('No se pudo abrir el archivo.');
+    }
+  },
+
+  async reconnect() {
+    if (!this.handle) return;
+    try {
+      const p = await this.handle.requestPermission({ mode: 'readwrite' });
+      this.status = p === 'granted' ? 'ok' : 'needs-permission';
+    } catch (e) { this.status = 'needs-permission'; }
+    if (this.status === 'ok') { await this.write(); toast('Guardado automático reconectado 💾'); }
+    this.paint();
+  },
+
+  async disconnect() {
+    await Files.del(AUTOSAVE_KEY);
+    this.handle = null;
+    this.status = 'off';
+    this.paint();
+  },
+
+  async link(h) {
+    this.handle = h;
+    this.status = 'ok';
+    await Files.put(AUTOSAVE_KEY, h);
+  },
+
+  schedule() {
+    if (this.status !== 'ok') return;
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.write(), 800);
+  },
+
+  async write() {
+    if (!this.handle) return;
+    try {
+      const w = await this.handle.createWritable();
+      await w.write(JSON.stringify({ app: 'perezoso', savedAt: new Date().toISOString(), data: Store.data }, null, 1));
+      await w.close();
+      this.lastSaved = Date.now();
+      this.status = 'ok';
+    } catch (e) {
+      this.status = e.name === 'NotAllowedError' || e.name === 'SecurityError' ? 'needs-permission' : 'error';
+    }
+    this.paint();
+  },
+
+  fileName() { return this.handle ? this.handle.name : ''; },
+
+  // Aviso arriba cuando hay que volver a dar permiso (el navegador lo pide al reabrir)
+  paint() {
+    const bar = $('#save-banner');
+    if (!bar) return;
+    if (this.status === 'needs-permission' || this.status === 'error') {
+      bar.hidden = false;
+      bar.innerHTML = `<span>💾 ${this.status === 'error' ? 'No pude escribir en' : 'Para seguir guardando solo en'} <strong>${esc(this.fileName())}</strong> tocá acá.</span>
+        <button class="btn sm" id="save-reconnect">${this.status === 'error' ? 'Reintentar' : 'Permitir'}</button>`;
+      $('#save-reconnect').onclick = () => (this.status === 'error' ? this.write() : this.reconnect());
+    } else bar.hidden = true;
+    if (location.hash === '#ajustes' && $('#autosave-card')) paintAutosaveCard();
+  },
+};
+
+// Acepta tanto el archivo de guardado automático como un respaldo descargado
+function parseBackup(text) {
+  try {
+    const raw = JSON.parse(text);
+    const data = raw && raw.app === 'perezoso' && raw.data ? raw.data : raw;
+    return data && Array.isArray(data.subjects) ? data : null;
+  } catch (e) { return null; }
+}
+
+/* ---------- Instalar como app (PWA) ---------- */
+
+const Install = {
+  prompt: null,
+  init() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.prompt = e;
+      if (location.hash === '#ajustes') renderSettings();
+    });
+    window.addEventListener('appinstalled', () => { this.prompt = null; toast('¡Perezoso instalado! Buscalo en tu escritorio 🦥'); });
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    // Pide al navegador que no borre los datos si le falta espacio
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  },
+  installed() { return window.matchMedia('(display-mode: standalone)').matches; },
+  async run() {
+    if (!this.prompt) return;
+    this.prompt.prompt();
+    await this.prompt.userChoice.catch(() => {});
+    this.prompt = null;
+    renderSettings();
+  },
+};
 
 </script>
   <script>
@@ -2863,6 +3077,8 @@ function updateLive() {
 function init() {
   Store.load();
   Sloth.init();
+  Install.init();
+  AutoSave.init();
 
   const modal = $('#modal');
   modal.addEventListener('click', (e) => { if (e.target === modal) Modal.close(); });

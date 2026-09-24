@@ -20,6 +20,8 @@ def inline_js(m):
     return f'<script>\n{js}\n</script>'
 
 
+# El manifest y el ícono PNG solo sirven publicada en la web; en un archivo suelto se quitan.
+html = re.sub(r'\s*<link rel="(?:manifest|apple-touch-icon)"[^>]*>', '', html)
 html = re.sub(r'<link rel="stylesheet" href="([^"]+)">', inline_css, html)
 html = re.sub(r'<script src="(js/[^"]+)"(?: defer)?></script>', inline_js, html)
 icon = base64.b64encode((root / 'img/perezoso.svg').read_bytes()).decode()
