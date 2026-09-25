@@ -34,7 +34,7 @@ function homeAlerts() {
   const out = [];
   const now = new Date();
   const maxRem = Math.max(0, ...(Store.data.settings.reminderDays || [0]));
-  Store.data.events.filter((e) => { const d = daysUntil(e.date, now); return d >= 0 && d <= maxRem; }).sort(byEventDate).forEach((e) => {
+  Store.data.events.filter((e) => { const d = daysUntil(e.date, now); return !e.done && d >= 0 && d <= maxRem; }).sort(byEventDate).forEach((e) => {
     const d = daysUntil(e.date, now);
     const when = d === 0 ? '¡hoy!' : d === 1 ? 'mañana' : `en ${d} días`;
     out.push({ cls: d <= 2 ? 'warn' : '', icon: eventType(e).icon, html: `<strong>${esc(typeLabel(e))}</strong> de ${esc(subjectName(e.subjectId))} ${when}.` });
@@ -57,7 +57,7 @@ function renderHome() {
   const now = new Date();
   const todayIdx = ((now.getDay() + 6) % 7) + 1;
   const classes = activeClasses().filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
-  const upcoming = Store.data.events.filter((e) => eventDate(e) >= now || daysUntil(e.date) === 0).sort(byEventDate).slice(0, 5);
+  const upcoming = Store.data.events.filter((e) => !e.done && (eventDate(e) >= now || daysUntil(e.date) === 0)).sort(byEventDate).slice(0, 5);
   const alerts = homeAlerts();
   const a = Store.data.activeSession;
   const seedMissing = !st.seedDismissed && !Store.data.subjects.some((s) => s.name === 'Física');

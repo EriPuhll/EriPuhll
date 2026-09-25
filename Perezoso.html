@@ -870,6 +870,51 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
   main { padding: 0; }
 }
 
+/* ---------- Eventos: hecho y cosas a hacer ---------- */
+.stack { display: grid; gap: 1rem; }
+.more-link { display: inline-block; margin-top: .3rem; font-weight: 700; font-size: .88rem; color: var(--accent-ink); }
+.ev-item { margin-bottom: .5rem; }
+.ev-item .ev-row { margin-bottom: 0; grid-template-columns: 34px 58px 1fr auto; }
+.ev-check {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--c) 70%, var(--line));
+  background: var(--surface); display: grid; place-items: center; padding: 0; cursor: pointer; color: transparent;
+  transition: background .15s, color .15s, transform .15s;
+}
+.ev-check .ic { width: 18px; height: 18px; stroke: currentColor; stroke-width: 3; fill: none; }
+.ev-check:hover { color: color-mix(in srgb, var(--c) 60%, var(--muted)); transform: scale(1.08); }
+.ev-check.on { background: var(--moss, #7cae7a); border-color: var(--moss, #7cae7a); color: #fff; }
+.ev-item.is-done .ev-type, .ev-item.is-done .ev-title { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--muted); }
+.ev-item.is-done .ev-row { background: color-mix(in srgb, var(--surface) 70%, var(--bg)); }
+.countdown[data-level="done"] { background: color-mix(in srgb, var(--moss, #7cae7a) 18%, var(--surface)); color: color-mix(in srgb, var(--moss, #7cae7a) 70%, var(--ink)); }
+.ev-todo-chip {
+  margin-top: .35rem; border: 1px dashed var(--line); background: none; border-radius: 999px; padding: .15rem .6rem;
+  font: inherit; font-size: .78rem; font-weight: 700; color: var(--muted); cursor: pointer;
+}
+.ev-todo-chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+.ev-todo-chip.full { border-style: solid; border-color: var(--moss, #7cae7a); color: color-mix(in srgb, var(--moss, #7cae7a) 70%, var(--ink)); }
+.ev-todos {
+  margin: -.2rem 0 0 1.2rem; padding: .7rem .8rem .8rem; border: 1px solid var(--line); border-top: 0;
+  border-radius: 0 0 14px 14px; background: var(--surface);
+}
+.todo-list { list-style: none; margin: 0 0 .5rem; padding: 0; }
+.todo-list li { display: flex; align-items: center; gap: .4rem; padding: .15rem 0; }
+.todo-list label { flex: 1; display: flex; align-items: center; gap: .5rem; cursor: pointer; font-weight: 600; min-width: 0; }
+.todo-list input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; margin: 0; }
+.todo-list li.done span { text-decoration: line-through; color: var(--muted); }
+.todo-add { display: flex; gap: .4rem; }
+.todo-add input { flex: 1; min-width: 0; }
+.todo-field { border: 1px solid var(--line); border-radius: 12px; padding: .5rem .8rem .7rem; margin: 0; }
+.todo-field legend { font-weight: 700; padding: 0 .3rem; }
+.chip.done { opacity: .55; }
+.chip.done .chip-t { text-decoration: line-through; }
+@container (max-width: 460px) {
+  .ev-item .ev-row { grid-template-columns: 30px 50px 1fr; }
+  .ev-item .ev-row .countdown { grid-column: 1 / -1; }
+  .ev-todos { margin-left: .4rem; }
+}
+.form .todo-list label { flex-direction: row; align-items: center; gap: .5rem; font-weight: 600; margin: 0; }
+.form .todo-list input[type="checkbox"] { width: 18px; height: 18px; padding: 0; flex: none; }
+
 </style>
 </head>
 <body>
@@ -2109,6 +2154,7 @@ const PHRASES = {
   desbloqueo: ['¡Me regalaste {accesorio}! Gracias por estudiar tanto.', '¡{accesorio}! ¿Cómo me queda? Decime que bien.', '¡Ropa nueva! {accesorio}. Me siento el más lindo de la selva.', 'Mirá: {accesorio}. Todo gracias a tus horas de estudio.'],
   racha: ['¡{dias} días seguidos! Estoy re orgulloso.', '{dias} días de racha. No la cortes, ¿sí?', '¡{dias} días al hilo! Eso es más constancia que la mía para dormir.'],
   noche: ['Zzz… ¿qué hacés despierta? Mañana seguimos.', 'Ya es tarde. Hasta los perezosos duermen… bueno, sobre todo los perezosos.', 'Zzz… soñé que aprobabas todo. Ahora andá a dormir vos.', 'Es de noche. Cerrá la compu, que el cerebro también guarda lo que estudiaste mientras dormís.'],
+  hecho: ['¡{evento} listo! Qué orgullo me das.', '¡Tachamos {evento}! Aplausos lentos.', '{evento}: hecho. Me voy a hacer una siesta de festejo.', 'Uno menos: {evento}. Sos una genia.'],
   prioritario: ['¡Un ejercicio amarillo menos! Qué genia.', '¡Resolviste un prioritario! Aplausos lentos.', '¡Prioritario resuelto! Esa sí que costaba.'],
 };
 
@@ -2686,7 +2732,7 @@ const Sloth = {
   worried() {
     const now = new Date();
     return Store.data.events
-      .filter((e) => { const d = daysUntil(e.date, now); return d >= 0 && d <= 3 && e.subjectId; })
+      .filter((e) => { const d = daysUntil(e.date, now); return !e.done && d >= 0 && d <= 3 && e.subjectId; })
       .map((e) => ({ e, s: subjectById(e.subjectId) }))
       .find(({ s }) => s && subjectPace(s).behind) || null;
   },
@@ -2741,7 +2787,7 @@ const Sloth = {
     const now = new Date();
     const mood = this.mood();
     if (mood === 'dormido') return phrase('noche');
-    const next = Store.data.events.filter((e) => daysUntil(e.date, now) >= 0 && eventDate(e) >= now - DAY_MS).sort(byEventDate)[0];
+    const next = Store.data.events.filter((e) => !e.done && daysUntil(e.date, now) >= 0 && eventDate(e) >= now - DAY_MS).sort(byEventDate)[0];
     const r = Math.random();
     if (next) {
       const d = daysUntil(next.date, now);
@@ -2857,7 +2903,7 @@ const Sloth = {
     const now = new Date();
     for (const ev of Store.data.events.slice().sort(byEventDate)) {
       const d = daysUntil(ev.date, now);
-      if (d < 0 || !days.includes(d)) continue;
+      if (ev.done || d < 0 || !days.includes(d)) continue;
       const sent = Store.data.remindersSent[ev.id] || [];
       if (sent.includes(d)) continue;
       Store.data.remindersSent[ev.id] = [...sent, d];
@@ -3102,9 +3148,9 @@ function chipHtml(ev) {
   const t = eventType(ev);
   const subj = ev.subjectId ? subjectName(ev.subjectId) : '';
   const cd = countdown(eventDate(ev));
-  return `<button class="chip ${cd.level === 'urgent' ? 'near' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
+  return `<button class="chip ${cd.level === 'urgent' && !ev.done ? 'near' : ''} ${ev.done ? 'done' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
       title="${esc(`${typeLabel(ev)}${subj ? ' · ' + subj : ''}${ev.title ? ' · ' + ev.title : ''}${ev.time ? ' · ' + ev.time : ''}`)}">
-      <span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
+      <span class="chip-t">${ev.done ? '✓ ' : ''}${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
     </button>`;
 }
 
@@ -3196,6 +3242,55 @@ function renderExams(el) {
   paintList();
 }
 
+// Eventos con la lista de "cosas a hacer" abierta (se mantiene al redibujar)
+const openTodoLists = new Set();
+const CHECK_SVG = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+function todoListHTML(ev, prefix = '') {
+  const todos = ev.todos || [];
+  return `<ul class="todo-list">${todos.map((t) => `
+      <li class="${t.done ? 'done' : ''}">
+        <label><input type="checkbox" data-${prefix}t="${t.id}" ${t.done ? 'checked' : ''}><span>${esc(t.text)}</span></label>
+        <button type="button" class="icon-btn sm ghosty" data-${prefix}tdel="${t.id}" title="Borrar" aria-label="Borrar “${esc(t.text)}”">✕</button>
+      </li>`).join('')}</ul>
+    <div class="todo-add">
+      <input data-${prefix}tadd placeholder="Agregar algo para hacer…" aria-label="Nueva cosa para hacer" maxlength="140">
+      <button type="button" class="btn sm" data-${prefix}tbtn>Agregar</button>
+    </div>`;
+}
+
+// Cambios en una lista de cosas a hacer (se usa en la lista y en el formulario)
+function bindTodoEditor(root, list, onChange, prefix = '') {
+  const input = $(`[data-${prefix}tadd]`, root);
+  const add = () => {
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    list.push({ id: uid(), text, done: false });
+    onChange(true);
+  };
+  $(`[data-${prefix}tbtn]`, root).onclick = add;
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+  $$(`[data-${prefix}t]`, root).forEach((c) => (c.onchange = () => {
+    const t = list.find((x) => x.id === c.getAttribute(`data-${prefix}t`));
+    if (t) t.done = c.checked;
+    if (c.checked && list.length && list.every((x) => x.done)) toast('¡Lista completa!');
+    onChange(false);
+  }));
+  $$(`[data-${prefix}tdel]`, root).forEach((b) => (b.onclick = () => {
+    const i = list.findIndex((x) => x.id === b.getAttribute(`data-${prefix}tdel`));
+    if (i >= 0) list.splice(i, 1);
+    onChange(false);
+  }));
+}
+
+function setEventDone(ev, done) {
+  ev.done = done;
+  Store.save();
+  if (done) Sloth.react('hecho', { evento: typeLabel(ev) }, { proud: true });
+  else toast('Marcado como pendiente');
+  rerender();
+}
+
 function renderEventList(container, evs, emptyMsg) {
   if (!evs.length) {
     container.innerHTML = `<div class="empty small"><p>${esc(emptyMsg)}</p></div>`;
@@ -3205,32 +3300,62 @@ function renderEventList(container, evs, emptyMsg) {
   container.innerHTML = evs.map((ev) => {
     const d = eventDate(ev);
     const cd = countdown(d);
-    const t = eventType(ev);
     const proj = ev.projectId && projectById(ev.projectId);
+    const todos = ev.todos || [];
+    const nDone = todos.filter((t) => t.done).length;
+    const open = openTodoLists.has(ev.id);
     return `
-      <article class="ev-row" data-ev="${ev.id}" data-level="${cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" role="button">
-        <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
-        <div class="ev-main">
-          <div class="ev-type">${esc(typeLabel(ev))}</div>
-          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · ${esc(proj.name)}` : ''}</div>
-          ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
-          <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
-        </div>
-        <div class="countdown" data-countdown="${d.getTime()}" data-level="${cd.level}" title="Cuánto falta">${cd.text}</div>
-      </article>`;
+      <div class="ev-item ${ev.done ? 'is-done' : ''}">
+        <article class="ev-row" data-ev="${ev.id}" data-level="${ev.done ? 'done' : cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" aria-label="${esc(typeLabel(ev))}: abrir para editar">
+          <button type="button" class="ev-check ${ev.done ? 'on' : ''}" data-done="${ev.id}" aria-pressed="${!!ev.done}" title="${ev.done ? 'Hecho. Tocá para marcarlo pendiente' : 'Marcar como hecho'}" aria-label="${ev.done ? 'Hecho' : 'Marcar como hecho'}">${CHECK_SVG}</button>
+          <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
+          <div class="ev-main">
+            <div class="ev-type">${esc(typeLabel(ev))}</div>
+            <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · ${esc(proj.name)}` : ''}</div>
+            ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
+            <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
+            <button type="button" class="ev-todo-chip ${todos.length && nDone === todos.length ? 'full' : ''}" data-todos="${ev.id}" aria-expanded="${open}">
+              ${todos.length ? `${nDone} de ${todos.length} cosas hechas` : '+ Cosas a hacer'} <span aria-hidden="true">${open ? '▴' : '▾'}</span></button>
+          </div>
+          ${ev.done
+            ? '<div class="countdown" data-level="done">Hecho</div>'
+            : `<div class="countdown" data-countdown="${d.getTime()}" data-level="${cd.level}" title="Cuánto falta">${cd.text}</div>`}
+        </article>
+        ${open ? `<div class="ev-todos" data-todo-box="${ev.id}">${todoListHTML(ev)}</div>` : ''}
+      </div>`;
   }).join('');
+  const redraw = () => renderEventList(container, evs, emptyMsg);
+  const find = (id) => Store.data.events.find((x) => x.id === id);
   $$('.ev-row', container).forEach((r) => {
-    const open = () => openEventForm(Store.data.events.find((x) => x.id === r.dataset.ev));
-    r.onclick = open;
-    r.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    const open = () => openEventForm(find(r.dataset.ev));
+    r.onclick = (e) => { if (!e.target.closest('button')) open(); };
+    r.onkeydown = (e) => { if (e.target === r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open(); } };
+  });
+  $$('[data-done]', container).forEach((b) => (b.onclick = () => { const ev = find(b.dataset.done); if (ev) setEventDone(ev, !ev.done); }));
+  $$('[data-todos]', container).forEach((b) => (b.onclick = () => {
+    const id = b.dataset.todos;
+    if (openTodoLists.has(id)) openTodoLists.delete(id); else openTodoLists.add(id);
+    redraw();
+    const inp = $(`[data-todo-box="${id}"] [data-tadd]`, container);
+    if (inp && !(find(id).todos || []).length) inp.focus();
+  }));
+  $$('[data-todo-box]', container).forEach((box) => {
+    const ev = find(box.dataset.todoBox);
+    if (!ev) return;
+    ev.todos = ev.todos || [];
+    bindTodoEditor(box, ev.todos, (added) => {
+      Store.save();
+      redraw();
+      if (added) { const inp = $(`[data-todo-box="${ev.id}"] [data-tadd]`, container); if (inp) inp.focus(); }
+    });
   });
 }
 
 function openEventForm(ev, preset = {}) {
   const isNew = !ev;
-  const data = ev ? { ...ev } : {
+  const data = ev ? { ...ev, todos: (ev.todos || []).map((t) => ({ ...t })) } : {
     id: uid(), type: preset.type || 'parcial', customType: '', subjectId: preset.subjectId || '', projectId: preset.projectId || '',
-    title: '', date: preset.date || toISODate(new Date()), time: '', notes: '',
+    title: '', date: preset.date || toISODate(new Date()), time: '', notes: '', done: false, todos: [],
   };
   const projOpts = Store.data.projects.map((p) => `<option value="${p.id}" ${p.id === data.projectId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   Modal.open(isNew ? 'Nuevo evento' : 'Editar evento', `
@@ -3253,6 +3378,8 @@ function openEventForm(ev, preset = {}) {
       <label>Notas <span class="opt">(opcional)</span>
         <textarea name="notes" rows="3" placeholder="Salón, qué entra, qué llevar…">${esc(data.notes)}</textarea>
       </label>
+      <fieldset class="todo-field"><legend>Cosas a hacer <span class="opt">(opcional)</span></legend><div id="ev-todo-edit"></div></fieldset>
+      <label class="check"><input type="checkbox" name="done" ${data.done ? 'checked' : ''}> Ya está hecho</label>
       <div class="form-actions">
         ${isNew ? '' : '<button type="button" class="btn danger ghost" id="ev-del">Eliminar</button>'}
         <span class="grow"></span>
@@ -3262,6 +3389,13 @@ function openEventForm(ev, preset = {}) {
     </form>`, (body) => {
     const f = $('#ev-form', body);
     const el = f.elements;
+    const todoBox = $('#ev-todo-edit', f);
+    const paintTodos = (focus) => {
+      todoBox.innerHTML = todoListHTML(data, 'f');
+      bindTodoEditor(todoBox, data.todos, paintTodos, 'f');
+      if (focus) $('[data-ftadd]', todoBox).focus();
+    };
+    paintTodos(false);
     el.type.onchange = () => { $('.custom-type', f).hidden = el.type.value !== 'otro'; };
     el.projectId.onchange = () => {
       const p = projectById(el.projectId.value);
@@ -3280,7 +3414,10 @@ function openEventForm(ev, preset = {}) {
         date: el.date.value,
         time: el.time.value,
         notes: el.notes.value.trim(),
+        done: el.done.checked,
       });
+      const pending = $('[data-ftadd]', f).value.trim();
+      if (pending) data.todos.push({ id: uid(), text: pending, done: false });
       if (isNew) Store.data.events.push(data);
       else Object.assign(ev, data);
       if (changedDate) delete Store.data.remindersSent[data.id];
@@ -3656,6 +3793,7 @@ function openClassForm(cl, preset = {}) {
 
 const SUBJECT_TABS = [
   { id: 'resumen', label: 'Resumen' },
+  { id: 'eventos', label: 'Pruebas y entregas' },
   { id: 'documentos', label: 'Documentos' },
   { id: 'practicos', label: 'Tareas a realizar' },
   { id: 'notas', label: 'Notas' },
@@ -3688,7 +3826,7 @@ function renderSubjects() {
         const [y, sem] = k.split('|');
         return `<h2 class="group-title">${semLabel(sem)} · ${y}</h2>
           <div class="subj-cards">${groups[k].map((s) => {
-            const next = Store.data.events.filter((e) => e.subjectId === s.id && eventDate(e) >= now).sort(byEventDate)[0];
+            const next = Store.data.events.filter((e) => e.subjectId === s.id && !e.done && eventDate(e) >= now).sort(byEventDate)[0];
             const p = subjectPace(s);
             return `<a class="card subj-card" href="#materia/${s.id}" style="--c:${s.color}">
               <div class="subj-card-top"><h3>${esc(s.name)}</h3><span class="badge">${Number(s.credits) || 0} cr.</span></div>
@@ -3831,7 +3969,7 @@ function renderSubject(id, tab = 'resumen') {
   $('#s-edit').onclick = () => openSubjectForm(s);
   $('#s-del').onclick = () => deleteSubject(s);
   const box = $('#subj-tab');
-  ({ resumen: tabResumen, documentos: tabDocumentos, practicos: tabPracticos, notas: tabNotas, apariencia: tabApariencia })[tab](s, box);
+  ({ resumen: tabResumen, eventos: tabEventos, documentos: tabDocumentos, practicos: tabPracticos, notas: tabNotas, apariencia: tabApariencia })[tab](s, box);
 }
 
 /* --- Resumen --- */
@@ -3841,11 +3979,37 @@ const RESUMEN_BLOCKS = [
   ['materia.apuntes', 'Apuntes pendientes'], ['materia.horario', 'Horario'], ['materia.faltas', 'Faltas'],
 ];
 
+// Pestañas visibles de la materia
+function subjectTabIds() {
+  return SUBJECT_TABS.map((t) => t.id).filter((id) => id === 'resumen' || !(Store.data.settings.subjectTabsHidden || []).includes(id));
+}
+
+/* ----- Pestaña: todos los eventos de la materia ----- */
+const EVENTOS_BLOCKS = [['materia.ev.pend', 'Pendientes'], ['materia.ev.hechos', 'Hechos']];
+function tabEventos(s, box) {
+  const all = Store.data.events.filter((e) => e.subjectId === s.id).sort(byEventDate);
+  const pend = all.filter((e) => !e.done);
+  const done = all.filter((e) => e.done).reverse();
+  const late = pend.filter((e) => daysUntil(e.date) < 0).length;
+  box.innerHTML = `
+    <div class="stack">
+      ${block('materia.ev.pend', `Pendientes (${pend.length})`, `${late ? `<p class="hint">${late === 1 ? 'Hay 1 que ya pasó' : `Hay ${late} que ya pasaron`} y no ${late === 1 ? 'está marcado' : 'están marcados'} como hecho.</p>` : ''}<div id="se-pend" class="ev-list"></div>`, { actions: '<button class="btn sm" id="se-add">+ Evento</button>' })}
+      ${block('materia.ev.hechos', `Hechos (${done.length})`, '<div id="se-done" class="ev-list"></div>')}
+    </div>
+    ${hiddenBar(EVENTOS_BLOCKS)}`;
+  bindBlocks(box);
+  const pb = $('#se-pend', box);
+  if (pb) renderEventList(pb, pend, 'No hay nada pendiente en esta materia.');
+  const db = $('#se-done', box);
+  if (db) renderEventList(db, done, 'Todavía no marcaste nada como hecho. Tocá el círculo de un evento cuando lo termines.');
+  on(box, '#se-add', 'onclick', () => openEventForm(null, { subjectId: s.id }));
+}
+
 function tabResumen(s, box) {
   const p = subjectPace(s);
   const pct = p.goal ? Math.min(100, (p.done / p.goal) * 100) : 0;
   const now = new Date();
-  const upcoming = Store.data.events.filter((e) => e.subjectId === s.id && (eventDate(e) >= now || daysUntil(e.date) === 0)).sort(byEventDate);
+  const upcoming = Store.data.events.filter((e) => e.subjectId === s.id && !e.done && (eventDate(e) >= now || daysUntil(e.date) === 0)).sort(byEventDate);
   const classes = Store.data.classes.filter((c) => c.subjectId === s.id).sort((a, b) => a.day - b.day || toMin(a.start) - toMin(b.start));
   const studying = Store.data.activeSession && Store.data.activeSession.subjectId === s.id;
   const absWarn = s.maxAbsences != null && s.absences >= s.maxAbsences - 1;
@@ -3892,7 +4056,7 @@ function tabResumen(s, box) {
     <div class="grid-2">
       ${block('materia.info', 'Info de la materia', info)}
       ${block('materia.creditos', 'Créditos y horas', creditos)}
-      ${block('materia.pruebas', 'Próximas pruebas', '<div id="s-events" class="ev-list"></div>', { actions: '<button class="btn sm" id="s-add-ev">+ Evento</button>' })}
+      ${block('materia.pruebas', 'Próximos eventos', `<div id="s-events" class="ev-list"></div>${subjectTabIds().includes('eventos') ? `<a class="more-link" href="#materia/${s.id}/eventos">Ver todos, con los hechos →</a>` : ''}`, { actions: '<button class="btn sm" id="s-add-ev">+ Evento</button>' })}
       ${block('materia.apuntes', 'Apuntes pendientes', apuntes)}
       ${block('materia.horario', 'Horario', horario, { actions: '<button class="btn sm" id="s-add-cl">+ Clase</button>' })}
       ${block('materia.faltas', 'Faltas', faltas, { cls: 'compact' })}
@@ -5353,7 +5517,7 @@ function homeAlerts() {
   const out = [];
   const now = new Date();
   const maxRem = Math.max(0, ...(Store.data.settings.reminderDays || [0]));
-  Store.data.events.filter((e) => { const d = daysUntil(e.date, now); return d >= 0 && d <= maxRem; }).sort(byEventDate).forEach((e) => {
+  Store.data.events.filter((e) => { const d = daysUntil(e.date, now); return !e.done && d >= 0 && d <= maxRem; }).sort(byEventDate).forEach((e) => {
     const d = daysUntil(e.date, now);
     const when = d === 0 ? '¡hoy!' : d === 1 ? 'mañana' : `en ${d} días`;
     out.push({ cls: d <= 2 ? 'warn' : '', icon: eventType(e).icon, html: `<strong>${esc(typeLabel(e))}</strong> de ${esc(subjectName(e.subjectId))} ${when}.` });
@@ -5376,7 +5540,7 @@ function renderHome() {
   const now = new Date();
   const todayIdx = ((now.getDay() + 6) % 7) + 1;
   const classes = activeClasses().filter((c) => +c.day === todayIdx).sort((a, b) => toMin(a.start) - toMin(b.start));
-  const upcoming = Store.data.events.filter((e) => eventDate(e) >= now || daysUntil(e.date) === 0).sort(byEventDate).slice(0, 5);
+  const upcoming = Store.data.events.filter((e) => !e.done && (eventDate(e) >= now || daysUntil(e.date) === 0)).sort(byEventDate).slice(0, 5);
   const alerts = homeAlerts();
   const a = Store.data.activeSession;
   const seedMissing = !st.seedDismissed && !Store.data.subjects.some((s) => s.name === 'Física');

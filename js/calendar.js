@@ -38,9 +38,9 @@ function chipHtml(ev) {
   const t = eventType(ev);
   const subj = ev.subjectId ? subjectName(ev.subjectId) : '';
   const cd = countdown(eventDate(ev));
-  return `<button class="chip ${cd.level === 'urgent' ? 'near' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
+  return `<button class="chip ${cd.level === 'urgent' && !ev.done ? 'near' : ''} ${ev.done ? 'done' : ''}" data-ev="${ev.id}" style="--c:${subjectColor(ev.subjectId)}"
       title="${esc(`${typeLabel(ev)}${subj ? ' · ' + subj : ''}${ev.title ? ' · ' + ev.title : ''}${ev.time ? ' · ' + ev.time : ''}`)}">
-      <span class="chip-t">${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
+      <span class="chip-t">${ev.done ? '✓ ' : ''}${esc(typeLabel(ev))}${subj ? ` <small>${esc(subj)}</small>` : ''}</span>
     </button>`;
 }
 
@@ -132,6 +132,55 @@ function renderExams(el) {
   paintList();
 }
 
+// Eventos con la lista de "cosas a hacer" abierta (se mantiene al redibujar)
+const openTodoLists = new Set();
+const CHECK_SVG = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+function todoListHTML(ev, prefix = '') {
+  const todos = ev.todos || [];
+  return `<ul class="todo-list">${todos.map((t) => `
+      <li class="${t.done ? 'done' : ''}">
+        <label><input type="checkbox" data-${prefix}t="${t.id}" ${t.done ? 'checked' : ''}><span>${esc(t.text)}</span></label>
+        <button type="button" class="icon-btn sm ghosty" data-${prefix}tdel="${t.id}" title="Borrar" aria-label="Borrar “${esc(t.text)}”">✕</button>
+      </li>`).join('')}</ul>
+    <div class="todo-add">
+      <input data-${prefix}tadd placeholder="Agregar algo para hacer…" aria-label="Nueva cosa para hacer" maxlength="140">
+      <button type="button" class="btn sm" data-${prefix}tbtn>Agregar</button>
+    </div>`;
+}
+
+// Cambios en una lista de cosas a hacer (se usa en la lista y en el formulario)
+function bindTodoEditor(root, list, onChange, prefix = '') {
+  const input = $(`[data-${prefix}tadd]`, root);
+  const add = () => {
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    list.push({ id: uid(), text, done: false });
+    onChange(true);
+  };
+  $(`[data-${prefix}tbtn]`, root).onclick = add;
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+  $$(`[data-${prefix}t]`, root).forEach((c) => (c.onchange = () => {
+    const t = list.find((x) => x.id === c.getAttribute(`data-${prefix}t`));
+    if (t) t.done = c.checked;
+    if (c.checked && list.length && list.every((x) => x.done)) toast('¡Lista completa!');
+    onChange(false);
+  }));
+  $$(`[data-${prefix}tdel]`, root).forEach((b) => (b.onclick = () => {
+    const i = list.findIndex((x) => x.id === b.getAttribute(`data-${prefix}tdel`));
+    if (i >= 0) list.splice(i, 1);
+    onChange(false);
+  }));
+}
+
+function setEventDone(ev, done) {
+  ev.done = done;
+  Store.save();
+  if (done) Sloth.react('hecho', { evento: typeLabel(ev) }, { proud: true });
+  else toast('Marcado como pendiente');
+  rerender();
+}
+
 function renderEventList(container, evs, emptyMsg) {
   if (!evs.length) {
     container.innerHTML = `<div class="empty small"><p>${esc(emptyMsg)}</p></div>`;
@@ -141,32 +190,62 @@ function renderEventList(container, evs, emptyMsg) {
   container.innerHTML = evs.map((ev) => {
     const d = eventDate(ev);
     const cd = countdown(d);
-    const t = eventType(ev);
     const proj = ev.projectId && projectById(ev.projectId);
+    const todos = ev.todos || [];
+    const nDone = todos.filter((t) => t.done).length;
+    const open = openTodoLists.has(ev.id);
     return `
-      <article class="ev-row" data-ev="${ev.id}" data-level="${cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" role="button">
-        <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
-        <div class="ev-main">
-          <div class="ev-type">${esc(typeLabel(ev))}</div>
-          <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · ${esc(proj.name)}` : ''}</div>
-          ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
-          <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
-        </div>
-        <div class="countdown" data-countdown="${d.getTime()}" data-level="${cd.level}" title="Cuánto falta">${cd.text}</div>
-      </article>`;
+      <div class="ev-item ${ev.done ? 'is-done' : ''}">
+        <article class="ev-row" data-ev="${ev.id}" data-level="${ev.done ? 'done' : cd.level}" style="--c:${subjectColor(ev.subjectId)}" tabindex="0" aria-label="${esc(typeLabel(ev))}: abrir para editar">
+          <button type="button" class="ev-check ${ev.done ? 'on' : ''}" data-done="${ev.id}" aria-pressed="${!!ev.done}" title="${ev.done ? 'Hecho. Tocá para marcarlo pendiente' : 'Marcar como hecho'}" aria-label="${ev.done ? 'Hecho' : 'Marcar como hecho'}">${CHECK_SVG}</button>
+          <div class="ev-date"><strong>${d.getDate()}</strong><span>${MONTHS[d.getMonth()].slice(0, 3)}</span></div>
+          <div class="ev-main">
+            <div class="ev-type">${esc(typeLabel(ev))}</div>
+            <div class="ev-subj"><span class="dot"></span>${esc(subjectName(ev.subjectId))}${proj ? ` · ${esc(proj.name)}` : ''}</div>
+            ${ev.title ? `<div class="ev-title">${esc(ev.title)}</div>` : ''}
+            <div class="ev-when">${fmtDateShort(d)} · ${ev.time || 'hora a confirmar'}</div>
+            <button type="button" class="ev-todo-chip ${todos.length && nDone === todos.length ? 'full' : ''}" data-todos="${ev.id}" aria-expanded="${open}">
+              ${todos.length ? `${nDone} de ${todos.length} cosas hechas` : '+ Cosas a hacer'} <span aria-hidden="true">${open ? '▴' : '▾'}</span></button>
+          </div>
+          ${ev.done
+            ? '<div class="countdown" data-level="done">Hecho</div>'
+            : `<div class="countdown" data-countdown="${d.getTime()}" data-level="${cd.level}" title="Cuánto falta">${cd.text}</div>`}
+        </article>
+        ${open ? `<div class="ev-todos" data-todo-box="${ev.id}">${todoListHTML(ev)}</div>` : ''}
+      </div>`;
   }).join('');
+  const redraw = () => renderEventList(container, evs, emptyMsg);
+  const find = (id) => Store.data.events.find((x) => x.id === id);
   $$('.ev-row', container).forEach((r) => {
-    const open = () => openEventForm(Store.data.events.find((x) => x.id === r.dataset.ev));
-    r.onclick = open;
-    r.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    const open = () => openEventForm(find(r.dataset.ev));
+    r.onclick = (e) => { if (!e.target.closest('button')) open(); };
+    r.onkeydown = (e) => { if (e.target === r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open(); } };
+  });
+  $$('[data-done]', container).forEach((b) => (b.onclick = () => { const ev = find(b.dataset.done); if (ev) setEventDone(ev, !ev.done); }));
+  $$('[data-todos]', container).forEach((b) => (b.onclick = () => {
+    const id = b.dataset.todos;
+    if (openTodoLists.has(id)) openTodoLists.delete(id); else openTodoLists.add(id);
+    redraw();
+    const inp = $(`[data-todo-box="${id}"] [data-tadd]`, container);
+    if (inp && !(find(id).todos || []).length) inp.focus();
+  }));
+  $$('[data-todo-box]', container).forEach((box) => {
+    const ev = find(box.dataset.todoBox);
+    if (!ev) return;
+    ev.todos = ev.todos || [];
+    bindTodoEditor(box, ev.todos, (added) => {
+      Store.save();
+      redraw();
+      if (added) { const inp = $(`[data-todo-box="${ev.id}"] [data-tadd]`, container); if (inp) inp.focus(); }
+    });
   });
 }
 
 function openEventForm(ev, preset = {}) {
   const isNew = !ev;
-  const data = ev ? { ...ev } : {
+  const data = ev ? { ...ev, todos: (ev.todos || []).map((t) => ({ ...t })) } : {
     id: uid(), type: preset.type || 'parcial', customType: '', subjectId: preset.subjectId || '', projectId: preset.projectId || '',
-    title: '', date: preset.date || toISODate(new Date()), time: '', notes: '',
+    title: '', date: preset.date || toISODate(new Date()), time: '', notes: '', done: false, todos: [],
   };
   const projOpts = Store.data.projects.map((p) => `<option value="${p.id}" ${p.id === data.projectId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
   Modal.open(isNew ? 'Nuevo evento' : 'Editar evento', `
@@ -189,6 +268,8 @@ function openEventForm(ev, preset = {}) {
       <label>Notas <span class="opt">(opcional)</span>
         <textarea name="notes" rows="3" placeholder="Salón, qué entra, qué llevar…">${esc(data.notes)}</textarea>
       </label>
+      <fieldset class="todo-field"><legend>Cosas a hacer <span class="opt">(opcional)</span></legend><div id="ev-todo-edit"></div></fieldset>
+      <label class="check"><input type="checkbox" name="done" ${data.done ? 'checked' : ''}> Ya está hecho</label>
       <div class="form-actions">
         ${isNew ? '' : '<button type="button" class="btn danger ghost" id="ev-del">Eliminar</button>'}
         <span class="grow"></span>
@@ -198,6 +279,13 @@ function openEventForm(ev, preset = {}) {
     </form>`, (body) => {
     const f = $('#ev-form', body);
     const el = f.elements;
+    const todoBox = $('#ev-todo-edit', f);
+    const paintTodos = (focus) => {
+      todoBox.innerHTML = todoListHTML(data, 'f');
+      bindTodoEditor(todoBox, data.todos, paintTodos, 'f');
+      if (focus) $('[data-ftadd]', todoBox).focus();
+    };
+    paintTodos(false);
     el.type.onchange = () => { $('.custom-type', f).hidden = el.type.value !== 'otro'; };
     el.projectId.onchange = () => {
       const p = projectById(el.projectId.value);
@@ -216,7 +304,10 @@ function openEventForm(ev, preset = {}) {
         date: el.date.value,
         time: el.time.value,
         notes: el.notes.value.trim(),
+        done: el.done.checked,
       });
+      const pending = $('[data-ftadd]', f).value.trim();
+      if (pending) data.todos.push({ id: uid(), text: pending, done: false });
       if (isNew) Store.data.events.push(data);
       else Object.assign(ev, data);
       if (changedDate) delete Store.data.remindersSent[data.id];

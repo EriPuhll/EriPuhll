@@ -561,7 +561,7 @@ const Sloth = {
   worried() {
     const now = new Date();
     return Store.data.events
-      .filter((e) => { const d = daysUntil(e.date, now); return d >= 0 && d <= 3 && e.subjectId; })
+      .filter((e) => { const d = daysUntil(e.date, now); return !e.done && d >= 0 && d <= 3 && e.subjectId; })
       .map((e) => ({ e, s: subjectById(e.subjectId) }))
       .find(({ s }) => s && subjectPace(s).behind) || null;
   },
@@ -616,7 +616,7 @@ const Sloth = {
     const now = new Date();
     const mood = this.mood();
     if (mood === 'dormido') return phrase('noche');
-    const next = Store.data.events.filter((e) => daysUntil(e.date, now) >= 0 && eventDate(e) >= now - DAY_MS).sort(byEventDate)[0];
+    const next = Store.data.events.filter((e) => !e.done && daysUntil(e.date, now) >= 0 && eventDate(e) >= now - DAY_MS).sort(byEventDate)[0];
     const r = Math.random();
     if (next) {
       const d = daysUntil(next.date, now);
@@ -732,7 +732,7 @@ const Sloth = {
     const now = new Date();
     for (const ev of Store.data.events.slice().sort(byEventDate)) {
       const d = daysUntil(ev.date, now);
-      if (d < 0 || !days.includes(d)) continue;
+      if (ev.done || d < 0 || !days.includes(d)) continue;
       const sent = Store.data.remindersSent[ev.id] || [];
       if (sent.includes(d)) continue;
       Store.data.remindersSent[ev.id] = [...sent, d];

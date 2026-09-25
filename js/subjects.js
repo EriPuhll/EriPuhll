@@ -4,6 +4,7 @@
 
 const SUBJECT_TABS = [
   { id: 'resumen', label: 'Resumen' },
+  { id: 'eventos', label: 'Pruebas y entregas' },
   { id: 'documentos', label: 'Documentos' },
   { id: 'practicos', label: 'Tareas a realizar' },
   { id: 'notas', label: 'Notas' },
@@ -36,7 +37,7 @@ function renderSubjects() {
         const [y, sem] = k.split('|');
         return `<h2 class="group-title">${semLabel(sem)} · ${y}</h2>
           <div class="subj-cards">${groups[k].map((s) => {
-            const next = Store.data.events.filter((e) => e.subjectId === s.id && eventDate(e) >= now).sort(byEventDate)[0];
+            const next = Store.data.events.filter((e) => e.subjectId === s.id && !e.done && eventDate(e) >= now).sort(byEventDate)[0];
             const p = subjectPace(s);
             return `<a class="card subj-card" href="#materia/${s.id}" style="--c:${s.color}">
               <div class="subj-card-top"><h3>${esc(s.name)}</h3><span class="badge">${Number(s.credits) || 0} cr.</span></div>
@@ -179,7 +180,7 @@ function renderSubject(id, tab = 'resumen') {
   $('#s-edit').onclick = () => openSubjectForm(s);
   $('#s-del').onclick = () => deleteSubject(s);
   const box = $('#subj-tab');
-  ({ resumen: tabResumen, documentos: tabDocumentos, practicos: tabPracticos, notas: tabNotas, apariencia: tabApariencia })[tab](s, box);
+  ({ resumen: tabResumen, eventos: tabEventos, documentos: tabDocumentos, practicos: tabPracticos, notas: tabNotas, apariencia: tabApariencia })[tab](s, box);
 }
 
 /* --- Resumen --- */
@@ -189,11 +190,37 @@ const RESUMEN_BLOCKS = [
   ['materia.apuntes', 'Apuntes pendientes'], ['materia.horario', 'Horario'], ['materia.faltas', 'Faltas'],
 ];
 
+// Pestañas visibles de la materia
+function subjectTabIds() {
+  return SUBJECT_TABS.map((t) => t.id).filter((id) => id === 'resumen' || !(Store.data.settings.subjectTabsHidden || []).includes(id));
+}
+
+/* ----- Pestaña: todos los eventos de la materia ----- */
+const EVENTOS_BLOCKS = [['materia.ev.pend', 'Pendientes'], ['materia.ev.hechos', 'Hechos']];
+function tabEventos(s, box) {
+  const all = Store.data.events.filter((e) => e.subjectId === s.id).sort(byEventDate);
+  const pend = all.filter((e) => !e.done);
+  const done = all.filter((e) => e.done).reverse();
+  const late = pend.filter((e) => daysUntil(e.date) < 0).length;
+  box.innerHTML = `
+    <div class="stack">
+      ${block('materia.ev.pend', `Pendientes (${pend.length})`, `${late ? `<p class="hint">${late === 1 ? 'Hay 1 que ya pasó' : `Hay ${late} que ya pasaron`} y no ${late === 1 ? 'está marcado' : 'están marcados'} como hecho.</p>` : ''}<div id="se-pend" class="ev-list"></div>`, { actions: '<button class="btn sm" id="se-add">+ Evento</button>' })}
+      ${block('materia.ev.hechos', `Hechos (${done.length})`, '<div id="se-done" class="ev-list"></div>')}
+    </div>
+    ${hiddenBar(EVENTOS_BLOCKS)}`;
+  bindBlocks(box);
+  const pb = $('#se-pend', box);
+  if (pb) renderEventList(pb, pend, 'No hay nada pendiente en esta materia.');
+  const db = $('#se-done', box);
+  if (db) renderEventList(db, done, 'Todavía no marcaste nada como hecho. Tocá el círculo de un evento cuando lo termines.');
+  on(box, '#se-add', 'onclick', () => openEventForm(null, { subjectId: s.id }));
+}
+
 function tabResumen(s, box) {
   const p = subjectPace(s);
   const pct = p.goal ? Math.min(100, (p.done / p.goal) * 100) : 0;
   const now = new Date();
-  const upcoming = Store.data.events.filter((e) => e.subjectId === s.id && (eventDate(e) >= now || daysUntil(e.date) === 0)).sort(byEventDate);
+  const upcoming = Store.data.events.filter((e) => e.subjectId === s.id && !e.done && (eventDate(e) >= now || daysUntil(e.date) === 0)).sort(byEventDate);
   const classes = Store.data.classes.filter((c) => c.subjectId === s.id).sort((a, b) => a.day - b.day || toMin(a.start) - toMin(b.start));
   const studying = Store.data.activeSession && Store.data.activeSession.subjectId === s.id;
   const absWarn = s.maxAbsences != null && s.absences >= s.maxAbsences - 1;
@@ -240,7 +267,7 @@ function tabResumen(s, box) {
     <div class="grid-2">
       ${block('materia.info', 'Info de la materia', info)}
       ${block('materia.creditos', 'Créditos y horas', creditos)}
-      ${block('materia.pruebas', 'Próximas pruebas', '<div id="s-events" class="ev-list"></div>', { actions: '<button class="btn sm" id="s-add-ev">+ Evento</button>' })}
+      ${block('materia.pruebas', 'Próximos eventos', `<div id="s-events" class="ev-list"></div>${subjectTabIds().includes('eventos') ? `<a class="more-link" href="#materia/${s.id}/eventos">Ver todos, con los hechos →</a>` : ''}`, { actions: '<button class="btn sm" id="s-add-ev">+ Evento</button>' })}
       ${block('materia.apuntes', 'Apuntes pendientes', apuntes)}
       ${block('materia.horario', 'Horario', horario, { actions: '<button class="btn sm" id="s-add-cl">+ Clase</button>' })}
       ${block('materia.faltas', 'Faltas', faltas, { cls: 'compact' })}

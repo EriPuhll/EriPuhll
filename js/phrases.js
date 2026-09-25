@@ -115,6 +115,7 @@ const PHRASES = {
   desbloqueo: ['¡Me regalaste {accesorio}! Gracias por estudiar tanto.', '¡{accesorio}! ¿Cómo me queda? Decime que bien.', '¡Ropa nueva! {accesorio}. Me siento el más lindo de la selva.', 'Mirá: {accesorio}. Todo gracias a tus horas de estudio.'],
   racha: ['¡{dias} días seguidos! Estoy re orgulloso.', '{dias} días de racha. No la cortes, ¿sí?', '¡{dias} días al hilo! Eso es más constancia que la mía para dormir.'],
   noche: ['Zzz… ¿qué hacés despierta? Mañana seguimos.', 'Ya es tarde. Hasta los perezosos duermen… bueno, sobre todo los perezosos.', 'Zzz… soñé que aprobabas todo. Ahora andá a dormir vos.', 'Es de noche. Cerrá la compu, que el cerebro también guarda lo que estudiaste mientras dormís.'],
+  hecho: ['¡{evento} listo! Qué orgullo me das.', '¡Tachamos {evento}! Aplausos lentos.', '{evento}: hecho. Me voy a hacer una siesta de festejo.', 'Uno menos: {evento}. Sos una genia.'],
   prioritario: ['¡Un ejercicio amarillo menos! Qué genia.', '¡Resolviste un prioritario! Aplausos lentos.', '¡Prioritario resuelto! Esa sí que costaba.'],
 };
 

@@ -3,7 +3,7 @@
  * así los cambios nuevos aparecen la próxima vez que se abre.
  * Si cambiás la lista de archivos, subí el número de versión.
  */
-const CACHE = 'perezoso-v11';
+const CACHE = 'perezoso-v12';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/styles.css',
   'img/perezoso.svg', 'img/icon-192.png', 'img/icon-512.png',

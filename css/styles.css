@@ -857,3 +857,48 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
   .card { box-shadow: none; }
   main { padding: 0; }
 }
+
+/* ---------- Eventos: hecho y cosas a hacer ---------- */
+.stack { display: grid; gap: 1rem; }
+.more-link { display: inline-block; margin-top: .3rem; font-weight: 700; font-size: .88rem; color: var(--accent-ink); }
+.ev-item { margin-bottom: .5rem; }
+.ev-item .ev-row { margin-bottom: 0; grid-template-columns: 34px 58px 1fr auto; }
+.ev-check {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--c) 70%, var(--line));
+  background: var(--surface); display: grid; place-items: center; padding: 0; cursor: pointer; color: transparent;
+  transition: background .15s, color .15s, transform .15s;
+}
+.ev-check .ic { width: 18px; height: 18px; stroke: currentColor; stroke-width: 3; fill: none; }
+.ev-check:hover { color: color-mix(in srgb, var(--c) 60%, var(--muted)); transform: scale(1.08); }
+.ev-check.on { background: var(--moss, #7cae7a); border-color: var(--moss, #7cae7a); color: #fff; }
+.ev-item.is-done .ev-type, .ev-item.is-done .ev-title { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--muted); }
+.ev-item.is-done .ev-row { background: color-mix(in srgb, var(--surface) 70%, var(--bg)); }
+.countdown[data-level="done"] { background: color-mix(in srgb, var(--moss, #7cae7a) 18%, var(--surface)); color: color-mix(in srgb, var(--moss, #7cae7a) 70%, var(--ink)); }
+.ev-todo-chip {
+  margin-top: .35rem; border: 1px dashed var(--line); background: none; border-radius: 999px; padding: .15rem .6rem;
+  font: inherit; font-size: .78rem; font-weight: 700; color: var(--muted); cursor: pointer;
+}
+.ev-todo-chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+.ev-todo-chip.full { border-style: solid; border-color: var(--moss, #7cae7a); color: color-mix(in srgb, var(--moss, #7cae7a) 70%, var(--ink)); }
+.ev-todos {
+  margin: -.2rem 0 0 1.2rem; padding: .7rem .8rem .8rem; border: 1px solid var(--line); border-top: 0;
+  border-radius: 0 0 14px 14px; background: var(--surface);
+}
+.todo-list { list-style: none; margin: 0 0 .5rem; padding: 0; }
+.todo-list li { display: flex; align-items: center; gap: .4rem; padding: .15rem 0; }
+.todo-list label { flex: 1; display: flex; align-items: center; gap: .5rem; cursor: pointer; font-weight: 600; min-width: 0; }
+.todo-list input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; margin: 0; }
+.todo-list li.done span { text-decoration: line-through; color: var(--muted); }
+.todo-add { display: flex; gap: .4rem; }
+.todo-add input { flex: 1; min-width: 0; }
+.todo-field { border: 1px solid var(--line); border-radius: 12px; padding: .5rem .8rem .7rem; margin: 0; }
+.todo-field legend { font-weight: 700; padding: 0 .3rem; }
+.chip.done { opacity: .55; }
+.chip.done .chip-t { text-decoration: line-through; }
+@container (max-width: 460px) {
+  .ev-item .ev-row { grid-template-columns: 30px 50px 1fr; }
+  .ev-item .ev-row .countdown { grid-column: 1 / -1; }
+  .ev-todos { margin-left: .4rem; }
+}
+.form .todo-list label { flex-direction: row; align-items: center; gap: .5rem; font-weight: 600; margin: 0; }
+.form .todo-list input[type="checkbox"] { width: 18px; height: 18px; padding: 0; flex: none; }
