@@ -1,9 +1,10 @@
 'use strict';
 
-/* ---------- Sección Perezoso: personalizar, vestir y elegir personalidad ---------- */
+/* ---------- Sección Perezoso: personalizar, vestir y ver sus poses ---------- */
 
 let wardrobeCat = 'todo';
 let previewMood = null;
+let previewPose = 1;
 
 function renderSlothPage() {
   const sl = Store.data.sloth;
@@ -12,19 +13,31 @@ function renderSlothPage() {
   const prevStep = WARDROBE.filter((w) => w.hours <= hours).reduce((m, w) => Math.max(m, w.hours), 0);
   const unlockedCount = WARDROBE.filter((w) => w.hours <= hours).length;
   const items = WARDROBE.filter((w) => wardrobeCat === 'todo' || w.cat === wardrobeCat).sort((a, b) => a.hours - b.hours);
-  const pers = PERSONALITIES.find((p) => p.id === sl.personality) || PERSONALITIES[0];
+  const mood = Sloth.mood();
+  const ratio = Sloth.studyRatio();
+  const w = weekSummary();
+  const moodWhy = {
+    orgulloso: 'Está contento: venís al día con las horas de esta semana.',
+    enojado: Sloth.daysSinceStudy() >= 3 ? `Está enojado: hace ${Sloth.daysSinceStudy()} días que no registrás estudio.` : 'Está enojado: esta semana vas con menos de la mitad de las horas que te tocan hasta hoy.',
+    preocupado: 'Está preocupado: tenés una prueba cerca y esa materia va atrasada.',
+    dormido: 'Está dormido: ya es de noche.',
+    estirandose: 'Se está estirando: estás en un descanso del pomodoro.',
+    feliz: 'Está tranqui: venís bien, aunque todavía podés sumar un poquito más.',
+  }[mood];
 
   $('#view').innerHTML = `
     <section class="page">
-      <div class="page-head"><div><h1>${esc(sl.name)}, tu perezoso</h1><p class="sub">Vestilo, cambiale el color y elegí cómo te habla. Cuanto más estudiás, más ropa desbloqueás.</p></div></div>
+      <div class="page-head"><div><h1>${esc(sl.name)}, tu perezoso</h1><p class="sub">Vestilo y cambiale el color. Cuanto más estudiás, más ropa desbloqueás y más contento está.</p></div></div>
       <div class="sloth-studio">
         <div class="card studio-preview">
           <button class="big-sloth" id="studio-sloth" aria-label="Tocalo para que hable"></button>
-          <div class="speech" id="studio-speech" style="font-size:1.15rem">${esc(phrase('saludo'))}</div>
+          <div class="speech" id="studio-speech" style="font-size:1.15rem">${esc(Sloth.contextPhrase())}</div>
           <div class="moods" role="group" aria-label="Ver expresiones">
             ${Object.keys(MOODS).map((m) => `<button class="chip-opt ${previewMood === m ? 'on' : ''}" data-mood="${m}">${MOODS[m]}</button>`).join('')}
           </div>
-          <p class="hint">Ahora está <strong>${MOODS[Sloth.mood()].toLowerCase()}</strong>. Cambia según cómo va tu semestre.</p>
+          <div class="field" style="width:100%"><strong class="small">Poses</strong>
+            <div class="pose-row">${SLOTH_POSES.map((p) => `<button type="button" class="pose-opt ${previewPose === p.id ? 'on' : ''}" data-pose="${p.id}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${p.id}</button>`).join('')}</div>
+            <span class="muted small">${esc(SLOTH_POSES[previewPose - 1].name)}</span></div>
           <div class="unlock-bar">
             <p><strong>${hours.toFixed(1)} h</strong> estudiadas este semestre · ${unlockedCount}/${WARDROBE.length} prendas</p>
             ${next ? `<div class="bar" style="margin:.4rem 0"><span style="width:${((hours - prevStep) / (next.hours - prevStep)) * 100}%"></span></div>
@@ -49,7 +62,7 @@ function renderSlothPage() {
                 const view = ['cabeza', 'ojos', 'cara', 'cuello'].includes(w.cat) ? 'head' : 'full';
                 return `<button class="item ${on ? 'on' : ''} ${locked ? 'locked' : ''}" data-item="${w.id}" ${locked ? 'aria-disabled="true"' : ''}
                     aria-pressed="${on}" aria-label="${esc(w.name)}${locked ? `, se desbloquea a las ${w.hours} horas` : ''}">
-                  <span class="thumb">${slothSVG({ view, mood: 'feliz', sloth: { ...sl, personality: 'tierno', equipped: { [w.cat]: w.id } } })}</span>
+                  <span class="thumb">${slothSVG({ view, mood: 'feliz', sloth: { ...sl, equipped: { [w.cat]: w.id } } })}</span>
                   ${locked ? `<span class="lock">${w.hours} h</span>` : ''}
                   <span class="i-name">${esc(w.name)}</span>
                   <span class="i-style">${esc(w.style)}${locked ? ` · faltan ${fmtHM((w.hours - hours) * 60)}` : ''}</span>
@@ -70,11 +83,10 @@ function renderSlothPage() {
           </section>
 
           <section class="card">
-            <h2>Personalidad</h2>
-            <p class="hint">Cambia todas sus frases. Ahora: <strong>${pers.label}</strong>.</p>
-            <div class="pers-grid" style="margin-top:.6rem">
-              ${PERSONALITIES.map((p) => `<button class="pers ${p.id === sl.personality ? 'on' : ''}" data-pers="${p.id}"><strong>${p.label}</strong><span>${p.desc}</span></button>`).join('')}
-            </div>
+            <h2>Cómo está hoy</h2>
+            <p style="margin-top:.4rem">${moodWhy}</p>
+            ${w.target ? `<p class="hint" style="margin-top:.4rem">Esta semana llevás ${fmtHM(w.done)} de ${fmtHM(w.target)}${ratio != null ? ` (${Math.round(ratio * 100)}% de lo que te tocaba hasta hoy)` : ''}.</p>` : ''}
+            <p class="hint" style="margin-top:.4rem">Con muchas horas se pone contento y te felicita; con pocas, se enoja y se pone un poquito pasivo-agresivo.</p>
           </section>
 
           <section class="card form">
@@ -82,7 +94,6 @@ function renderSlothPage() {
             <div class="chip-row" role="radiogroup" aria-label="Frecuencia">
               ${[['nunca', 'Nunca'], ['a_veces', 'A veces'], ['seguido', 'Seguido']].map(([v, l]) => `<button class="chip-opt ${sl.frequency === v ? 'on' : ''}" data-freq="${v}">${l}</button>`).join('')}
             </div>
-            <label class="check"><input type="checkbox" id="sl-sound" ${sl.sound ? 'checked' : ''}> Gong suave cuando aparece el Maestro dramático</label>
             <div class="btn-row"><button class="btn ghost" id="sl-call">Llamarlo ahora</button></div>
           </section>
         </div>
@@ -91,7 +102,7 @@ function renderSlothPage() {
 
   const v = $('#view');
   const big = $('#studio-sloth', v);
-  const paintBig = () => { big.innerHTML = slothSVG({ view: 'full', mood: previewMood || Sloth.mood() }); };
+  const paintBig = () => { big.innerHTML = slothSVG({ view: `pose-${previewPose}`, mood: previewMood || Sloth.mood() }); };
   paintBig();
   big.onclick = () => { $('#studio-speech', v).textContent = Sloth.contextPhrase(); };
   const save = (reRender = true) => { Store.save(); Sloth.refresh(); if (reRender) renderSlothPage(); else paintBig(); };
@@ -111,12 +122,7 @@ function renderSlothPage() {
   const fur = $('#sl-fur', v);
   fur.oninput = () => { sl.fur = fur.value; paintBig(); };
   fur.onchange = () => { sl.fur = fur.value; save(); };
-  $$('[data-pers]', v).forEach((b) => (b.onclick = () => {
-    sl.personality = b.dataset.pers;
-    save();
-    $('#studio-speech').textContent = phrase('saludo');
-  }));
+  $$('[data-pose]', v).forEach((b) => (b.onclick = () => { previewPose = +b.dataset.pose; renderSlothPage(); }));
   $$('[data-freq]', v).forEach((b) => (b.onclick = () => { sl.frequency = b.dataset.freq; Sloth.schedule(); save(); }));
-  $('#sl-sound', v).onchange = (e) => { sl.sound = e.target.checked; save(false); };
-  $('#sl-call', v).onclick = () => Sloth.show(Sloth.contextPhrase());
+  $('#sl-call', v).onclick = () => Sloth.show(Sloth.contextPhrase(), { force: true });
 }

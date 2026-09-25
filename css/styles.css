@@ -229,12 +229,12 @@ dialog::backdrop { background: rgba(30, 22, 45, .4); backdrop-filter: blur(3px);
 
 .toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 80;
-  transform: translate(-50%, 160%);
+  transform: translate(-50%, calc(100% + 40px)); visibility: hidden;
   background: var(--ink); color: var(--surface); font-weight: 600; font-size: .88rem;
   padding: .5rem .9rem; border-radius: 12px; max-width: min(360px, calc(100vw - 32px)); text-align: center;
-  box-shadow: var(--shadow); transition: transform .3s cubic-bezier(.2, .9, .3, 1.3);
+  box-shadow: var(--shadow); transition: transform .3s cubic-bezier(.2, .9, .3, 1.3), visibility .3s;
 }
-.toast.show { transform: translate(-50%, 0); }
+.toast.show { transform: translate(-50%, 0); visibility: visible; }
 
 /* ---------- Pestañas ---------- */
 
@@ -556,7 +556,7 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 
 .sloth-studio { display: grid; grid-template-columns: minmax(240px, 340px) 1fr; gap: 1rem; align-items: start; }
 .studio-preview { position: sticky; top: 1rem; display: flex; flex-direction: column; align-items: center; gap: .6rem; text-align: center; }
-.studio-preview .big-sloth { width: 100%; max-width: 340px; aspect-ratio: 344 / 240; border: 0; background: none; padding: 0; cursor: pointer; }
+.studio-preview .big-sloth { width: 100%; max-width: 340px; aspect-ratio: 344 / 260; border: 0; background: none; padding: 0; cursor: pointer; }
 .studio-preview .big-sloth svg { width: 100%; height: 100%; }
 .moods { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: center; }
 .wardrobe { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: .6rem; }
@@ -699,37 +699,56 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
 .empty-sloth.big { width: 120px; height: 120px; }
 .empty.small .empty-sloth { width: 44px; height: 44px; }
 
-/* ---------- El perezoso que aparece abajo a la izquierda ---------- */
+/* ---------- El perezoso que aparece de vez en cuando ----------
+ * Cada pose aparece pegada al borde que le corresponde: las de rama salen
+ * de un costado, las que cuelgan desde arriba, y las sentadas desde abajo.
+ */
 
 .sloth-peek {
-  position: fixed; left: clamp(8px, 2vw, 28px); bottom: 12px; z-index: 70;
-  display: flex; align-items: flex-end; gap: .2rem;
-  transform: translate(-30%, 130%); pointer-events: none;
+  position: fixed; z-index: 70; display: flex; align-items: center; gap: .3rem;
+  pointer-events: none; visibility: hidden;
 }
-.sloth-peek:not(.show) { visibility: hidden; }
-.sloth-peek.show { animation: slothIn 8.5s cubic-bezier(.3, .8, .3, 1) forwards; pointer-events: auto; }
-.sloth-body { width: 330px; height: 230px; border: 0; background: none; padding: 0; cursor: pointer; }
-.sloth-body svg { width: 100%; height: 100%; }
+.sloth-peek.show { visibility: visible; pointer-events: auto; animation: 8.5s cubic-bezier(.3, .8, .3, 1) forwards; }
+.sloth-body { width: 300px; height: 227px; border: 0; background: none; padding: 0; cursor: pointer; flex: none; }
+.sloth-body svg { width: 100%; height: 100%; display: block; }
 .sloth-bubble {
-  order: 2; margin-bottom: 150px; margin-left: -40px; max-width: 270px;
-  background: var(--surface); color: var(--ink); font-family: var(--hand); font-weight: 700; font-size: 1.2rem; line-height: 1.2;
-  padding: .7rem .9rem; border-radius: 18px 18px 18px 4px;
-  border: 2px solid var(--accent); box-shadow: var(--shadow);
+  max-width: 250px; background: var(--surface); color: var(--ink);
+  font-family: var(--hand); font-weight: 700; font-size: 1.2rem; line-height: 1.2;
+  padding: .7rem .9rem; border-radius: 18px; border: 2px solid var(--accent); box-shadow: var(--shadow);
 }
-@keyframes slothIn {
-  0% { transform: translate(-30%, 130%); }
-  12%, 90% { transform: translate(0, 0); }
-  100% { transform: translate(-30%, 130%); }
-}
-.page-sloth { display: block; width: min(300px, 90%); aspect-ratio: 344 / 240; border: 0; background: none; padding: 0; cursor: pointer; margin: .2rem auto 0; }
-.page-sloth svg { width: 100%; height: 100%; }
+.sloth-peek[data-place="left"] { left: 0; flex-direction: row-reverse; }
+.sloth-peek[data-place="left"].show { animation-name: peekLeft; }
+.sloth-peek[data-place="right"] { right: 0; }
+.sloth-peek[data-place="right"].show { animation-name: peekRight; }
+.sloth-peek[data-place="top-left"] { top: 0; left: 0; flex-direction: row-reverse; align-items: flex-start; }
+.sloth-peek[data-place="top-right"] { top: 0; right: 0; align-items: flex-start; }
+.sloth-peek[data-place^="top"] .sloth-bubble { margin-top: 110px; }
+.sloth-peek[data-place^="top"].show { animation-name: peekTop; }
+.sloth-peek[data-place="bottom"], .sloth-peek[data-place="bottom-right"] { bottom: 0; align-items: flex-end; }
+.sloth-peek[data-place="bottom"] { flex-direction: row-reverse; }
+.sloth-peek[data-place="bottom-right"] { right: 16px; }
+.sloth-peek[data-place^="bottom"] .sloth-bubble { margin-bottom: 150px; }
+.sloth-peek[data-place^="bottom"].show { animation-name: peekBottom; }
+.sloth-peek[data-place="left"] .sloth-body, .sloth-peek[data-place="top-left"] .sloth-body { margin-left: -12px; }
+.sloth-peek[data-place="right"] .sloth-body, .sloth-peek[data-place="top-right"] .sloth-body { margin-right: -12px; }
+@keyframes peekLeft { 0% { transform: translateX(-105%); } 12%, 90% { transform: none; } 100% { transform: translateX(-105%); } }
+@keyframes peekRight { 0% { transform: translateX(105%); } 12%, 90% { transform: none; } 100% { transform: translateX(105%); } }
+@keyframes peekTop { 0% { transform: translateY(-105%); } 12%, 90% { transform: none; } 100% { transform: translateY(-105%); } }
+@keyframes peekBottom { 0% { transform: translateY(105%); } 12%, 90% { transform: none; } 100% { transform: translateY(105%); } }
 @media (max-width: 1000px) {
-  .sloth-peek { bottom: calc(70px + env(safe-area-inset-bottom)); }
-  .sloth-body { width: 230px; height: 160px; }
-  .sloth-bubble { margin-bottom: 100px; max-width: 190px; font-size: 1.05rem; }
+  .sloth-peek[data-place^="bottom"] { bottom: calc(62px + env(safe-area-inset-bottom)); }
+  .sloth-body { width: 210px; height: 159px; }
+  .sloth-bubble { max-width: 170px; font-size: 1.02rem; }
+  .sloth-peek[data-place^="top"] .sloth-bubble { margin-top: 80px; }
+  .sloth-peek[data-place^="bottom"] .sloth-bubble { margin-bottom: 100px; }
 }
+.pose-row { display: flex; flex-wrap: wrap; gap: .3rem; margin: .35rem 0 .2rem; }
+.pose-opt { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-weight: 800; cursor: pointer; }
+.pose-opt.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.page-sloth { display: block; width: min(300px, 90%); aspect-ratio: 344 / 260; border: 0; background: none; padding: 0; cursor: pointer; margin: .2rem auto 0; }
+.page-sloth svg { width: 100%; height: 100%; }
 @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
-.sl-blink { animation: blink 4.5s infinite; transform-origin: 100px 94px; }
+.sl-blink { animation: blink 4.5s infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 .sl-zzz { animation: zzz 2.4s ease-in-out infinite; }
 @keyframes zzz { 50% { transform: translateY(-4px); opacity: .6; } }

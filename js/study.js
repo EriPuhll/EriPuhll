@@ -100,7 +100,7 @@ function renderStudy() {
           <div id="study-clock" class="big-clock">${a ? fmtClock(Date.now() - a.start) : '00:00:00'}</div>
           <p class="muted">${a ? `Empezaste a las ${fmtTime(new Date(a.start))}. Aunque cierres la app, sigue contando.` : 'Lista cuando vos digas.'}</p>
           <button class="btn big ${a ? 'danger' : ''}" id="study-toggle">${a ? '■ Terminar' : '▶ Comenzar'}</button>
-          <button type="button" class="page-sloth" data-sloth="full" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
+          <button type="button" class="page-sloth" data-sloth="pose-8" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
         </div>
         <div class="stats">
           <div class="card stat"><span>Hoy</span><strong>${fmtHM(studiedMinutes('', todayStart))}</strong></div>

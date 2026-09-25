@@ -2,7 +2,7 @@
 
 *Despacito, pero al día.*
 
-App web personal para organizar el semestre de facultad, con un perezoso que te acompaña, se viste con lo que vas desbloqueando al estudiar y te habla según su personalidad.
+App web personal para organizar el semestre de facultad, con un perezoso que te acompaña, se viste con lo que vas desbloqueando al estudiar y te habla según cómo viene tu semana de estudio.
 
 ## Cómo abrirla
 
@@ -27,7 +27,7 @@ App web personal para organizar el semestre de facultad, con un perezoso que te 
 | ⏱️ **Horas de estudio** | Cronómetro que sobrevive a cerrar la app, registro editable con origen, carga manual, últimos 14 días, semana por materia, total del semestre y racha. |
 | 🍅 **Pomodoro** | Tiempos configurables; cada bloque terminado se suma a la materia. **Simulacro de parcial** con tiempo por ejercicio y comparación con simulacros anteriores. |
 | 🤝 **Proyectos** | Integrantes, links, tareas con responsable y entregas que aparecen también en el calendario. Se pueden **compartir** (link, WhatsApp, mail o archivo) e importar. |
-| 🦥 **Perezoso** | Nombre, color de pelo, 6 personalidades (Maestro dramático por defecto), frecuencia, y un **ropero de 45 prendas** que se desbloquean con horas de estudio. Aparece de vez en cuando bajando con su rama; también lo podés llamar con el botoncito de abajo a la derecha. |
+| 🦥 **Perezoso** | Nombre, color de pelo, **9 poses**, frecuencia, y un **ropero de 45 prendas** que se desbloquean con horas de estudio. Su humor depende de tus horas: si vas bien está contento y te dice cosas tiernas; si estudiás poco se enoja y se pone pasivo-agresivo. Aparece de vez en cuando en un lugar que va con la pose (colgado arriba, sentado abajo, en su rama desde un costado); también lo podés llamar con el botoncito de abajo a la derecha. |
 | ⚙️ **Ajustes** | Nombre, horas por crédito, fechas del semestre, recordatorios, **apariencia completa** (6 colores, tipografía, bordes, modo oscuro, fondo, temas listos y el símbolo de las listas), guardado automático, instalar, respaldo. |
 
 ### El ropero del perezoso
@@ -44,7 +44,7 @@ index.html               estructura (menú arriba / navegación inferior en celu
 css/styles.css           estilos (todo con variables de color)
 js/util.js               utilidades, fechas, modal
 js/store.js              datos, migraciones, datos iniciales y consultas
-js/phrases.js            frases del perezoso por personalidad y contexto
+js/phrases.js            frases del perezoso según contexto y humor (contento / normal / enojado)
 js/sloth.js              dibujo por capas, ropero, ánimo y apariciones
 js/theme.js              temas, patrones y fondos
 js/home.js               Inicio
