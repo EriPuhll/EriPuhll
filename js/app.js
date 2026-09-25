@@ -37,6 +37,8 @@ function route() {
   Modal.close();
   $('#more-sheet').hidden = true;
   $('#more-btn').setAttribute('aria-expanded', 'false');
+  Sloth.pagePoses = {}; // cada visita, figuras nuevas
+  if (!location.hash.startsWith('#estudio') && document.body.classList.contains('study-focus')) setStudyFocus(false);
   rerender();
   window.scrollTo(0, 0);
 }
@@ -48,6 +50,12 @@ function updateLive() {
 
   const clock = $('#study-clock');
   if (clock && a) clock.textContent = fmtClock(now - a.start);
+  // En Estudio, el perezoso cambia de pose cada tanto
+  const ps = $('[data-page-sloth="estudio"]');
+  if (ps && now - (Sloth.lastStudyReroll || (Sloth.lastStudyReroll = now)) > 4 * 60000) {
+    Sloth.lastStudyReroll = now;
+    Sloth.rerollPage(ps, 'estudio', POSE_SETS.estudio);
+  }
   paintPomodoro();
 
   let pillHtml = '', href = '#estudio';

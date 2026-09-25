@@ -127,7 +127,8 @@ function renderPomoTimer(el) {
           <button class="btn big" id="pomo-toggle">${Pomo.running ? '❚❚ Pausar' : '▶ Empezar'}</button>
           <button class="btn ghost" id="pomo-skip" title="Saltar a la siguiente fase" aria-label="Saltar fase">⏭</button>
         </div>
-        <button type="button" class="page-sloth" data-sloth="pose-${Pomo.phase === 'work' ? 4 : 7}" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
+        <button type="button" class="page-sloth" data-sloth="pose-${Sloth.pagePose(pomoSlothKey(), POSE_SETS[pomoSlothKey()])}" data-page-sloth aria-label="Tocá al perezoso para que hable y cambie de pose"></button>
+        <p class="sloth-quote page-quote" aria-live="polite"></p>
         <p class="muted center">${p.subjectId ? `Cada bloque de foco terminado suma ${p.work} min a <strong>${esc(subjectName(p.subjectId))}</strong>.` : 'Elegí una materia para que los bloques se sumen a tus horas.'}</p>
       </div>
 
@@ -168,9 +169,11 @@ function renderPomoTimer(el) {
     renderPomoTimer(el);
   };
   Sloth.paint(el);
-  $$('[data-sloth-talk]', el).forEach((b) => (b.onclick = () => Sloth.speak()));
+  $$('[data-page-sloth]', el).forEach((b) => (b.onclick = () => { Sloth.rerollPage(b, pomoSlothKey(), POSE_SETS[pomoSlothKey()]); Sloth.sayOnPage(b); }));
   paintPomodoro();
 }
+
+const pomoSlothKey = () => (Pomo.phase === 'work' ? 'foco' : 'descanso');
 
 function paintPomodoro() {
   const t = $('#pomo-time');

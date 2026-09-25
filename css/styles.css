@@ -475,6 +475,20 @@ ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-directio
 .study-timer label { width: min(100%, 340px); }
 .big-clock { font-size: clamp(2.6rem, 8vw, 4rem); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent-ink); }
 .study-timer.running { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
+.focus-btn { margin-top: -.2rem; }
+.page-quote { display: none; max-width: 340px; text-align: center; margin: -.2rem auto 0; }
+.page-quote.on { display: block; animation: fadeUp .3s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* Cronómetro en pantalla completa */
+body.study-focus { overflow: hidden; }
+body.study-focus .topbar, body.study-focus .bottom-nav, body.study-focus .sloth-fab, body.study-focus .more-sheet { display: none !important; }
+body.study-focus .study-timer {
+  position: fixed; inset: 0; z-index: 60; border-radius: 0; border: 0; box-shadow: none;
+  justify-content: center; gap: 1rem; padding: 2rem 1rem; background: var(--bg); overflow: auto;
+}
+body.study-focus .big-clock { font-size: clamp(4rem, 17vw, 12rem); line-height: 1; }
+body.study-focus .page-sloth { width: auto; height: min(34vh, 290px); max-width: 80vw; margin: 0 auto; }
+body.study-focus .focus-btn { position: absolute; top: 14px; right: 14px; margin: 0; }
 .timer-sloth { position: absolute; width: 74px; height: 74px; right: -8px; top: -6px; transform: rotate(14deg); }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; align-content: start; }
 .stat { display: flex; flex-direction: column; gap: .2rem; padding: .9rem 1rem; }
@@ -722,6 +736,7 @@ ul.plain > li.pill::before, ul.plain > li.muted::before { content: none; }
 .sloth-peek[data-place="right"].show { animation-name: peekRight; }
 .sloth-peek[data-place="top-left"] { top: 0; left: 0; flex-direction: row-reverse; align-items: flex-start; }
 .sloth-peek[data-place="top-right"] { top: 0; right: 0; align-items: flex-start; }
+.sloth-peek[data-place="top"] { top: 0; flex-direction: row-reverse; align-items: flex-start; }
 .sloth-peek[data-place^="top"] .sloth-bubble { margin-top: 110px; }
 .sloth-peek[data-place^="top"].show { animation-name: peekTop; }
 .sloth-peek[data-place="bottom"], .sloth-peek[data-place="bottom-right"] { bottom: 0; align-items: flex-end; }

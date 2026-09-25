@@ -251,10 +251,24 @@ const SLOTH_POSES = [
   { id: 4, name: 'Sentado leyendo', place: 'bottom' },
   { id: 5, name: 'Durmiendo hecho bolita', place: 'left' },
   { id: 6, name: 'Saludando', place: 'top-left' },
-  { id: 7, name: 'Estirándose', place: 'right' },
+  { id: 7, name: 'Colgado de las patas', place: 'top-right' },
   { id: 8, name: 'Estudiando en la compu', place: 'bottom' },
   { id: 9, name: 'Asomándose', place: 'bottom' },
+  { id: 10, name: 'Tomando mate', place: 'bottom' },
+  { id: 11, name: 'Siesta en la hamaca', place: 'top' },
+  { id: 12, name: 'Colgado de una liana', place: 'top' },
+  { id: 13, name: 'Festejando', place: 'bottom' },
+  { id: 14, name: 'Escuchando música', place: 'bottom' },
+  { id: 15, name: 'Espiando', place: 'right' },
+  { id: 16, name: 'Meditando', place: 'bottom' },
 ];
+
+// Figuras que tienen sentido en cada página
+const POSE_SETS = {
+  estudio: [8, 4, 10, 14, 16, 9, 12, 13],
+  foco: [4, 8, 10, 14],
+  descanso: [13, 16, 11, 7, 1],
+};
 
 function drawPose(id, c, mood, items) {
   const limb = (d, col = c.fur, w = 28) => `<path d="${d}" stroke="${mixHex(col, '#3b2616', 0.25)}" stroke-width="${w + 4}" fill="none" stroke-linecap="round" opacity=".35"/><path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
@@ -344,18 +358,19 @@ function drawPose(id, c, mood, items) {
         ${arm(112, 100)}${hand(166, 196, 0.5)}
         ${head(160, 104, -4, 0.95)}`;
     }
-    case 7: { // estirándose (sentado en la rama que sale del borde derecho)
-      const P = { body: ellipsePath(166, 162, 50, 58), center: [166, 164], rx: 50, ry: 58, skirt: 'M122 178 Q166 192 210 178 L226 212 Q166 226 106 212 Z', hem: 'M106 212 Q120 204 134 214 Q148 204 162 216 Q176 204 190 214 Q204 204 226 212', spine: [[114, 130, -60], [110, 160, -85], [114, 190, -105]] };
+    case 7: { // colgado de las patas, cabeza abajo (la rama sale del borde derecho)
+      const P = { body: ellipsePath(166, 98, 50, 58), center: [166, 100], rx: 50, ry: 58 };
       const o = dress(P);
-      return `${branch(222, 20, 420)}${leaf(34, 216, -30)}
-        ${back(166, 150)}${o.back}
-        <path d="${P.body}" fill="${c.fur}"/>${belly(166, 174, 30, 38)}${o.front}
-        ${limb('M130 128 C 112 96, 104 64, 108 34')}${limb('M202 128 C 220 96, 228 64, 224 34')}
-        ${claw(108, 34, 175)}${claw(224, 34, 185)}
-        ${limb('M140 212 C 136 220, 128 224, 118 224', c.furDark)}${limb('M192 212 C 196 220, 204 224, 214 224', c.furDark)}
-        ${claw(116, 224, 80)}${claw(216, 224, -80)}
-        ${arm(116, 86)}${hand(108, 60, 0.45)}
-        ${head(166, 104, 0, 0.95)}`;
+      return `${branch(38, 20, 420)}${leaf(34, 32, -30)}
+        ${limb('M146 60 C 142 48, 140 40, 140 32', c.furDark)}${limb('M186 60 C 190 48, 192 40, 192 32', c.furDark)}
+        ${claw(140, 52, 180)}${claw(192, 52, 180)}
+        ${back(166, 104)}${o.back}
+        <path d="${P.body}" fill="${c.fur}"/>${belly(166, 92, 30, 38)}${o.front}
+        ${hair('M140 70 q8 -4 16 0 M178 72 q8 -4 16 0')}
+        ${limb('M130 128 C 112 160, 104 192, 108 222')}${limb('M202 128 C 220 160, 228 192, 224 222')}
+        ${claw(108, 222, 5)}${claw(224, 222, -5)}
+        ${arm(116, 150)}${hand(224, 244, 0.42)}
+        ${head(166, 164, 0, 0.95)}`;
     }
     case 8: { // estudiando en la compu (escritorio abajo)
       const P = { body: ellipsePath(165, 160, 56, 62), center: [165, 150], rx: 56, ry: 62, spine: [[112, 120, -60], [106, 150, -85]] };
@@ -383,6 +398,111 @@ function drawPose(id, c, mood, items) {
         ${claw(104, 204, 0)}${claw(226, 204, 0)}
         ${hand(262, 196, 0.45)}`;
     }
+    case 10: { // tomando mate (sentado abajo, con el termo al lado)
+      const P = { body: ellipsePath(165, 170, 58, 64), center: [165, 168], rx: 58, ry: 64, skirt: 'M112 196 Q165 212 218 196 L238 240 Q165 256 92 240 Z', hem: 'M92 240 Q106 232 120 242 Q134 232 148 244 Q162 232 176 244 Q190 232 204 242 Q218 232 238 240', spine: [[112, 130, -60], [106, 160, -85], [110, 190, -105]] };
+      const o = dress(P);
+      return `<ellipse cx="165" cy="252" rx="150" ry="18" fill="#8cc084" opacity=".45"/>
+        <rect x="246" y="150" width="34" height="94" rx="10" fill="${ACCENT}"/><rect x="250" y="138" width="26" height="18" rx="5" fill="#5b4a7a"/>
+        <rect x="246" y="186" width="34" height="8" fill="#fff" opacity=".45"/><path d="M280 170 q12 0 12 14 q0 14 -12 14" stroke="#5b4a7a" stroke-width="5" fill="none"/>
+        ${back(165, 160)}${o.back}
+        <path d="${P.body}" fill="${c.fur}"/>${belly(165, 182, 36, 44)}${o.front}
+        ${limb('M126 224 C 116 232, 112 236, 104 236', c.furDark)}${limb('M204 224 C 214 232, 218 236, 226 236', c.furDark)}
+        ${claw(102, 234, 90)}${claw(228, 234, -90)}
+        ${limb('M124 142 C 108 170, 120 204, 144 208')}${limb('M206 142 C 222 170, 210 204, 186 208')}
+        ${claw(144, 204, -80)}${claw(186, 204, 80)}
+        <path d="M170 184 L186 140" stroke="#cfcfd6" stroke-width="4" stroke-linecap="round"/>
+        <path d="M146 184 Q140 224 165 228 Q190 224 184 184 Z" fill="#8a5a2b"/><ellipse cx="165" cy="184" rx="19" ry="6" fill="#5e3a19"/><ellipse cx="165" cy="183" rx="14" ry="4" fill="#6f9a4a"/>
+        <path d="M152 206 q13 -6 26 0" stroke="#c9a15c" stroke-width="2.5" fill="none"/>
+        <path d="M152 170 q-6 -8 0 -16 M160 166 q-6 -8 0 -16" stroke="#b9aec9" stroke-width="2" fill="none" stroke-linecap="round"/>
+        ${arm(114, 172)}${hand(66, 236, 0.4)}
+        ${head(165, 98, -4, 0.95)}`;
+    }
+    case 11: { // siesta en la hamaca (las cuerdas suben al borde de arriba)
+      const P = { body: ellipsePath(180, 134, 72, 34), center: [180, 130], rx: 72, ry: 34 };
+      const o = dress(P);
+      return `<path d="M44 102 L22 -20 M286 102 L308 -20" stroke="#b08a5a" stroke-width="5" stroke-linecap="round"/>
+        <path d="M44 102 Q165 250 286 102" fill="#7d5bb8"/>
+        ${back(180, 128, 0.7)}${o.back}
+        <path d="${P.body}" fill="${c.fur}"/>${o.front}
+        ${hair('M160 106 q12 -5 24 -1 M204 104 q10 -2 18 3')}
+        ${limb('M232 146 C 250 166, 262 188, 266 212', c.furDark)}${claw(266, 212, -10)}
+        <path d="M38 102 Q165 246 292 102 Q165 160 38 102 Z" fill="${ACCENT}"/>
+        <path d="M66 124 Q165 196 264 124 M86 146 Q165 206 244 146" stroke="#fff" stroke-width="4" fill="none" opacity=".55"/>
+        ${limb('M136 156 C 132 176, 130 192, 132 206')}${claw(132, 206)}
+        ${hand(132, 226, 0.4)}
+        ${head(98, 124, -16, 0.86)}`;
+    }
+    case 12: { // colgado de una liana (baja del borde de arriba)
+      const P = { body: ellipsePath(165, 166, 44, 58), center: [165, 168], rx: 44, ry: 58, skirt: 'M126 188 Q165 200 204 188 L218 226 Q165 240 112 226 Z', hem: 'M112 226 Q126 218 140 228 Q154 218 168 230 Q182 218 196 228 Q208 218 218 226', spine: [[208, 130, 60], [212, 160, 85], [208, 190, 105]] };
+      const o = dress(P);
+      return `<path d="M165 -20 C 158 6, 172 24, 165 48" stroke="#5f8f3e" stroke-width="10" fill="none" stroke-linecap="round"/>
+        ${leaf(160, 6, -50, 0.8)}${leaf(170, 26, 50, 0.7)}
+        ${limb('M128 136 C 116 100, 132 66, 156 50')}${limb('M202 136 C 214 100, 198 66, 174 50')}
+        ${claw(158, 56, 200)}${claw(172, 56, 160)}
+        ${back(165, 156)}${o.back}
+        ${limb('M148 214 C 146 230, 142 242, 140 250', c.furDark)}${limb('M182 214 C 184 230, 188 242, 190 250', c.furDark)}
+        ${claw(140, 246, 10)}${claw(190, 246, -10)}
+        <path d="${P.body}" fill="${c.fur}"/>${belly(165, 180, 26, 38)}${o.front}
+        ${arm(114, 116)}${hand(222, 200, 0.42)}
+        ${head(165, 118, 3, 0.92)}`;
+    }
+    case 13: { // festejando (parado abajo, con papel picado)
+      const P = { body: ellipsePath(165, 158, 48, 60), center: [165, 160], rx: 48, ry: 60, skirt: 'M124 176 Q165 190 206 176 L222 214 Q165 228 108 214 Z', hem: 'M108 214 Q122 206 136 216 Q150 206 164 218 Q178 206 192 216 Q206 206 222 214', spine: [[116, 130, -60], [112, 160, -85], [116, 190, -105]] };
+      const o = dress(P);
+      const conf = [[36, 40, ACCENT], [70, 96, '#f2b134'], [258, 26, '#7cc6a8'], [292, 96, '#f28ab2'], [22, 150, '#7cc6a8'], [300, 168, ACCENT], [124, 16, '#f28ab2'], [214, 60, '#f2b134'], [60, 200, '#f28ab2'], [270, 214, '#f2b134']]
+        .map(([x, y, col], i) => `<rect x="${x}" y="${y}" width="9" height="14" rx="2" fill="${col}" transform="rotate(${i * 37} ${x} ${y})"/>`).join('');
+      return `${conf}<ellipse cx="165" cy="252" rx="120" ry="14" fill="#8cc084" opacity=".45"/>
+        ${back(165, 150)}${o.back}
+        ${limb('M146 206 C 144 224, 142 236, 140 246', c.furDark)}${limb('M184 206 C 186 224, 188 236, 190 246', c.furDark)}
+        ${claw(140, 244, 80)}${claw(190, 244, -80)}
+        <path d="${P.body}" fill="${c.fur}"/>${belly(165, 172, 28, 38)}${o.front}
+        ${limb('M128 126 C 108 98, 96 70, 92 42')}${limb('M202 126 C 222 98, 234 70, 238 42')}
+        ${claw(92, 42, 170)}${claw(238, 42, 190)}
+        ${arm(112, 92)}${hand(92, 30, 0.42)}
+        ${head(165, 102, 0, 0.95)}`;
+    }
+    case 14: { // escuchando música (sentado abajo, con auriculares)
+      const P = { body: ellipsePath(165, 170, 58, 64), center: [165, 168], rx: 58, ry: 64, skirt: 'M112 196 Q165 212 218 196 L238 240 Q165 256 92 240 Z', hem: 'M92 240 Q106 232 120 242 Q134 232 148 244 Q162 232 176 244 Q190 232 204 242 Q218 232 238 240', spine: [[112, 130, -60], [106, 160, -85], [110, 190, -105]] };
+      const o = dress(P);
+      const note = (x, y, col, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse cx="0" cy="18" rx="7" ry="5.5" fill="${col}" transform="rotate(-20 0 18)"/><path d="M6 16 L6 -8 Q14 -4 18 6" stroke="${col}" stroke-width="3" fill="none" stroke-linecap="round"/></g>`;
+      return `<ellipse cx="165" cy="252" rx="150" ry="18" fill="#8cc084" opacity=".45"/>
+        ${note(56, 60, ACCENT, -12)}${note(262, 40, '#f28ab2', 10)}${note(286, 120, ACCENT, 14)}${note(34, 140, '#7cc6a8', -6)}
+        ${back(165, 160)}${o.back}
+        <path d="${P.body}" fill="${c.fur}"/>${belly(165, 182, 36, 44)}${o.front}
+        ${limb('M126 224 C 116 232, 112 236, 104 236', c.furDark)}${limb('M204 224 C 214 232, 218 236, 226 236', c.furDark)}
+        ${claw(102, 234, 90)}${claw(228, 234, -90)}
+        ${limb('M124 142 C 110 170, 124 200, 150 206')}${limb('M206 142 C 220 170, 206 200, 180 206')}
+        ${claw(150, 202, -80)}${claw(180, 202, 80)}
+        <rect x="150" y="180" width="30" height="46" rx="6" fill="#2a2238"/><rect x="154" y="185" width="22" height="34" rx="3" fill="#b9a3f0"/>
+        <path d="M160 206 l0 -12 l10 -3 l0 12" stroke="#fff" stroke-width="2" fill="none"/>
+        ${arm(114, 172)}${hand(236, 214, 0.42)}
+        ${head(165, 98, 6, 0.95)}
+        <g transform="rotate(6 165 98)"><path d="M112 98 C 112 36, 218 36, 218 98" stroke="#5b4a7a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <rect x="102" y="84" width="18" height="32" rx="8" fill="${ACCENT}"/><rect x="210" y="84" width="18" height="32" rx="8" fill="${ACCENT}"/></g>`;
+    }
+    case 15: { // espiando desde el costado derecho
+      const P = { body: ellipsePath(334, 150, 60, 84), center: [320, 150], rx: 60, ry: 84 };
+      const o = dress(P);
+      return `<path d="${P.body}" fill="${c.fur}"/>${o.front}
+        ${limb('M338 208 C 306 210, 292 218, 288 230', c.furDark)}${claw(286, 228, 40)}
+        ${head(250, 128, -16, 1.08)}
+        ${limb('M340 58 C 312 50, 298 54, 292 62')}${claw(290, 60, 40)}
+        ${hand(284, 150, 0.42)}`;
+    }
+    case 16: { // meditando (flotando un poquito, abajo)
+      const P = { body: ellipsePath(165, 156, 50, 58), center: [165, 158], rx: 50, ry: 58 };
+      const o = dress(P);
+      const spark = [[60, 80, 9], [272, 70, 11], [40, 170, 7], [292, 170, 8], [110, 30, 6], [226, 24, 7]].map(([x, y, r]) => sparkle(x, y, r, ACCENT)).join('');
+      return `<g opacity=".7">${spark}</g><ellipse cx="165" cy="252" rx="86" ry="8" fill="#2a2238" opacity=".12"/>
+        ${back(165, 150)}${o.back}
+        <path d="${P.body}" fill="${c.fur}"/>${belly(165, 168, 28, 36)}${o.front}
+        <ellipse cx="165" cy="214" rx="80" ry="24" fill="${c.furDark}"/><path d="M110 212 Q165 234 220 212" stroke="${mixHex(c.furDark, '#3b2616', 0.3)}" stroke-width="2.5" fill="none"/>
+        ${claw(94, 206, 90)}${claw(236, 206, -90)}
+        ${limb('M122 132 C 100 158, 96 184, 106 204')}${limb('M208 132 C 230 158, 234 184, 224 204')}
+        ${claw(106, 200, 30)}${claw(224, 200, -30)}
+        ${arm(112, 162)}${hand(165, 200, 0.42)}
+        ${head(165, 98, 0, 0.95)}`;
+    }
     default: { // 1 · acostado en la rama (sale del borde izquierdo)
       const P = {
         body: 'M112 132 C 100 88, 150 56, 208 58 C 262 60, 292 90, 286 124 C 282 146, 252 152, 206 148 L 136 146 Z', center: [205, 104], rx: 80, ry: 44,
@@ -407,7 +527,7 @@ function drawPose(id, c, mood, items) {
 
 /**
  * Devuelve el SVG del perezoso.
- * view: 'head' (solo la cara), 'full' (pose 1) o 'pose-N' (N de 1 a 9).
+ * view: 'head' (solo la cara), 'full' (pose 1) o 'pose-N' (N de 1 a 16).
  */
 function slothSVG({ view = 'full', mood, sloth, pose } = {}) {
   const sl = sloth || Store.data.sloth;
@@ -513,11 +633,34 @@ const Sloth = {
 
   // Qué pose usar y en qué borde de la pantalla aparece
   pickPose(mood) {
-    if (mood === 'dormido') return 5;
-    if (mood === 'estirandose') return 7;
-    if (location.hash.startsWith('#estudio')) return 8;
-    const opts = [1, 2, 3, 4, 6, 9, 5, 7];
-    return opts[Math.floor(Math.random() * opts.length)];
+    const any = (a) => a[Math.floor(Math.random() * a.length)];
+    if (mood === 'dormido') return any([5, 11]);
+    if (mood === 'estirandose') return any([13, 16, 7]);
+    if (location.hash.startsWith('#estudio')) return any(POSE_SETS.estudio);
+    return any(SLOTH_POSES.map((p) => p.id).filter((id) => id !== this.peekPose));
+  },
+
+  // Figura de una página (Estudio, Pomodoro): al azar, pero fija mientras estás en la página
+  pagePoses: {},
+  pagePose(key, opts) {
+    if (!opts.includes(this.pagePoses[key])) this.pagePoses[key] = opts[Math.floor(Math.random() * opts.length)];
+    return this.pagePoses[key];
+  },
+  // Frase debajo de la figura de la página (sin sacar otro perezoso)
+  sayOnPage(btn) {
+    const q = btn.parentElement.querySelector('.page-quote');
+    if (!q) return this.speak();
+    q.textContent = this.contextPhrase();
+    q.classList.add('on');
+    clearTimeout(this.quoteTimer);
+    this.quoteTimer = setTimeout(() => q.classList.remove('on'), 9000);
+  },
+  // Cambia la figura de una página por otra distinta y la vuelve a dibujar
+  rerollPage(btn, key, opts) {
+    const rest = opts.filter((id) => id !== this.pagePoses[key]);
+    this.pagePoses[key] = rest[Math.floor(Math.random() * rest.length)];
+    btn.dataset.sloth = `pose-${this.pagePoses[key]}`;
+    this.paint(btn.parentElement);
   },
 
   show(msg, { mood = null, ms = 8500, force = false, pose = null } = {}) {
@@ -530,7 +673,7 @@ const Sloth = {
     // Posición a lo largo del borde (arriba/abajo o a un costado)
     const rnd = (a, b) => `${Math.round(a + Math.random() * (b - a))}%`;
     peek.style.top = ['left', 'right'].includes(place) ? rnd(22, 52) : '';
-    peek.style.left = place === 'bottom' ? rnd(4, 58) : '';
+    peek.style.left = ['bottom', 'top'].includes(place) ? rnd(4, 58) : '';
     this.paint(peek, true);
     $('#sloth-bubble').textContent = msg || this.contextPhrase();
     peek.classList.remove('show');

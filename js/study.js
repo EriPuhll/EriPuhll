@@ -100,7 +100,9 @@ function renderStudy() {
           <div id="study-clock" class="big-clock">${a ? fmtClock(Date.now() - a.start) : '00:00:00'}</div>
           <p class="muted">${a ? `Empezaste a las ${fmtTime(new Date(a.start))}. Aunque cierres la app, sigue contando.` : 'Lista cuando vos digas.'}</p>
           <button class="btn big ${a ? 'danger' : ''}" id="study-toggle">${a ? '■ Terminar' : '▶ Comenzar'}</button>
-          <button type="button" class="page-sloth" data-sloth="pose-8" data-sloth-talk aria-label="Tocá al perezoso para que hable"></button>
+          <button type="button" class="page-sloth" data-sloth="pose-${Sloth.pagePose('estudio', POSE_SETS.estudio)}" data-page-sloth="estudio" aria-label="Tocá al perezoso para que hable y cambie de pose"></button>
+          <p class="sloth-quote page-quote" aria-live="polite"></p>
+          <button type="button" class="btn ghost small focus-btn" id="study-full" aria-pressed="${document.body.classList.contains('study-focus')}">${document.body.classList.contains('study-focus') ? 'Salir de pantalla completa' : '⛶ Pantalla completa'}</button>
         </div>
         <div class="stats">
           <div class="card stat"><span>Hoy</span><strong>${fmtHM(studiedMinutes('', todayStart))}</strong></div>
@@ -161,6 +163,8 @@ function renderStudy() {
   const v = $('#view');
   Sloth.paint(v);
   $$('[data-sloth-talk]', v).forEach((b) => (b.onclick = () => Sloth.speak()));
+  $$('[data-page-sloth]', v).forEach((b) => (b.onclick = () => { Sloth.rerollPage(b, 'estudio', POSE_SETS.estudio); Sloth.sayOnPage(b); }));
+  $('#study-full').onclick = () => setStudyFocus(!document.body.classList.contains('study-focus'));
   bindBlocks(v);
   const tip = $('.chart-tip', v);
   $$('.bar-g', v).forEach((g) => {
@@ -224,3 +228,18 @@ function openSessionForm(se) {
     };
   });
 }
+
+/* ---------- Pantalla completa del cronómetro ---------- */
+function setStudyFocus(onOff) {
+  document.body.classList.toggle('study-focus', onOff);
+  const root = document.documentElement;
+  try {
+    if (onOff && !document.fullscreenElement && root.requestFullscreen) root.requestFullscreen().catch(() => {});
+    if (!onOff && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch (e) { /* sin pantalla completa nativa: queda el modo foco igual */ }
+  if (location.hash.startsWith('#estudio')) renderStudy();
+}
+// Si se sale con Esc, se sale también del modo foco
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && document.body.classList.contains('study-focus')) setStudyFocus(false);
+});
