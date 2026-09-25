@@ -1881,14 +1881,15 @@ function subjectActive(s, date = new Date()) {
 function subjectPace(s, now = Date.now()) {
   const W = 7 * DAY_MS;
   const goal = goalMinutes(s);
-  const done = studiedMinutes(s.id);
+  const credit = Number(s.creditMinutes) || 0; // horas que se dan por hechas (antes de usar la app)
+  const done = studiedMinutes(s.id) + credit;
   const left = Math.max(0, goal - done);
   const { start, end } = subjectPeriod(s);
   const track = [Store.data.settings.trackingStart, s.createdAt].filter(Boolean).map((d) => parseDate(d).getTime());
   const paceStart = Math.max(start.getTime(), ...track);
   const firstWeek = startOfWeek(new Date(paceStart)).getTime();
   const totalWeeks = Math.max(1, Math.ceil((end.getTime() - firstWeek) / W));
-  const goalAtStart = Math.max(0, goal - studiedMinutes(s.id, 0, firstWeek));
+  const goalAtStart = Math.max(0, goal - credit - studiedMinutes(s.id, 0, firstWeek));
   const base = goalAtStart / totalWeeks;
   const thisWeek = startOfWeek(new Date(now)).getTime();
   const started = now >= start.getTime();
@@ -1897,12 +1898,31 @@ function subjectPace(s, now = Date.now()) {
   const doneSince = studiedMinutes(s.id, firstWeek, thisWeek);
   const debt = started && !finished ? Math.max(0, Math.min(goalAtStart, base * weekIdx) - doneSince) : 0;
   const weekDone = studiedMinutes(s.id, thisWeek);
-  const leftAtWeek = Math.max(0, goal - studiedMinutes(s.id, 0, thisWeek));
+  const leftAtWeek = Math.max(0, goal - credit - studiedMinutes(s.id, 0, thisWeek));
   const perWeek = started && !finished ? Math.min(leftAtWeek, base + debt) : 0;
   const weeksLeft = finished ? 0 : Math.max(1, Math.ceil((end.getTime() - Math.max(now, firstWeek)) / W));
   const expected = (goal - goalAtStart) + goalAtStart * clamp((now - paceStart) / Math.max(1, end.getTime() - paceStart), 0, 1);
   const behind = goal > 0 && debt >= 30;
   return { goal, done, left, base, debt, perWeek, weeksLeft, totalWeeks, expected, behind, weekDone, over: done - goal, started, finished, start, end };
+}
+
+// Única vez: las horas que tocaban antes del lunes 21/9/2026 se dan por hechas
+// y el ritmo semanal arranca esa semana, sin deuda.
+const PAST_CREDIT_UNTIL = '2026-09-21';
+function applyPastWeeksCredit() {
+  const set = Store.data.settings;
+  if (set.pastCreditApplied) return;
+  const cut = parseDate(PAST_CREDIT_UNTIL).getTime();
+  if (Date.now() < cut) return;
+  Store.data.subjects.forEach((s) => {
+    const { start, end } = subjectPeriod(s);
+    const frac = clamp((cut - start.getTime()) / Math.max(1, end.getTime() - start.getTime()), 0, 1);
+    const owed = goalMinutes(s) * frac - studiedMinutes(s.id, 0, cut);
+    s.creditMinutes = Math.max(0, Math.round(owed));
+  });
+  if (!set.trackingStart || set.trackingStart < PAST_CREDIT_UNTIL) set.trackingStart = PAST_CREDIT_UNTIL;
+  set.pastCreditApplied = true;
+  Store.save();
 }
 
 // Clases de materias que se están cursando
@@ -5758,6 +5778,7 @@ function updateLive() {
 
 function init() {
   Store.load();
+  applyPastWeeksCredit();
   applyTheme(globalTheme());
   applyBullet();
   Sloth.init();

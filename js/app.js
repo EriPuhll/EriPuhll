@@ -73,6 +73,7 @@ function updateLive() {
 
 function init() {
   Store.load();
+  applyPastWeeksCredit();
   applyTheme(globalTheme());
   applyBullet();
   Sloth.init();
